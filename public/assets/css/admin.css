@@ -1,0 +1,267 @@
+/**
+ * Admin page specific styles
+ */
+
+.tabs {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-xl);
+    border-bottom: 2px solid var(--color-border);
+}
+
+.tab {
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: transparent;
+    border: none;
+    color: var(--color-text-secondary);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+}
+
+.tab:hover {
+    color: var(--color-text-primary);
+    background-color: rgba(255, 107, 53, 0.05);
+}
+
+.tab.active {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+    background-color: rgba(255, 107, 53, 0.1);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.section {
+    background: var(--color-bg-secondary);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    margin-bottom: var(--spacing-xl);
+    width: 100%;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.actions {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+.info-card {
+    background: var(--color-bg-tertiary);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-md);
+}
+
+.info-label {
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+    margin-bottom: var(--spacing-xs);
+}
+
+.info-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+input[type="file"] {
+    cursor: pointer;
+}
+
+/* ─── Log Viewer ─────────────────────────────── */
+.log-controls {
+    display: flex;
+    gap: var(--spacing-sm);
+    align-items: center;
+}
+
+.log-toggle {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.btn-toggle {
+    padding: 0.4rem 0.9rem;
+    background: transparent;
+    border: none;
+    color: var(--color-text-secondary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-toggle:not(:last-child) {
+    border-right: 1px solid var(--color-border);
+}
+
+.btn-toggle.active {
+    background: var(--color-primary);
+    color: white;
+}
+
+.btn-toggle:hover:not(.active) {
+    background: rgba(255, 107, 53, 0.1);
+    color: var(--color-text-primary);
+}
+
+.log-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    flex-wrap: wrap;
+}
+
+.log-toolbar-left,
+.log-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.log-filter-input {
+    background: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 0.4rem 0.75rem;
+    color: var(--color-text-primary);
+    font-size: 0.85rem;
+    width: 200px;
+}
+
+.log-filter-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.log-lines-select {
+    background: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 0.4rem 0.5rem;
+    color: var(--color-text-primary);
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.log-info-text {
+    color: var(--color-text-secondary);
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.log-container {
+    max-height: 600px;
+    overflow-y: auto;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-bg-tertiary);
+}
+
+.log-empty {
+    padding: var(--spacing-xl);
+    text-align: center;
+    color: var(--color-text-secondary);
+}
+
+.log-entry {
+    padding: 0.6rem 0.9rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    transition: background 0.15s;
+}
+
+.log-entry:last-child {
+    border-bottom: none;
+}
+
+.log-entry:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.log-entry.log-error {
+    border-left: 3px solid rgba(239, 68, 68, 0.6);
+}
+
+.log-entry.log-activity {
+    border-left: 3px solid rgba(59, 130, 246, 0.4);
+}
+
+.log-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.log-icon {
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.log-message {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--color-text-primary);
+    flex: 1;
+}
+
+.log-time {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+    font-family: 'Courier New', monospace;
+}
+
+.log-context {
+    margin-top: 0.3rem;
+    padding-left: 1.6rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 0.8rem;
+}
+
+.log-ctx-item {
+    font-size: 0.78rem;
+    color: var(--color-text-secondary);
+}
+
+.log-ctx-key {
+    color: var(--color-primary);
+    opacity: 0.8;
+}
+
+/* Button sizes for log toolbar */
+.btn-sm {
+    padding: 0.35rem 0.7rem;
+    font-size: 0.8rem;
+}

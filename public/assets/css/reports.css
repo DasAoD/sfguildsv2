@@ -1,0 +1,363 @@
+/* Reports Page Styles */
+
+/* Match spacing from other pages */
+.main-content {
+    flex: 1;
+    padding: var(--spacing-2xl) 0;
+}
+
+.guild-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: var(--spacing-lg);
+    border-bottom: 2px solid var(--color-border);
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-primary) var(--color-bg-secondary);
+}
+
+.guild-tabs::-webkit-scrollbar {
+    height: 6px;
+    width: 0;
+}
+
+.guild-tabs::-webkit-scrollbar-track {
+    background: var(--color-bg-secondary);
+}
+
+.guild-tabs::-webkit-scrollbar-thumb {
+    background: var(--color-primary);
+    border-radius: 3px;
+}
+
+.guild-tab {
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--color-text-secondary);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s;
+    text-decoration: none;
+    white-space: nowrap;
+    margin-bottom: -2px;
+}
+
+.guild-tab:hover {
+    color: var(--color-text-primary);
+    background: rgba(255, 107, 53, 0.05);
+}
+
+.guild-tab.active {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+    background: rgba(255, 107, 53, 0.1);
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(120px, 1fr));
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-xl);
+}
+
+.stat-card {
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md);
+    text-align: center;
+    min-width: 0; /* Allow cards to shrink */
+}
+
+.stat-card .stat-label {
+    color: var(--color-text-secondary);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.4rem;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.stat-card .stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    margin-bottom: 0.3rem;
+    line-height: 1;
+}
+
+.stat-card .stat-sublabel {
+    color: var(--color-text-secondary);
+    font-size: 0.7rem;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.report-layout {
+    display: grid;
+    grid-template-columns: 1fr 550px;
+    gap: var(--spacing-xl);
+    margin-top: var(--spacing-lg);
+}
+
+.report-main {
+    min-width: 0;
+}
+
+.report-sidebar {
+    position: sticky;
+    top: var(--spacing-lg);
+    height: fit-content;
+}
+
+.sidebar-section h3 {
+    margin: 0 0 var(--spacing-md) 0;
+    color: var(--color-text-primary);
+    font-size: 1.25rem;
+}
+
+.sidebar-card {
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.sidebar-card h4 {
+    margin: 0 0 var(--spacing-sm) 0;
+    color: var(--color-primary);
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.sidebar-card div {
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+/* Sidebar row alignment */
+.sidebar-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-xs) 0;
+    gap: var(--spacing-sm);
+}
+
+.sidebar-name {
+    flex: 1;
+    text-align: left;
+    color: var(--color-text-primary);
+}
+
+.sidebar-value {
+    text-align: right;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.sidebar-card .highlight {
+    color: var(--color-danger);
+    font-weight: 600;
+}
+
+/* Progress Bar */
+.progress-container {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    width: 100%;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 20px;
+    background: var(--color-bg-primary);
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.3s ease;
+    background: linear-gradient(90deg, var(--progress-color) 0%, var(--progress-color) 100%);
+}
+
+.progress-text {
+    min-width: 45px;
+    text-align: right;
+    color: var(--color-text-secondary);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+/* Color coding for progress bars */
+.progress-excellent {
+    --progress-color: #22c55e;
+}
+
+.progress-good {
+    --progress-color: #eab308;
+}
+
+.progress-poor {
+    --progress-color: #ef4444;
+}
+
+/* Table enhancements */
+#statsTable {
+    width: 100%;
+}
+
+#statsTable th.center,
+#statsTable td.center {
+    text-align: center;
+}
+
+/* Column widths */
+#statsTable th:nth-child(2),
+#statsTable td:nth-child(2),
+#statsTable th:nth-child(3),
+#statsTable td:nth-child(3) {
+    width: 120px;
+}
+
+#statsTable th:nth-child(4),
+#statsTable td:nth-child(4) {
+    width: 100px;
+}
+
+#statsTable th:last-child,
+#statsTable td:last-child {
+    width: 250px;
+}
+
+#statsTable td:first-child {
+    font-weight: 500;
+}
+
+/* Clickable player links */
+.player-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.player-link:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: var(--spacing-lg);
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+.modal-content {
+    background: var(--color-bg-primary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    animation: slideUp 0.3s ease-out;
+}
+
+.modal-close {
+    position: absolute;
+    top: var(--spacing-lg);
+    right: var(--spacing-lg);
+    background: transparent;
+    border: none;
+    font-size: 2rem;
+    line-height: 1;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    padding: 0;
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    transition: background 0.2s, color 0.2s;
+}
+
+.modal-close:hover {
+    background: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .report-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .report-sidebar {
+        position: static;
+    }
+}
+
+/* PNG Icon Styling */
+.rank-icon,
+.battle-icon {
+    width: 1.2em;
+    height: 1.2em;
+    vertical-align: middle;
+    display: inline-block;
+    margin-right: 0.25rem;
+}
+
+.rank-icon {
+    margin-right: 0.5rem;
+}

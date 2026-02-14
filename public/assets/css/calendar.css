@@ -1,0 +1,496 @@
+/* ======================
+   Guild Tabs Navigation
+   ====================== */
+.main-content {
+    flex: 1;
+    padding: var(--spacing-2xl) 0;
+}
+
+.page-header {
+    margin-bottom: var(--spacing-xs);
+}
+
+.guild-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--color-text-primary);
+    margin: 0;
+}
+
+.guild-server {
+    color: var(--color-text-secondary);
+    font-size: 1rem;
+    margin-top: var(--spacing-xs);
+}
+
+.guild-crest {
+    flex-shrink: 0;
+}
+
+.guild-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: var(--spacing-lg);
+    border-bottom: 2px solid var(--color-border);
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-primary) var(--color-bg-secondary);
+}
+
+.guild-tabs::-webkit-scrollbar {
+    height: 6px;
+    width: 0;
+}
+
+.guild-tabs::-webkit-scrollbar-track {
+    background: var(--color-bg-secondary);
+}
+
+.guild-tabs::-webkit-scrollbar-thumb {
+    background: var(--color-primary);
+    border-radius: 3px;
+}
+
+.guild-tab {
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--color-text-secondary);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s;
+    text-decoration: none;
+    white-space: nowrap;
+    margin-bottom: -2px;
+}
+
+.guild-tab:hover {
+    color: var(--color-text-primary);
+    background: rgba(255, 107, 53, 0.05);
+}
+
+.guild-tab.active {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+    background: rgba(255, 107, 53, 0.1);
+}
+
+/* ======================
+   Calendar Styles
+   ====================== */
+.calendar-header {
+    margin-bottom: 0;
+}
+
+.month-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-xs);
+}
+
+.month-nav h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--color-text-primary);
+    line-height: 1.2;
+}
+
+.nav-btn {
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--radius);
+    text-decoration: none;
+    font-size: 1.2rem;
+    line-height: 1;
+    transition: all var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 1.8rem;
+}
+
+.nav-btn:hover {
+    background: var(--color-hover);
+    border-color: var(--color-primary);
+}
+
+.month-stats {
+    text-align: center;
+    font-size: 1.1rem;
+    color: var(--color-text-secondary);
+    padding: var(--spacing-md);
+    background: var(--color-bg-secondary);
+    border-radius: var(--radius);
+    border: 1px solid var(--color-border);
+}
+
+.calendar {
+    background: var(--color-bg-secondary);
+    border-radius: var(--radius);
+    padding: var(--spacing-lg);
+    border: 1px solid var(--color-border);
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0;
+    margin-bottom: 0;
+    font-weight: 600;
+    text-align: center;
+    color: var(--color-text-secondary);
+    padding: var(--spacing-sm) 0;
+    border-bottom: 2px solid var(--color-border);
+}
+
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0;
+    border-left: 1px solid var(--color-border);
+    border-right: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.calendar-day {
+    min-height: 80px;
+    padding: var(--spacing-sm);
+    border-right: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-bg-primary);
+    transition: all var(--transition);
+    position: relative;
+}
+
+.calendar-day:nth-child(7n) {
+    border-right: none;
+}
+
+.calendar-day:nth-last-child(-n+7) {
+    border-bottom: none;
+}
+
+.calendar-day.empty {
+    background: transparent;
+    border: none;
+}
+
+.calendar-day.has-data {
+    cursor: pointer;
+    background: var(--color-bg-secondary);
+}
+
+.calendar-day.has-data:hover {
+    background: var(--color-hover);
+    z-index: 1;
+}
+
+.day-number {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: var(--color-text-primary);
+}
+
+.day-stats {
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+}
+
+/* ======================
+   Modal Styles
+   ====================== */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: var(--color-bg-secondary);
+    border-radius: var(--radius);
+    max-width: 800px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-lg);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: var(--color-text-primary);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius);
+    transition: all var(--transition);
+}
+
+.modal-close:hover {
+    background: var(--color-hover);
+    color: var(--color-text-primary);
+}
+
+.modal-body {
+    padding: var(--spacing-lg);
+}
+
+/* ======================
+   Battle Info Styles
+   ====================== */
+.battle-info {
+    background: var(--color-bg-primary);
+    padding: var(--spacing-md);
+    border-radius: var(--radius);
+    margin-bottom: var(--spacing-lg);
+    border: 1px solid var(--color-border);
+}
+
+.battle-info p {
+    margin: var(--spacing-sm) 0;
+    color: var(--color-text-primary);
+}
+
+.battle-info strong {
+    color: var(--color-primary);
+}
+
+/* ======================
+   Participants Grid
+   ====================== */
+.participants-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-lg);
+}
+
+.participants-column {
+    background: var(--color-bg-primary);
+    padding: var(--spacing-md);
+    border-radius: var(--radius);
+    border: 1px solid var(--color-border);
+}
+
+.participants-column h4 {
+    margin: 0 0 var(--spacing-md) 0;
+    color: var(--color-primary);
+    font-size: 1rem;
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.participants-column ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.participants-column li {
+    padding: var(--spacing-sm);
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+}
+
+.participants-column li:last-child {
+    border-bottom: none;
+}
+
+/* ======================
+   Button Styles
+   ====================== */
+.btn-small {
+    padding: 0.35rem 0.75rem;
+    font-size: 0.85rem;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all var(--transition);
+    margin-right: var(--spacing-sm);
+}
+
+.btn-small:hover {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+}
+
+.btn-small.btn-danger {
+    background: var(--color-danger);
+    color: white;
+    border-color: var(--color-danger);
+}
+
+.btn-small.btn-danger:hover {
+    background: #c82333;
+    border-color: #c82333;
+}
+
+.guild-select {
+    padding: 0.35rem 0.5rem;
+    font-size: 0.85rem;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.guild-select:hover,
+.guild-select:focus {
+    border-color: var(--color-primary);
+    outline: none;
+}
+
+/* ======================
+   Responsive Design
+   ====================== */
+@media (max-width: 768px) {
+    .calendar-day {
+        min-height: 60px;
+        padding: 0.25rem;
+    }
+    
+    .day-stats {
+        font-size: 0.75rem;
+    }
+    
+    .participants-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .modal-content {
+        width: 95%;
+        max-height: 90vh;
+    }
+    
+    .btn-small {
+        margin-bottom: var(--spacing-xs);
+    }
+    
+    .guild-tabs {
+        flex-wrap: nowrap;
+    }
+}
+
+/* ======================
+   Form Styling (Dark Mode)
+   ====================== */
+.form-group {
+    margin-bottom: var(--spacing-md);
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: var(--spacing-xs);
+    color: var(--color-text-primary);
+    font-weight: 600;
+}
+
+.form-input {
+    width: 100%;
+    background: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+    padding: var(--spacing-sm);
+    border-radius: var(--radius);
+    font-family: inherit;
+    font-size: 1rem;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+textarea.form-input {
+    resize: vertical;
+    font-family: monospace;
+}
+
+/* Date and Time Inputs */
+input[type="date"],
+input[type="time"] {
+    background: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+    padding: var(--spacing-sm);
+    border-radius: var(--radius);
+    color-scheme: dark;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
+input[type="date"]:focus,
+input[type="time"]:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+input[type="date"]::-webkit-datetime-edit,
+input[type="time"]::-webkit-datetime-edit {
+    color: var(--color-text-primary);
+}
+
+input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+input[type="time"]::-webkit-datetime-edit-fields-wrapper {
+    background: var(--color-bg-secondary);
+}
+
+input[type="date"]::-webkit-datetime-edit-text,
+input[type="time"]::-webkit-datetime-edit-text {
+    color: var(--color-text-secondary);
+}
+
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field,
+input[type="date"]::-webkit-datetime-edit-year-field,
+input[type="time"]::-webkit-datetime-edit-hour-field,
+input[type="time"]::-webkit-datetime-edit-minute-field {
+    color: var(--color-text-primary);
+}
+
+.btn-primary {
+    background: var(--color-primary);
+    color: white;
+    border: none;
+}

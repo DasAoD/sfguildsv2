@@ -1,0 +1,154 @@
+/**
+ * Dashboard-specific styles
+ */
+
+.guilds-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: var(--spacing-xl);
+    margin-bottom: var(--spacing-2xl);
+}
+
+.guild-card {
+    background-color: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl);
+    transition: all 0.25s;
+    cursor: pointer;
+}
+
+.guild-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    border-color: var(--color-primary);
+}
+
+.guild-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.guild-crest {
+    width: 60px;
+    height: 60px;
+    border-radius: var(--radius-lg);
+    background: linear-gradient(135deg, var(--color-bg-tertiary), var(--color-bg-hover));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.guild-info {
+    flex: 1;
+}
+
+.guild-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.guild-server {
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.status-badge.active {
+    background-color: rgba(74, 222, 128, 0.1);
+    color: var(--color-success);
+}
+
+.status-badge.warning {
+    background-color: rgba(251, 191, 36, 0.1);
+    color: var(--color-warning);
+}
+
+.status-badge.inactive {
+    background-color: rgba(160, 160, 160, 0.1);
+    color: var(--color-text-secondary);
+}
+
+.guild-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
+}
+
+.guild-stats .stat:nth-child(4),
+.guild-stats .stat:nth-child(5) {
+    grid-column: span 1;
+}
+
+/* Make the last row (Kämpfe, Teilnahme) span nicely */
+.guild-stats .stat:nth-child(4) {
+    grid-column: 1 / 2;
+}
+
+.guild-stats .stat:nth-child(5) {
+    grid-column: 2 / 3;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-label {
+    color: var(--color-text-secondary);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+}
+
+.stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.guild-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--color-border);
+}
+
+.last-update {
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+}
+
+.btn-details {
+    padding: 0.5rem var(--spacing-md);
+    background-color: var(--color-primary);
+    border: none;
+    border-radius: var(--radius-md);
+    color: white;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-decoration: none;
+    transition: all 0.25s;
+}
+
+.btn-details:hover {
+    background-color: #ff8c5a;
+}

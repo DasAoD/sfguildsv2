@@ -1,0 +1,371 @@
+/**
+ * Guild page specific styles
+ */
+
+.guild-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: var(--spacing-lg);
+    border-bottom: 2px solid var(--color-border);
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-primary) var(--color-bg-secondary);
+}
+
+.guild-tabs::-webkit-scrollbar {
+    height: 6px;
+    width: 0;
+}
+
+.guild-tabs::-webkit-scrollbar-track {
+    background: var(--color-bg-secondary);
+}
+
+.guild-tabs::-webkit-scrollbar-thumb {
+    background: var(--color-primary);
+    border-radius: 3px;
+}
+
+.guild-tab {
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--color-text-secondary);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s;
+    text-decoration: none;
+    white-space: nowrap;
+    margin-bottom: -2px;
+}
+
+.guild-tab:hover {
+    color: var(--color-text-primary);
+    background: rgba(255, 107, 53, 0.05);
+}
+
+.guild-tab.active {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+    background: rgba(255, 107, 53, 0.1);
+}
+
+.guild-title {
+    font-size: 2rem;
+    font-weight: 800;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+.stat-card {
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+}
+
+.stat-card .stat-label {
+    color: var(--color-text-secondary);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.stat-card .stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+.table-container {
+    background: var(--color-bg-secondary);
+    border-radius: var(--radius-lg);
+    overflow-x: auto;
+}
+
+/* Member row colors */
+tr.fired {
+    background: rgba(239, 68, 68, 0.15);
+}
+
+tr.left {
+    background: rgba(251, 191, 36, 0.15);
+}
+
+tr.has-notes {
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.long-offline {
+    font-weight: 700;
+}
+
+/* Editable cells */
+.editable {
+    cursor: pointer;
+    position: relative;
+}
+
+.editable:hover {
+    background: rgba(255, 107, 53, 0.1);
+}
+
+/* Inline edit form */
+.edit-form {
+    display: flex;
+    gap: var(--spacing-sm);
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.edit-form textarea,
+.edit-form input {
+    flex: 1;
+    min-width: 200px;
+}
+
+.edit-form button {
+    white-space: nowrap;
+}
+
+.edit-actions {
+    display: flex;
+    gap: var(--spacing-xs);
+    align-items: center;
+}
+
+/* Additional helper classes */
+.center {
+    text-align: center;
+}
+
+.btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8125rem;
+}
+
+/* Date picker styling */
+input[type="date"] {
+    background: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+    padding: 0.5rem;
+    border-radius: var(--radius-md);
+    color-scheme: dark;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
+input[type="date"]:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+/* Calendar popup styling */
+input[type="date"]::-webkit-datetime-edit {
+    color: var(--color-text-primary);
+}
+
+input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+    background: var(--color-bg-secondary);
+}
+
+input[type="date"]::-webkit-datetime-edit-text {
+    color: var(--color-text-secondary);
+}
+
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field,
+input[type="date"]::-webkit-datetime-edit-year-field {
+    color: var(--color-text-primary);
+}
+
+/* ======================
+   Modal Styles
+   ====================== */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: var(--color-bg-secondary);
+    border-radius: var(--radius);
+    max-width: 800px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-lg);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: var(--color-text-primary);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius);
+    transition: all var(--transition);
+}
+
+.modal-close:hover {
+    background: var(--color-hover);
+    color: var(--color-text-primary);
+}
+
+.modal-body {
+    padding: var(--spacing-lg);
+}
+
+/* ======================
+   Form Styling (Dark Mode)
+   ====================== */
+.form-group {
+    margin-bottom: var(--spacing-md);
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: var(--spacing-xs);
+    color: var(--color-text-primary);
+    font-weight: 600;
+}
+
+.form-input {
+    width: 100%;
+    background: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+    padding: var(--spacing-sm);
+    border-radius: var(--radius);
+    font-family: inherit;
+    font-size: 1rem;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+input[type="file"].form-input {
+    padding: var(--spacing-sm);
+    cursor: pointer;
+}
+
+/* ======================
+   Button Styles
+   ====================== */
+.btn-small {
+    padding: 0.35rem 0.75rem;
+    font-size: 0.85rem;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all var(--transition);
+    margin-right: var(--spacing-sm);
+}
+
+.btn-small:hover {
+    background: var(--color-hover);
+    border-color: var(--color-border);
+}
+
+.btn-small.btn-primary {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+}
+
+.btn-small.btn-primary:hover {
+    background: var(--color-primary);
+    opacity: 0.9;
+    border-color: var(--color-primary);
+}
+
+.btn-primary {
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all var(--transition);
+    font-size: 0.95rem;
+}
+
+.btn-primary:hover {
+    background: var(--color-primary);
+    opacity: 0.9;
+}
+
+/* Delete button */
+.btn-delete {
+    background: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius);
+    transition: all 0.2s;
+    opacity: 0.5;
+}
+
+.btn-delete:hover {
+    opacity: 1;
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.4);
+}
+
+/* PNG Icon Styling */
+.rank-icon,
+.battle-icon {
+    width: 1.2em;
+    height: 1.2em;
+    vertical-align: middle;
+    display: inline-block;
+    margin-right: 0.25rem;
+}
+
+.rank-icon {
+    margin-right: 0.5rem;
+}

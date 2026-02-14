@@ -1,0 +1,44 @@
+# --- Secrets (nur echte Secrets ignorieren) ---
+/config/.env
+/config/.env.local
+/config/.env.*.local
+!/config/.env.example
+
+# optional: falls du im Projekt-Root auch eine .env nutzt
+/.env
+/.env.local
+/.env.*.local
+!/.env.example
+
+# --- Database ---
+/data/*.sqlite
+/data/*.db
+
+# --- Runtime-Ordner: Inhalt ignorieren, Struktur behalten (via .gitkeep) ---
+/data/uploads/*
+/data/logs/*
+/storage/import/*
+/storage/import/archive/*
+/storage/import/failed/*
+/storage/import/incoming/*
+/storage/import/processing/*
+/storage/sf_reports/*
+!/storage/sf_reports/temp/
+/storage/sf_reports/temp/*
+
+# --- allgemeine Logs/Locks ---
+*.log
+*.lock
+
+# --- Editor/OS ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# --- Leere Ordner beibehalten ---
+!.gitkeep
+
+# --- Install/Setup (vorerst nicht ins Repo) ---
+/install/

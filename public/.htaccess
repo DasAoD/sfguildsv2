@@ -1,0 +1,33 @@
+# Prevent directory listing
+Options -Indexes
+
+# Follow symbolic links
+Options +FollowSymLinks
+
+# Enable rewrite engine
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+    
+    # Redirect to HTTPS (uncomment when SSL is ready)
+    # RewriteCond %{HTTPS} off
+    # RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [L,R=301]
+    
+    # Remove .php extension
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME}\.php -f
+    RewriteRule ^(.*)$ $1.php [L]
+</IfModule>
+
+# Protect sensitive files
+<FilesMatch "\.(db|sqlite|log|ini|conf)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# PHP settings
+<IfModule mod_php7.c>
+    php_flag display_errors Off
+    php_flag log_errors On
+    php_value error_log /var/log/php_errors.log
+</IfModule>

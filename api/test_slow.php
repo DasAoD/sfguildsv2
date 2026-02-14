@@ -1,0 +1,1 @@
+echo "<?php set_time_limit(300); sleep(90); echo 'Done after 90s'; ?>" > /var/www/sfguildsv2/api/test_slow.php
