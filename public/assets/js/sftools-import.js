@@ -67,9 +67,9 @@ class SFToolsImport {
         content.style.cssText = `
             background: var(--color-bg-secondary, #1a1a1a);
             border-radius: 8px;
-            width: 95%;
-            max-width: 1400px;
-            height: 90%;
+            width: 90%;
+            max-width: 1000px;
+            height: 100%;
             position: relative;
             display: flex;
             flex-direction: column;
