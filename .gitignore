@@ -16,15 +16,23 @@
 
 # --- Runtime-Ordner: Inhalt ignorieren, Struktur behalten (via .gitkeep) ---
 /data/uploads/*
+!/data/uploads/.gitkeep
+
 /data/logs/*
-/storage/import/*
-/storage/import/archive/*
-/storage/import/failed/*
-/storage/import/incoming/*
-/storage/import/processing/*
-/storage/sf_reports/*
-!/storage/sf_reports/temp/
-/storage/sf_reports/temp/*
+!/data/logs/.gitkeep
+
+/storage/import/**
+!/storage/import/.gitkeep
+!/storage/import/archive/.gitkeep
+!/storage/import/failed/.gitkeep
+!/storage/import/incoming/.gitkeep
+!/storage/import/processing/.gitkeep
+
+/storage/sf_reports/**
+!/storage/sf_reports/.gitkeep
+!/storage/sf_reports/temp/.gitkeep
+
+guild_*.webp
 
 # --- allgemeine Logs/Locks ---
 *.log
@@ -42,4 +50,3 @@ Thumbs.db
 
 # --- Install/Setup (vorerst nicht ins Repo) ---
 /install/
-public/assets/images/guild_*.webp
