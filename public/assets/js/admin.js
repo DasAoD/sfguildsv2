@@ -163,8 +163,10 @@ formData.append('crest',crestFile);
 const r=await fetch('/api/admin_guilds.php',{method:'POST',body:formData});
 const d=await r.json();
 showAlert(d.message,d.success?'success':'error');
+if(d.success){
 closeGuildModal();
 loadGuilds();
+}
 });
 
 async function deleteGuild(guildId,name){
