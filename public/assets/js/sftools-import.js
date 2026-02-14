@@ -67,9 +67,10 @@ class SFToolsImport {
         content.style.cssText = `
             background: var(--color-bg-secondary, #1a1a1a);
             border-radius: 8px;
-            width: 95%;
-            max-width: 1400px;
-            height: 95%;
+            width: 70%;
+            max-width: 900px;
+            height: 98%;
+            max-height: calc(100vh - 20px);
             position: relative;
             display: flex;
             flex-direction: column;
@@ -79,7 +80,7 @@ class SFToolsImport {
         const header = document.createElement('div');
         header.className = 'modal-header';
         header.style.cssText = `
-            padding: 0.75rem 1rem;
+            padding: 0.5rem 0.75rem;
             border-bottom: 1px solid var(--color-border, #333);
             display: flex;
             justify-content: space-between;
@@ -88,7 +89,10 @@ class SFToolsImport {
 
         const title = document.createElement('h3');
         title.textContent = `SFTools Import: ${this.guildName}`;
-        title.style.margin = '0';
+        title.style.cssText = `
+            margin: 0;
+            font-size: 1rem;
+        `;
 
         const closeBtn = document.createElement('button');
         closeBtn.textContent = '×';
@@ -97,9 +101,12 @@ class SFToolsImport {
             background: none;
             border: none;
             color: inherit;
-            font-size: 2rem;
+            font-size: 1.5rem;
             cursor: pointer;
             line-height: 1;
+            padding: 0;
+            width: 1.5rem;
+            height: 1.5rem;
         `;
         closeBtn.onclick = () => this.close();
 
@@ -110,7 +117,7 @@ class SFToolsImport {
         const iframeContainer = document.createElement('div');
         iframeContainer.style.cssText = `
             flex: 1;
-            padding: 0.5rem;
+            padding: 0.25rem;
             overflow: hidden;
         `;
 
