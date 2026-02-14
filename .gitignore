@@ -25,6 +25,7 @@
 /storage/sf_reports/*
 !/storage/sf_reports/temp/
 /storage/sf_reports/temp/*
+/public/assets/images/guild_*
 
 # --- allgemeine Logs/Locks ---
 *.log
