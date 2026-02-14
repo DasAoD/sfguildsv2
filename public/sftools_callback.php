@@ -1,197 +1,236 @@
 <?php
-declare(strict_types=1);
-
 /**
  * SFTools Callback Handler
  * 
- * Empfängt POST-Daten von SFTools request.html nach Endpoint-Import
- * und konvertiert sie in CSV für den automatischen Import via systemd
+ * Receives POST data from SFTools, converts JSON to CSV,
+ * and saves to import/incoming directory for processing by systemd service
  */
 
-// Logging für Debug
-$logFile = '/var/www/sfguildsv2/storage/import/sftools_callback.log';
-$incomingDir = '/var/www/sfguildsv2/storage/import/incoming';
-
-function logDebug(string $msg): void {
-    global $logFile;
-    $timestamp = date('Y-m-d H:i:s');
-    file_put_contents($logFile, "[{$timestamp}] {$msg}\n", FILE_APPEND);
-}
-
-// CORS Headers für SFTools iframe
+// CORS Headers - only allow SFTools
 header('Access-Control-Allow-Origin: https://sftools.mar21.eu');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
+header('Content-Type: application/json');
 
-// Preflight OPTIONS request
+// Handle preflight
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(204);
+    http_response_code(200);
     exit;
 }
 
-// Nur POST erlauben
+// Only accept POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    logDebug('ERROR: Nur POST erlaubt, erhalten: ' . $_SERVER['REQUEST_METHOD']);
-    echo json_encode(['error' => 'Only POST allowed']);
+    echo json_encode(['error' => 'Method not allowed']);
     exit;
 }
 
-try {
-    // POST-Daten lesen
+// Base directory
+$baseDir = dirname(__DIR__);
+
+// Logging
+$logFile = $baseDir . '/storage/import/sftools_callback.log';
+$incomingDir = $baseDir . '/storage/import/incoming';
+
+function logMessage($message) {
+    global $logFile;
+    $timestamp = date('Y-m-d H:i:s');
+    file_put_contents($logFile, "[$timestamp] $message\n", FILE_APPEND);
+}
+
+logMessage("=== SFTools Callback Triggered ===");
+logMessage("Method: " . $_SERVER['REQUEST_METHOD']);
+logMessage("Content-Type: " . ($_SERVER['CONTENT_TYPE'] ?? 'not set'));
+
+// For multipart/form-data, use $_POST instead of php://input
+$data = null;
+
+// Check if we have POST data
+if (!empty($_POST)) {
+    logMessage("Using \$_POST data");
+    $data = $_POST;
+    logMessage("POST keys: " . implode(', ', array_keys($_POST)));
+} else {
+    // Fallback to raw input (for JSON)
     $rawInput = file_get_contents('php://input');
-    logDebug('Received POST data length: ' . strlen($rawInput));
+    logMessage("Raw input length: " . strlen($rawInput));
     
-    // Content-Type prüfen
-    $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
-    logDebug('Content-Type: ' . $contentType);
-    
-    $data = null;
-    
-    // JSON im Body?
-    if (strpos($contentType, 'application/json') !== false) {
+    if (strlen($rawInput) > 0) {
         $data = json_decode($rawInput, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new RuntimeException('JSON decode error: ' . json_last_error_msg());
-        }
-        logDebug('Parsed as JSON, keys: ' . implode(', ', array_keys($data)));
-    }
-    // Form-encoded?
-    elseif (strpos($contentType, 'application/x-www-form-urlencoded') !== false) {
-        parse_str($rawInput, $data);
-        logDebug('Parsed as form data, keys: ' . implode(', ', array_keys($data)));
-    }
-    // Fallback: versuche beides
-    else {
-        // Erst JSON versuchen
-        $jsonData = json_decode($rawInput, true);
-        if (json_last_error() === JSON_ERROR_NONE) {
-            $data = $jsonData;
-            logDebug('Fallback: Parsed as JSON');
-        } else {
-            // Dann form data
+        if ($data === null) {
             parse_str($rawInput, $data);
-            logDebug('Fallback: Parsed as form data');
+            logMessage("Parsed as form-encoded data");
+        } else {
+            logMessage("Parsed as JSON");
+        }
+    }
+}
+
+// Check if we have data
+if (empty($data)) {
+    logMessage("ERROR: No data received");
+    http_response_code(400);
+    echo json_encode(['error' => 'No data received']);
+    exit;
+}
+
+logMessage("Data keys: " . implode(', ', array_keys($data)));
+
+// SFTools might send data in different formats:
+// Option 1: Direct members array in POST
+// Option 2: JSON string in a POST field
+// Option 3: Nested structure
+
+$members = null;
+
+// Try to find members array
+if (isset($data['members'])) {
+    $members = $data['members'];
+    logMessage("Found members in \$data['members']");
+} elseif (isset($data['data'])) {
+    $members = $data['data'];
+    logMessage("Found members in \$data['data']");
+} elseif (isset($data['guild']['members'])) {
+    $members = $data['guild']['members'];
+    logMessage("Found members in \$data['guild']['members']");
+} else {
+    // Maybe it's a JSON string in one of the POST fields?
+    foreach ($data as $key => $value) {
+        if (is_string($value) && (substr($value, 0, 1) === '{' || substr($value, 0, 1) === '[')) {
+            $decoded = json_decode($value, true);
+            if ($decoded !== null && isset($decoded['members'])) {
+                $members = $decoded['members'];
+                logMessage("Found JSON-encoded members in POST field: $key");
+                break;
+            } elseif ($decoded !== null && is_array($decoded) && !empty($decoded)) {
+                // Maybe the whole thing IS the members array?
+                $firstKey = array_key_first($decoded);
+                if (is_array($decoded[$firstKey]) && isset($decoded[$firstKey]['name'])) {
+                    $members = $decoded;
+                    logMessage("Found members array in JSON-encoded POST field: $key");
+                    break;
+                }
+            }
         }
     }
     
-    if (!$data) {
-        logDebug('ERROR: Keine Daten empfangen oder parsing fehlgeschlagen');
-        logDebug('Raw input (first 500 chars): ' . substr($rawInput, 0, 500));
+    // Still nothing? Log the full data structure for debugging
+    if (!$members) {
+        logMessage("Data structure: " . json_encode($data, JSON_PRETTY_PRINT));
         http_response_code(400);
-        echo json_encode(['error' => 'No data received']);
+        echo json_encode(['error' => 'No members data found', 'received_keys' => array_keys($data)]);
         exit;
     }
-    
-    // Debug: Alle empfangenen Felder loggen
-    logDebug('Received data structure: ' . json_encode(array_keys($data)));
-    
-    // Guild Info extrahieren
-    $guildName = $data['guild']['name'] ?? $data['guildName'] ?? 'Unknown';
-    $guildId = $data['guild']['id'] ?? $data['guildId'] ?? '';
-    
-    // Members extrahieren
-    $members = $data['members'] ?? $data['roster'] ?? $data['guild']['members'] ?? [];
-    
-    if (empty($members)) {
-        logDebug('ERROR: Keine Mitglieder in Daten gefunden');
-        logDebug('Data keys: ' . implode(', ', array_keys($data)));
-        http_response_code(400);
-        echo json_encode(['error' => 'No members found in data']);
-        exit;
+}
+
+if (!is_array($members)) {
+    logMessage("ERROR: Members is not an array");
+    http_response_code(400);
+    echo json_encode(['error' => 'Members data is not an array']);
+    exit;
+}
+
+logMessage("Found " . count($members) . " members");
+
+// Convert to CSV
+$csvData = [];
+
+// CSV Header (must match cli/import_sftools.php expectations)
+$header = [
+    'Name',
+    'Rang',
+    'Level',
+    'zul. Online',
+    'Gildenbeitritt',
+    'Goldschatz',
+    'Lehrmeister',
+    'Ritterhalle',
+    'Gildenpet',
+    'Tage offline',  // Will be empty - calculated by import script
+    'Entlassen',     // Will be empty - manual field
+    'Verlassen',     // Will be empty - manual field
+    'Sonstige Notizen' // Will be empty - manual field
+];
+$csvData[] = $header;
+
+// Field mapping - SFTools can use different key names
+$fieldMap = [
+    'name' => ['name', 'Name', 'player', 'Player'],
+    'rank' => ['rank', 'Rang', 'role', 'Role'],
+    'level' => ['level', 'Level', 'lvl'],
+    'last_online' => ['last_online', 'lastOnline', 'zul. Online', 'last_active', 'lastActive'],
+    'joined_at' => ['joined_at', 'joinedAt', 'Gildenbeitritt', 'joined', 'guild_joined'],
+    'gold' => ['gold', 'Gold', 'Goldschatz', 'treasury'],
+    'mentor' => ['mentor', 'Mentor', 'Lehrmeister'],
+    'knight_hall' => ['knight_hall', 'knightHall', 'Ritterhalle', 'hall'],
+    'guild_pet' => ['guild_pet', 'guildPet', 'Gildenpet', 'pet']
+];
+
+function findField($member, $possibleKeys) {
+    foreach ($possibleKeys as $key) {
+        if (isset($member[$key])) {
+            return $member[$key];
+        }
     }
-    
-    logDebug('Found ' . count($members) . ' members for guild: ' . $guildName);
-    
-    // CSV erstellen
-    $timestamp = date('Ymd_His');
-    $guildSlug = strtolower(preg_replace('/[^a-z0-9]+/i', '_', $guildName));
-    $guildSlug = trim($guildSlug, '_');
-    
-    $filename = "{$guildSlug}__{$timestamp}.csv";
-    $tempFile = sys_get_temp_dir() . '/' . $filename;
-    
-    $fp = fopen($tempFile, 'w');
-    if (!$fp) {
-        throw new RuntimeException('Could not create temp file: ' . $tempFile);
-    }
-    
-    // CSV Header - entsprechend deinem import_sftools.php Script
-    $headers = [
-        'Name',
-        'Rang',
-        'Level',
-        'zul. Online',
-        'Gildenbeitritt',
-        'Goldschatz',
-        'Lehrmeister',
-        'Ritterhalle',
-        'Gildenpet',
-        'Tage offline',
-        'Entlassen',
-        'Verlassen',
-        'Sonstige Notizen'
+    return '';
+}
+
+// Process each member
+foreach ($members as $member) {
+    $row = [
+        findField($member, $fieldMap['name']),
+        findField($member, $fieldMap['rank']),
+        findField($member, $fieldMap['level']),
+        findField($member, $fieldMap['last_online']),
+        findField($member, $fieldMap['joined_at']),
+        findField($member, $fieldMap['gold']),
+        findField($member, $fieldMap['mentor']),
+        findField($member, $fieldMap['knight_hall']),
+        findField($member, $fieldMap['guild_pet']),
+        '', // Tage offline - empty
+        '', // Entlassen - empty (manual field)
+        '', // Verlassen - empty (manual field)
+        ''  // Sonstige Notizen - empty (manual field)
     ];
     
-    fputcsv($fp, $headers, ';');
-    
-    // Members schreiben
-    foreach ($members as $member) {
-        // Felder extrahieren (verschiedene mögliche Key-Namen)
-        $row = [
-            $member['name'] ?? $member['Name'] ?? '',
-            $member['rank'] ?? $member['role'] ?? $member['Rang'] ?? '',
-            $member['level'] ?? $member['Level'] ?? '',
-            $member['lastActive'] ?? $member['last_active'] ?? $member['zul. Online'] ?? '',
-            $member['joinedAt'] ?? $member['joined_at'] ?? $member['Gildenbeitritt'] ?? '',
-            $member['treasure'] ?? $member['gold'] ?? $member['Goldschatz'] ?? '',
-            $member['instructor'] ?? $member['mentor'] ?? $member['Lehrmeister'] ?? '',
-            $member['knights'] ?? $member['knight_hall'] ?? $member['Ritterhalle'] ?? '',
-            $member['pet'] ?? $member['guild_pet'] ?? $member['Gildenpet'] ?? '',
-            '', // Tage offline (wird berechnet)
-            '', // Entlassen (manuell)
-            '', // Verlassen (manuell)
-            ''  // Notizen (manuell)
-        ];
-        
-        fputcsv($fp, $row, ';');
-    }
-    
-    fclose($fp);
-    
-    // CSV in incoming-Ordner verschieben
-    $targetFile = $incomingDir . '/' . $filename;
-    
-    if (!is_dir($incomingDir)) {
-        mkdir($incomingDir, 0775, true);
-    }
-    
-    if (!rename($tempFile, $targetFile)) {
-        throw new RuntimeException('Could not move file to incoming: ' . $targetFile);
-    }
-    
-    // Berechtigungen setzen (für systemd service)
-    chmod($targetFile, 0664);
-    
-    logDebug('SUCCESS: CSV erstellt: ' . $filename . ' (' . count($members) . ' members)');
-    
-    // Erfolgreiche Antwort
-    http_response_code(200);
-    echo json_encode([
-        'success' => true,
-        'message' => 'Import erfolgreich',
-        'file' => $filename,
-        'members_count' => count($members),
-        'guild' => $guildName
-    ]);
-    
-} catch (Throwable $e) {
-    logDebug('EXCEPTION: ' . $e->getMessage());
-    logDebug('Stack: ' . $e->getTraceAsString());
-    
-    http_response_code(500);
-    echo json_encode([
-        'success' => false,
-        'error' => $e->getMessage()
-    ]);
+    $csvData[] = $row;
 }
+
+// Create CSV file
+$filename = 'sftools_import_' . date('Y-m-d_His') . '.csv';
+$filepath = $incomingDir . '/' . $filename;
+
+// Ensure incoming directory exists
+if (!is_dir($incomingDir)) {
+    mkdir($incomingDir, 0775, true);
+    logMessage("Created incoming directory");
+}
+
+// Write CSV
+$fp = fopen($filepath, 'w');
+if (!$fp) {
+    logMessage("ERROR: Could not create file: $filepath");
+    http_response_code(500);
+    echo json_encode(['error' => 'Could not create CSV file']);
+    exit;
+}
+
+// Use semicolon as delimiter to match existing import format
+foreach ($csvData as $row) {
+    fputcsv($fp, $row, ';');
+}
+fclose($fp);
+
+// Set proper permissions
+chmod($filepath, 0664);
+
+logMessage("SUCCESS: Created CSV file: $filename with " . (count($csvData) - 1) . " members");
+
+// Return success response
+http_response_code(200);
+echo json_encode([
+    'success' => true,
+    'message' => 'Import successful',
+    'filename' => $filename,
+    'members_count' => count($csvData) - 1
+]);
