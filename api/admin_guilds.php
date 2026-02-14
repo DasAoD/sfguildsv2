@@ -39,6 +39,8 @@ try {
             $tag = trim($_POST['tag'] ?? '');
             $notes = trim($_POST['notes'] ?? '');
             $crestFile = null;
+            $crestUploaded = false;
+            $crestError = null;
             
             if (empty($name) || empty($server)) {
                 jsonResponse(['success' => false, 'message' => 'Name und Server erforderlich'], 400);
@@ -94,26 +96,45 @@ try {
                         
                         if ($image) {
                             // Convert to WEBP with 90% quality
-                            imagewebp($image, $outputPath, 90);
-                            imagedestroy($image);
-                            
-                            // Update guild with crest filename
-                            execute(
-                                'UPDATE guilds SET crest_file = ? WHERE id = ?',
-                                [$crestFile, $guildId]
-                            );
+                            if (imagewebp($image, $outputPath, 90)) {
+                                imagedestroy($image);
+                                
+                                // Update guild with crest filename
+                                execute(
+                                    'UPDATE guilds SET crest_file = ? WHERE id = ?',
+                                    [$crestFile, $guildId]
+                                );
+                                $crestUploaded = true;
+                            } else {
+                                $crestError = 'Konvertierung zu WEBP fehlgeschlagen';
+                                logError("WEBP conversion failed (create guild)", ["guild_id" => $guildId]);
+                            }
+                        } else {
+                            $crestError = 'Bildformat nicht unterstützt oder Datei beschädigt';
+                            logError("Image load failed (create guild)", ["extension" => $fileExt, "guild_id" => $guildId]);
                         }
                     } catch (Exception $e) {
+                        $crestError = 'Fehler bei der Bildverarbeitung: ' . $e->getMessage();
                         logError("Image conversion failed (create guild)", ["error" => $e->getMessage()]);
                     }
+                } else {
+                    $crestError = 'Ungültiges Dateiformat (erlaubt: jpg, png, gif, bmp, webp)';
                 }
             }
             
             logActivity('Gilde erstellt', ['Name' => $name, 'Server' => $server]);
             
+            $message = 'Gilde erfolgreich angelegt';
+            if ($crestUploaded) {
+                $message .= ' (mit Wappen)';
+            } elseif ($crestError) {
+                $message .= ' (Wappen konnte nicht hochgeladen werden: ' . $crestError . ')';
+            }
+            
             jsonResponse([
                 'success' => true,
-                'message' => 'Gilde erfolgreich angelegt'
+                'message' => $message,
+                'crest_uploaded' => $crestUploaded
             ]);
             break;
             
