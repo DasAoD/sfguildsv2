@@ -170,8 +170,8 @@ loadGuilds();
 });
 
 async function deleteGuild(guildId,name){
-confirmDialog(`Gilde "${name}" wirklich löschen?`, async () => {
-const r=await fetch('/api/admin_guilds.php',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({guild_id:guildId})});
+confirmDialog(`Gilde "${name}" wirklich löschen?\n\nAlle Mitglieder, Kampfdaten und das Wappen werden ebenfalls gelöscht!\n\nDiese Aktion kann nicht rückgängig gemacht werden.`, async () => {
+const r=await fetch('/api/admin_guilds.php',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({guild_id:guildId,force:true})});
 const d=await r.json();
 showAlert(d.message,d.success?'success':'error');
 loadGuilds();
