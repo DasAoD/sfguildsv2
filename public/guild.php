@@ -34,17 +34,7 @@ $guildId = isset($_GET['id']) ? (int)$_GET['id'] : 1;
                             <div class="guild-server" id="guildServer"></div>
                         </div>
                     </div>
-                    <!-- ============================================ -->
-                    <!-- BUTTONS: CSV Import + SFTools Import         -->
-                    <!-- ============================================ -->
-                    <div style="display:flex;gap:var(--spacing-md)">
-                        <!-- SFTools Import Button (NEU) -->
-                        <button id="sftools-import-btn" class="btn btn-primary" style="display:none" title="Daten direkt aus SFTools aktualisieren">
-                            🔄 Aus SFTools aktualisieren
-                        </button>
-                        <!-- Bestehender CSV Import Button -->
-                        <button onclick="openImportModal()" class="btn btn-primary" id="importBtn" style="display:none">+ Mitglieder importieren</button>
-                    </div>
+                    <button onclick="openImportModal()" class="btn btn-primary" id="importBtn" style="display:none">+ Mitglieder importieren</button>
                 </div>
             </div>
 
@@ -61,7 +51,7 @@ $guildId = isset($_GET['id']) ? (int)$_GET['id'] : 1;
         </div>
     </main>
 
-    <!-- Import Modal (CSV) -->
+    <!-- Import Modal -->
     <div id="importModal" class="modal">
         <div class="modal-content" style="max-width: 600px;">
             <div class="modal-header">
@@ -95,47 +85,6 @@ $guildId = isset($_GET['id']) ? (int)$_GET['id'] : 1;
         let currentMembers = [];
     </script>
     
-    <!-- ============================================ -->
-    <!-- SFTools Import Script einbinden              -->
-    <!-- ============================================ -->
-    <script src="/assets/js/sftools-import.js"></script>
-    
     <?php renderScripts(['/assets/js/guild.js']); ?>
-    
-    <!-- ============================================ -->
-    <!-- SFTools Import Initialisierung               -->
-    <!-- ============================================ -->
-    <script>
-        // SFTools Import Button initialisieren sobald Guild-Daten geladen sind
-        // Lauscht auf ein Custom Event das von guild.js gefeuert wird
-        
-        // Fallback: Initialisierung nach 1 Sekunde falls kein Event gefeuert wird
-        setTimeout(function() {
-            const guildNameElement = document.getElementById('guildName');
-            const guildName = guildNameElement ? guildNameElement.textContent : 'Unbekannt';
-            
-            // Nur initialisieren wenn Guild-Name geladen wurde
-            if (guildName && guildName !== 'Lädt...' && guildName !== 'Unbekannt') {
-                initSFToolsImport(
-                    'sftools-import-btn',
-                    guildId,
-                    guildName
-                );
-                console.log('SFTools Import initialized (timeout) for guild:', guildName);
-            }
-        }, 1000);
-        
-        // Alternative: Event-basiert (falls guild.js ein Event feuert)
-        document.addEventListener('guildDataLoaded', function(event) {
-            if (event.detail && event.detail.name) {
-                initSFToolsImport(
-                    'sftools-import-btn',
-                    guildId,
-                    event.detail.name
-                );
-                console.log('SFTools Import initialized (event) for guild:', event.detail.name);
-            }
-        });
-    </script>
 </body>
 </html>
