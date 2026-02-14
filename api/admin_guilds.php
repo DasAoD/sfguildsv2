@@ -47,14 +47,10 @@ try {
             }
             
             // Insert guild first to get ID
-            execute(
+            $guildId = execute(
                 'INSERT INTO guilds (name, server, tag, notes, created_at) VALUES (?, ?, ?, ?, datetime("now"))',
                 [$name, $server, $tag, $notes]
             );
-            
-            // Get the new guild ID
-            $db = getConnection();
-            $guildId = $db->lastInsertRowID();
             
             // Handle file upload with guild ID
             if (isset($_FILES['crest']) && $_FILES['crest']['error'] === UPLOAD_ERR_OK) {
