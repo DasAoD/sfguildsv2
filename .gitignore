@@ -43,3 +43,4 @@ Thumbs.db
 
 # --- Install/Setup (vorerst nicht ins Repo) ---
 /install/
+public/assets/images/guild_*.webp
