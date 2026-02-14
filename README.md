@@ -87,4 +87,4 @@ Der Kern der Web-App (UI, Admin, lokale Daten) kann dennoch unabhängig davon be
 ## Credits / Acknowledgements
 
 - **sf-api** (Rust CLI/API) by **the-marenga**: https://github.com/the-marenga/sf-api
-  - Wird in diesem Projekt optional für Character-Listen und Report-Fetching genutzt.
+  - Wird in diesem Projekt für Report-Fetching genutzt.
