@@ -67,9 +67,9 @@ class SFToolsImport {
         content.style.cssText = `
             background: var(--color-bg-secondary, #1a1a1a);
             border-radius: 8px;
-            width: 90%;
-            max-width: 1000px;
-            height: 100%;
+            width: 95%;
+            max-width: 1400px;
+            height: 95%;
             position: relative;
             display: flex;
             flex-direction: column;
@@ -79,7 +79,7 @@ class SFToolsImport {
         const header = document.createElement('div');
         header.className = 'modal-header';
         header.style.cssText = `
-            padding: 1.5rem;
+            padding: 0.75rem 1rem;
             border-bottom: 1px solid var(--color-border, #333);
             display: flex;
             justify-content: space-between;
@@ -110,7 +110,7 @@ class SFToolsImport {
         const iframeContainer = document.createElement('div');
         iframeContainer.style.cssText = `
             flex: 1;
-            padding: 1.5rem;
+            padding: 0.5rem;
             overflow: hidden;
         `;
 
