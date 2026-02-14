@@ -241,26 +241,79 @@ try {
             // Delete guild
             $input = json_decode(file_get_contents('php://input'), true);
             $guildId = $input['guild_id'] ?? null;
+            $force = $input['force'] ?? false; // Optional: Force delete with members
             
             if (!$guildId) {
                 jsonResponse(['success' => false, 'message' => 'Guild ID erforderlich'], 400);
             }
             
-            // Check if guild has members
+            // Get guild info before deletion
+            $guild = queryOne('SELECT name, crest_file FROM guilds WHERE id = ?', [$guildId]);
+            if (!$guild) {
+                jsonResponse(['success' => false, 'message' => 'Gilde nicht gefunden'], 404);
+            }
+            
+            // Check member count for logging and deletion
             $memberCount = queryOne('SELECT COUNT(*) as count FROM members WHERE guild_id = ?', [$guildId]);
-            if ($memberCount['count'] > 0) {
-                jsonResponse(['success' => false, 'message' => 'Gilde hat noch Mitglieder. Bitte zuerst alle Mitglieder entfernen.'], 400);
+            
+            // Delete crest file if exists
+            if ($guild['crest_file']) {
+                $uploadDir = __DIR__ . '/../public/assets/images/';
+                $crestPath = $uploadDir . $guild['crest_file'];
+                
+                if (file_exists($crestPath)) {
+                    @unlink($crestPath);
+                }
+                
+                // Also clean up any other guild crest files with this ID
+                foreach (glob($uploadDir . 'guild_' . $guildId . '.*') as $file) {
+                    if (file_exists($file)) {
+                        @unlink($file);
+                    }
+                }
+            }
+            
+            // Delete associated battle data
+            $battleCount = queryOne('SELECT COUNT(*) as count FROM sf_eval_battles WHERE guild_id = ?', [$guildId]);
+            if ($battleCount && $battleCount['count'] > 0) {
+                execute('DELETE FROM sf_eval_battles WHERE guild_id = ?', [$guildId]);
+            }
+            
+            // Delete members if force is enabled
+            if ($force && $memberCount['count'] > 0) {
+                execute('DELETE FROM members WHERE guild_id = ?', [$guildId]);
             }
             
             // Delete guild
-            $guild = queryOne('SELECT name FROM guilds WHERE id = ?', [$guildId]);
             execute('DELETE FROM guilds WHERE id = ?', [$guildId]);
             
-            logActivity('Gilde gelöscht', ['ID' => $guildId, 'Name' => $guild['name'] ?? '?']);
+            logActivity('Gilde gelöscht', [
+                'ID' => $guildId, 
+                'Name' => $guild['name'],
+                'Mitglieder gelöscht' => $memberCount['count'],
+                'Battles gelöscht' => $battleCount['count'] ?? 0
+            ]);
+            
+            $message = 'Gilde erfolgreich gelöscht';
+            $details = [];
+            
+            if ($memberCount['count'] > 0) {
+                $details[] = $memberCount['count'] . ' Mitglieder';
+            }
+            if ($battleCount && $battleCount['count'] > 0) {
+                $details[] = $battleCount['count'] . ' Kampfdaten';
+            }
+            if ($guild['crest_file']) {
+                $details[] = 'Wappen';
+            }
+            
+            if (!empty($details)) {
+                $message .= ' (inkl. ' . implode(', ', $details) . ')';
+            }
             
             jsonResponse([
                 'success' => true,
-                'message' => 'Gilde erfolgreich gelöscht'
+                'message' => $message
             ]);
             break;
             
