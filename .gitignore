@@ -13,6 +13,8 @@
 # --- Database ---
 /data/*.sqlite
 /data/*.db
+/data/*.backup
+/data/*.bak
 
 # --- Runtime-Ordner: Inhalt ignorieren, Struktur behalten (via .gitkeep) ---
 /data/uploads/*
