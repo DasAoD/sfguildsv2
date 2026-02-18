@@ -8,12 +8,18 @@
  * DELETE - Delete an account
  */
 
-session_start();
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../includes/auth.php';
-require_once __DIR__ . '/../includes/encryption.php';
-
 header('Content-Type: application/json');
+
+// Catch PHP errors as JSON
+set_error_handler(function($errno, $errstr, $errfile, $errline) {
+    http_response_code(500);
+    echo json_encode(['error' => "PHP Error: $errstr in $errfile:$errline"]);
+    exit;
+});
+
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/encryption.php';
 
 checkAuth();
 
@@ -179,7 +185,7 @@ function handlePost($db, $userId) {
         echo json_encode([
             'success' => true,
             'account_id' => (int)$accountId,
-            'message' => $input['id'] ? 'Account aktualisiert' : 'Account erstellt'
+            'message' => $accountId && isset($input['id']) ? 'Account aktualisiert' : 'Account erstellt'
         ]);
         
     } catch (Exception $e) {
