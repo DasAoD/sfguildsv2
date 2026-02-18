@@ -1,0 +1,292 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap');
+
+/**
+ * Hellevator Page Styles
+ * Uses project CSS variables from styles.css
+ */
+
+/* Header Banner */
+.hellevator-banner {
+    width: 100%;
+    max-height: 400px;
+    overflow: hidden;
+    position: relative;
+}
+.hellevator-banner img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+}
+.hellevator-banner::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 120px;
+    background: linear-gradient(to top, var(--color-bg-primary, #0f0f0f), transparent);
+}
+
+/* Container Override */
+.hellevator-container {
+    padding-bottom: 3rem;
+}
+
+/* Title Section */
+.hellevator-title {
+    text-align: center;
+    padding: 2rem 0 1.5rem;
+}
+.hellevator-title h1 {
+    font-family: 'Cinzel', serif;
+    font-weight: 900;
+    font-size: 3rem;
+    letter-spacing: 0.15em;
+    color: var(--color-warning, #d4a647);
+    text-shadow: 0 0 30px rgba(232, 98, 26, 0.4), 0 2px 4px rgba(0,0,0,0.6);
+}
+.hellevator-subtitle {
+    font-size: 1.15rem;
+    color: var(--color-text-muted, #666666);
+    margin-top: 0.3rem;
+    letter-spacing: 0.05em;
+}
+
+/* Language Toggle */
+.lang-toggle {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    margin: 1.5rem 0 2.5rem;
+}
+.lang-btn {
+    padding: 0.5rem 1.5rem;
+    border: 2px solid var(--color-border, #333333);
+    border-radius: 25px;
+    background: transparent;
+    color: var(--color-text-muted, #666666);
+    font-family: inherit;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.lang-btn.active {
+    background: var(--color-primary, #ff6b35);
+    border-color: var(--color-primary, #ff6b35);
+    color: #fff;
+    font-weight: 600;
+}
+.lang-btn:hover:not(.active) {
+    border-color: var(--color-primary, #ff6b35);
+    color: var(--color-primary, #ff6b35);
+}
+
+/* Content Layout */
+.hellevator-layout {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 2.5rem;
+    align-items: start;
+}
+
+/* Section Header */
+.hellevator-section-header {
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: var(--color-primary, #ff6b35);
+    letter-spacing: 0.08em;
+    padding: 1rem 1.25rem;
+    background: var(--color-bg-secondary, #1a1a1a);
+    border: 1px solid var(--color-border, #333333);
+    border-radius: var(--radius-md, 0.5rem) var(--radius-md, 0.5rem) 0 0;
+    margin-bottom: 0;
+}
+.hellevator-section-header .icon {
+    margin-right: 0.5rem;
+}
+
+/* Table */
+.hellevator-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--color-bg-tertiary, #252525);
+    border: 1px solid var(--color-border, #333333);
+    border-top: none;
+    border-radius: 0 0 var(--radius-md, 0.5rem) var(--radius-md, 0.5rem);
+    overflow: hidden;
+}
+.hellevator-table thead th {
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-text-muted, #666666);
+    padding: 0.9rem 1.25rem;
+    text-align: left;
+    border-bottom: 1px solid var(--color-border, #333333);
+}
+.hellevator-table tbody tr {
+    border-bottom: 1px solid rgba(51, 51, 51, 0.4);
+    transition: background 0.2s;
+}
+.hellevator-table tbody tr:hover {
+    background: rgba(255, 107, 53, 0.06);
+}
+.hellevator-table tbody td {
+    padding: 0.7rem 1.25rem;
+    vertical-align: middle;
+}
+
+/* Floor Badge */
+.floor-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--color-primary, #ff6b35), var(--color-primary-dark, #e85a2a));
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    min-width: 60px;
+    text-align: center;
+}
+.floor-name {
+    font-weight: 600;
+    color: var(--color-text-primary, #ffffff);
+}
+.player-info {
+    color: var(--color-text-secondary, #a0a0a0);
+    font-size: 0.95rem;
+}
+.player-info.no-data {
+    color: var(--color-text-muted, #666666);
+    font-style: italic;
+}
+
+/* Table Note */
+.hellevator-note {
+    font-size: 0.9rem;
+    color: var(--color-text-muted, #666666);
+    font-style: italic;
+    margin-top: 1rem;
+    padding: 0 0.25rem;
+}
+
+/* Warning Boxes */
+.warning-box {
+    border-radius: var(--radius-md, 0.5rem);
+    padding: 1rem 1.25rem;
+    margin-top: 1.25rem;
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+.warning-box.caution {
+    background: rgba(255, 107, 53, 0.08);
+    border: 1px solid rgba(255, 107, 53, 0.3);
+}
+.warning-box.danger {
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+.warning-label {
+    font-weight: 700;
+}
+.warning-label.caution-text {
+    color: var(--color-primary, #ff6b35);
+}
+.warning-label.danger-text {
+    color: var(--color-danger, #ef4444);
+}
+
+/* Side Image */
+.hellevator-side-image {
+    position: relative;
+    margin-top: 140px;
+}
+.hellevator-side-image img {
+    width: 100%;
+    border-radius: var(--radius-lg, 0.75rem);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    border: 1px solid var(--color-border, #333333);
+}
+
+/* Help Link */
+.hellevator-help-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+    padding: 0.9rem 1rem;
+    background: var(--color-bg-secondary, #1a1a1a);
+    border: 1px solid var(--color-border, #333333);
+    border-radius: var(--radius-md, 0.5rem);
+    text-decoration: none;
+    color: var(--color-text-primary, #ffffff);
+    transition: all 0.3s ease;
+}
+.hellevator-help-link:hover {
+    border-color: var(--color-primary, #ff6b35);
+    background: rgba(255, 107, 53, 0.08);
+}
+.help-link-icon {
+    font-size: 1.4rem;
+    flex-shrink: 0;
+}
+.help-link-text {
+    display: flex;
+    flex-direction: column;
+}
+.help-link-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--color-primary, #ff6b35);
+}
+.help-link-desc {
+    font-size: 0.8rem;
+    color: var(--color-text-muted, #666666);
+}
+
+/* Music Toggle */
+.music-toggle {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(26, 26, 26, 0.9);
+    border: 2px solid var(--color-border, #333333);
+    color: var(--color-primary, #ff6b35);
+    font-size: 1.3rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+}
+.music-toggle:hover {
+    border-color: var(--color-primary, #ff6b35);
+    background: rgba(255, 107, 53, 0.15);
+    transform: scale(1.08);
+}
+.music-toggle.muted {
+    color: var(--color-text-muted, #666666);
+}
+
+/* Responsive */
+@media (max-width: 800px) {
+    .hellevator-layout {
+        grid-template-columns: 1fr;
+    }
+    .hellevator-side-image {
+        margin-top: 1.5rem;
+        max-width: 320px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .hellevator-title h1 {
+        font-size: 2rem;
+    }
+}
