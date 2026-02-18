@@ -28,6 +28,7 @@ function renderNavbar($activePage = '') {
     if (empty($activePage)) {
         $currentPage = basename($_SERVER['PHP_SELF'], '.php');
         if ($currentPage === 'index') $activePage = 'dashboard';
+        elseif ($currentPage === 'hellevator') $activePage = 'hellevator';
         elseif ($currentPage === 'fights') $activePage = 'battles';
         elseif ($currentPage === 'reports') $activePage = 'reports';
         elseif ($currentPage === 'admin') $activePage = 'admin';
@@ -75,6 +76,7 @@ function renderNavbar($activePage = '') {
             </a>
             <div class="navbar-menu">
                 <a href="/" class="nav-item <?php echo $activePage === 'dashboard' ? 'active' : ''; ?>">Dashboard</a>
+                <a href="/hellevator.php" class="nav-item <?php echo $activePage === 'hellevator' ? 'active' : ''; ?>">Hellevator</a>
                 <?php if ($isLoggedIn): ?>
                 <a href="/fights.php" class="nav-item <?php echo $activePage === 'battles' ? 'active' : ''; ?>">Kämpfe</a>
                 <a href="/inbox.php" class="nav-item <?php echo $activePage === 'inbox' ? 'active' : ''; ?>">
