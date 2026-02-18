@@ -1,7 +1,11 @@
 <?php
 /**
  * API: Save Selected Characters
- * Saves user's selected S&F characters for report fetching
+ * Saves user's selected S&F characters for a specific account
+ * 
+ * POST Body:
+ *   account_id - SF account to save characters for
+ *   characters - Array of selected characters
  */
 
 session_start();
@@ -15,8 +19,8 @@ checkAuth();
 $db = getDB();
 $userId = $_SESSION['user_id'];
 
-// Get POST data
 $input = json_decode(file_get_contents('php://input'), true);
+$accountId = $input['account_id'] ?? null;
 $selectedCharacters = $input['characters'] ?? [];
 
 if (!is_array($selectedCharacters)) {
@@ -35,9 +39,23 @@ try {
         }
     }
     
-    // Save as JSON
-    $stmt = $db->prepare("UPDATE users SET selected_characters = ? WHERE id = ?");
-    $stmt->execute([json_encode($selectedCharacters), $userId]);
+    $json = json_encode($selectedCharacters);
+    
+    if ($accountId) {
+        // Save to sf_accounts table
+        $stmt = $db->prepare("UPDATE sf_accounts SET selected_characters = ?, updated_at = datetime('now') WHERE id = ? AND user_id = ?");
+        $stmt->execute([$json, $accountId, $userId]);
+        
+        if ($stmt->rowCount() === 0) {
+            http_response_code(404);
+            echo json_encode(['error' => 'Account nicht gefunden']);
+            exit;
+        }
+    } else {
+        // Legacy: Save to users table (backward compatibility)
+        $stmt = $db->prepare("UPDATE users SET selected_characters = ? WHERE id = ?");
+        $stmt->execute([$json, $userId]);
+    }
     
     echo json_encode([
         'success' => true,
