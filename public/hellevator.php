@@ -67,7 +67,7 @@ renderNavbar('hellevator');
 
                 <div class="warning-box danger" id="warningDanger">
                     <span>🚫 </span><span class="warning-label danger-text" id="dangerLabel">Ganz Wichtig:</span>
-                    <span id="dangerText"> Wer angemeldet ist, aber am Kampf selbst nicht teilnimmt, erhält keine Belohnung!</span>
+                    <span id="dangerText"> Nur wer im Kampf tatsächlich zum Einsatz kommt, erhält eine Belohnung – überzählige Anmeldungen gehen leer aus!</span>
                 </div>
             </div>
 
@@ -136,7 +136,7 @@ renderNavbar('hellevator');
                 cautionLabel: 'Wichtig:',
                 cautionText: ' Melden sich 2 oder mehr Spieler in einer Etage an, bitte aufs Level achten – sonst werden unnötig Schlüsselkarten verplempert.',
                 dangerLabel: 'Ganz Wichtig:',
-                dangerText: ' Wer angemeldet ist, aber am Kampf selbst nicht teilnimmt, erhält keine Belohnung!',
+                dangerText: ' Nur wer im Kampf tatsächlich zum Einsatz kommt, erhält eine Belohnung – überzählige Anmeldungen gehen leer aus!',
                 helpTitle: 'Offizielle Hellevator-Hilfe',
                 helpDesc: 'Playa Games Helpshift – Alles über den Hellevator',
                 noData: 'keine Daten'
@@ -150,7 +150,7 @@ renderNavbar('hellevator');
                 cautionLabel: 'Important:',
                 cautionText: ' If 2 or more players register on one floor, please pay attention to the level, otherwise key cards will be wasted unnecessarily.',
                 dangerLabel: 'Very Important:',
-                dangerText: ' Anyone who is registered but does not participate in the battle itself will not receive a reward!',
+                dangerText: ' Only players who are actually deployed in battle receive a reward – surplus registrations go empty-handed!',
                 helpTitle: 'Official Hellevator Help',
                 helpDesc: 'Playa Games Helpshift – Everything about the Hellevator',
                 noData: 'no data'
