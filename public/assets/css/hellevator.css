@@ -20,14 +20,14 @@
     bottom: 0;
     left: 0;
     right: 0;
-    height: 55%;
-    background: linear-gradient(to top, var(--color-bg-primary, #0f0f0f) 15%, transparent);
+    height: 65%;
+    background: linear-gradient(to top, var(--color-bg-primary, #0f0f0f) 25%, transparent);
 }
 
 /* Container Override - pull up into faded banner area */
 .hellevator-container {
     max-width: 1200px;
-    margin-top: -120px;
+    margin-top: -320px;
     position: relative;
     z-index: 2;
     padding-bottom: 3rem;
