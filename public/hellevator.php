@@ -24,11 +24,29 @@ renderNavbar('hellevator');
 
     <div class="container hellevator-container">
 
-        <!-- Content Layout -->
+        <!-- Content Layout: 3 columns -->
         <div class="hellevator-layout">
 
-            <!-- Left: Table + Warnings -->
+            <!-- Left: Info Boxes -->
             <div class="hellevator-left">
+                <div class="warning-box info" id="warningInfo">
+                    <span>📋 </span><span class="warning-label info-text" id="infoLabel">Hinweis:</span>
+                    <span id="tableNote"> Level beziehen sich auf nur einen Spieler.</span>
+                </div>
+
+                <div class="warning-box caution" id="warningCaution">
+                    <span>⚠️ </span><span class="warning-label caution-text" id="cautionLabel">Wichtig:</span>
+                    <span id="cautionText"> Melden sich 2 oder mehr Spieler in einer Etage an, bitte aufs Level achten – sonst werden unnötig Schlüsselkarten verplempert.</span>
+                </div>
+
+                <div class="warning-box danger" id="warningDanger">
+                    <span>🚫 </span><span class="warning-label danger-text" id="dangerLabel">Ganz Wichtig:</span>
+                    <span id="dangerText"> Nur wer im Kampf tatsächlich zum Einsatz kommt, erhält eine Belohnung – überzählige Anmeldungen gehen leer aus!</span>
+                </div>
+            </div>
+
+            <!-- Center: Table -->
+            <div class="hellevator-center">
                 <div class="hellevator-section-header">
                     <span class="icon">🔥</span>
                     <span id="sectionTitle">Höllen-Angriffe – Anmeldungen</span>
@@ -45,18 +63,6 @@ renderNavbar('hellevator');
                     <tbody id="tableBody">
                     </tbody>
                 </table>
-
-                <div class="hellevator-note" id="tableNote">Level beziehen sich auf nur einen Spieler.</div>
-
-                <div class="warning-box caution" id="warningCaution">
-                    <span>⚠️ </span><span class="warning-label caution-text" id="cautionLabel">Wichtig:</span>
-                    <span id="cautionText"> Melden sich 2 oder mehr Spieler in einer Etage an, bitte aufs Level achten – sonst werden unnötig Schlüsselkarten verplempert.</span>
-                </div>
-
-                <div class="warning-box danger" id="warningDanger">
-                    <span>🚫 </span><span class="warning-label danger-text" id="dangerLabel">Ganz Wichtig:</span>
-                    <span id="dangerText"> Nur wer im Kampf tatsächlich zum Einsatz kommt, erhält eine Belohnung – überzählige Anmeldungen gehen leer aus!</span>
-                </div>
             </div>
 
             <!-- Right: Lang Toggle + Image + Help Link -->
@@ -124,7 +130,8 @@ renderNavbar('hellevator');
                 thFloor: 'Stockwerk',
                 thStage: 'Etage',
                 thPlayers: 'Spieler / Level',
-                tableNote: 'Level beziehen sich auf nur einen Spieler.',
+                infoLabel: 'Hinweis:',
+                tableNote: ' Level beziehen sich auf nur einen Spieler.',
                 cautionLabel: 'Wichtig:',
                 cautionText: ' Melden sich 2 oder mehr Spieler in einer Etage an, bitte aufs Level achten – sonst werden unnötig Schlüsselkarten verplempert.',
                 dangerLabel: 'Ganz Wichtig:',
@@ -138,7 +145,8 @@ renderNavbar('hellevator');
                 thFloor: 'Floor',
                 thStage: 'Stage',
                 thPlayers: 'Players / Level',
-                tableNote: 'Levels refer to one player only.',
+                infoLabel: 'Note:',
+                tableNote: ' Levels refer to one player only.',
                 cautionLabel: 'Important:',
                 cautionText: ' If 2 or more players register on one floor, please pay attention to the level, otherwise key cards will be wasted unnecessarily.',
                 dangerLabel: 'Very Important:',
@@ -161,6 +169,7 @@ renderNavbar('hellevator');
             document.getElementById('thFloor').textContent = t.thFloor;
             document.getElementById('thStage').textContent = t.thStage;
             document.getElementById('thPlayers').textContent = t.thPlayers;
+            document.getElementById('infoLabel').textContent = t.infoLabel;
             document.getElementById('tableNote').textContent = t.tableNote;
             document.getElementById('cautionLabel').textContent = t.cautionLabel;
             document.getElementById('cautionText').textContent = t.cautionText;
