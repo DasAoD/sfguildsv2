@@ -20,14 +20,16 @@
     bottom: 0;
     left: 0;
     right: 0;
-    height: 200px;
-    background: linear-gradient(to top, var(--color-bg-primary, #0f0f0f), transparent);
+    height: 55%;
+    background: linear-gradient(to top, var(--color-bg-primary, #0f0f0f) 15%, transparent);
 }
 
-/* Container Override */
+/* Container Override - pull up into faded banner area */
 .hellevator-container {
-    max-width: 960px;
-    padding-top: 1.5rem;
+    max-width: 1200px;
+    margin-top: -120px;
+    position: relative;
+    z-index: 2;
     padding-bottom: 3rem;
 }
 
@@ -60,12 +62,25 @@
     color: var(--color-primary, #ff6b35);
 }
 
-/* Content Layout */
+/* Content Layout - 3 columns */
 .hellevator-layout {
     display: grid;
-    grid-template-columns: 1fr 280px;
-    gap: 2.5rem;
+    grid-template-columns: 240px 1fr 240px;
+    gap: 1.5rem;
     align-items: start;
+}
+
+/* Left column: Info Boxes */
+.hellevator-left {
+    padding-top: 50px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Center column: Table */
+.hellevator-center {
+    min-width: 0;
 }
 
 /* Section Header */
@@ -100,7 +115,7 @@
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--color-text-muted, #666666);
-    padding: 0.9rem 1.25rem;
+    padding: 0.9rem 1rem;
     text-align: left;
     border-bottom: 1px solid var(--color-border, #333333);
 }
@@ -112,7 +127,7 @@
     background: rgba(255, 107, 53, 0.06);
 }
 .hellevator-table tbody td {
-    padding: 0.7rem 1.25rem;
+    padding: 0.6rem 1rem;
     vertical-align: middle;
 }
 
@@ -123,9 +138,9 @@
     color: #fff;
     font-weight: 700;
     font-size: 0.85rem;
-    padding: 0.25rem 0.75rem;
+    padding: 0.25rem 0.65rem;
     border-radius: 4px;
-    min-width: 60px;
+    min-width: 55px;
     text-align: center;
 }
 .floor-name {
@@ -134,29 +149,23 @@
 }
 .player-info {
     color: var(--color-text-secondary, #a0a0a0);
-    font-size: 0.95rem;
+    font-size: 0.9rem;
 }
 .player-info.no-data {
     color: var(--color-text-muted, #666666);
     font-style: italic;
 }
 
-/* Table Note */
-.hellevator-note {
-    font-size: 1rem;
-    color: var(--color-text-secondary, #a0a0a0);
-    font-style: italic;
-    margin-top: 1.25rem;
-    text-align: center;
-}
-
-/* Warning Boxes */
+/* Warning / Info Boxes */
 .warning-box {
     border-radius: var(--radius-md, 0.5rem);
-    padding: 1rem 1.25rem;
-    margin-top: 1.25rem;
+    padding: 0.9rem 1rem;
     line-height: 1.6;
-    font-size: 0.95rem;
+    font-size: 0.88rem;
+}
+.warning-box.info {
+    background: rgba(59, 130, 246, 0.08);
+    border: 1px solid rgba(59, 130, 246, 0.3);
 }
 .warning-box.caution {
     background: rgba(255, 107, 53, 0.08);
@@ -169,6 +178,9 @@
 .warning-label {
     font-weight: 700;
 }
+.warning-label.info-text {
+    color: #3b82f6;
+}
 .warning-label.caution-text {
     color: var(--color-primary, #ff6b35);
 }
@@ -176,10 +188,14 @@
     color: var(--color-danger, #ef4444);
 }
 
+/* Right column */
+.hellevator-right {
+    padding-top: 0;
+}
+
 /* Side Image */
 .hellevator-side-image {
     position: relative;
-    margin-top: 90px;
 }
 .hellevator-side-image img {
     width: 100%;
@@ -193,8 +209,8 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    margin-top: 1.25rem;
-    padding: 0.9rem 1rem;
+    margin-top: 1rem;
+    padding: 0.8rem 0.9rem;
     background: var(--color-bg-secondary, #1a1a1a);
     border: 1px solid var(--color-border, #333333);
     border-radius: var(--radius-md, 0.5rem);
@@ -207,7 +223,7 @@
     background: rgba(255, 107, 53, 0.08);
 }
 .help-link-icon {
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     flex-shrink: 0;
 }
 .help-link-text {
@@ -216,11 +232,11 @@
 }
 .help-link-title {
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     color: var(--color-primary, #ff6b35);
 }
 .help-link-desc {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: var(--color-text-muted, #666666);
 }
 
@@ -254,17 +270,23 @@
 }
 
 /* Responsive */
-@media (max-width: 800px) {
+@media (max-width: 1000px) {
     .hellevator-layout {
         grid-template-columns: 1fr;
     }
-    .hellevator-side-image {
-        margin-top: 1.5rem;
-        max-width: 320px;
-        margin-left: auto;
-        margin-right: auto;
+    .hellevator-left {
+        padding-top: 0;
+        order: 2;
     }
-    .hellevator-title h1 {
-        font-size: 2rem;
+    .hellevator-center {
+        order: 1;
+    }
+    .hellevator-right {
+        order: 3;
+        max-width: 320px;
+        margin: 0 auto;
+    }
+    .hellevator-container {
+        margin-top: -60px;
     }
 }
