@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap');
-
 /**
  * Hellevator Page Styles
  * Uses project CSS variables from styles.css
@@ -8,7 +6,6 @@
 /* Header Banner */
 .hellevator-banner {
     width: 100%;
-    max-height: 500px;
     overflow: hidden;
     position: relative;
 }
@@ -16,7 +13,6 @@
     width: 100%;
     height: auto;
     display: block;
-    object-fit: cover;
 }
 .hellevator-banner::after {
     content: '';
@@ -24,51 +20,32 @@
     bottom: 0;
     left: 0;
     right: 0;
-    height: 180px;
+    height: 200px;
     background: linear-gradient(to top, var(--color-bg-primary, #0f0f0f), transparent);
 }
 
 /* Container Override */
 .hellevator-container {
     max-width: 960px;
+    padding-top: 1.5rem;
     padding-bottom: 3rem;
-}
-
-/* Title Section */
-.hellevator-title {
-    text-align: center;
-    padding: 2rem 0 1.5rem;
-}
-.hellevator-title h1 {
-    font-family: 'Cinzel', serif;
-    font-weight: 900;
-    font-size: 3rem;
-    letter-spacing: 0.15em;
-    color: var(--color-warning, #d4a647);
-    text-shadow: 0 0 30px rgba(232, 98, 26, 0.4), 0 2px 4px rgba(0,0,0,0.6);
-}
-.hellevator-subtitle {
-    font-size: 1.15rem;
-    color: var(--color-text-muted, #666666);
-    margin-top: 0.3rem;
-    letter-spacing: 0.05em;
 }
 
 /* Language Toggle */
 .lang-toggle {
     display: flex;
     justify-content: center;
-    gap: 0.75rem;
-    margin: 1.5rem 0 2.5rem;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
 }
 .lang-btn {
-    padding: 0.5rem 1.5rem;
+    padding: 0.4rem 1rem;
     border: 2px solid var(--color-border, #333333);
     border-radius: 25px;
     background: transparent;
     color: var(--color-text-muted, #666666);
     font-family: inherit;
-    font-size: 1rem;
+    font-size: 0.9rem;
     cursor: pointer;
     transition: all 0.3s ease;
 }
@@ -202,7 +179,7 @@
 /* Side Image */
 .hellevator-side-image {
     position: relative;
-    margin-top: 140px;
+    margin-top: 90px;
 }
 .hellevator-side-image img {
     width: 100%;
