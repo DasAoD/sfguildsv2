@@ -24,18 +24,6 @@ renderNavbar('hellevator');
 
     <div class="container hellevator-container">
 
-        <!-- Title -->
-        <div class="hellevator-title">
-            <h1>Hellevator</h1>
-            <div class="hellevator-subtitle" id="subtitle">Höllen-Angriffe · Hell Attacks</div>
-        </div>
-
-        <!-- Language Toggle -->
-        <div class="lang-toggle">
-            <button class="lang-btn active" onclick="setLang('de')" id="btn-de">🇩🇪 Deutsch</button>
-            <button class="lang-btn" onclick="setLang('en')" id="btn-en">🇬🇧 English</button>
-        </div>
-
         <!-- Content Layout -->
         <div class="hellevator-layout">
 
@@ -71,8 +59,12 @@ renderNavbar('hellevator');
                 </div>
             </div>
 
-            <!-- Right: Image + Help Link -->
+            <!-- Right: Lang Toggle + Image + Help Link -->
             <div class="hellevator-right">
+                <div class="lang-toggle">
+                    <button class="lang-btn active" onclick="setLang('de')" id="btn-de">🇩🇪 Deutsch</button>
+                    <button class="lang-btn" onclick="setLang('en')" id="btn-en">🇬🇧 English</button>
+                </div>
                 <div class="hellevator-side-image">
                     <img src="/assets/hellevator/helle_side.webp" alt="Hellevator Szene">
                 </div>
