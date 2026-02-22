@@ -81,22 +81,24 @@ try {
         foreach ($charactersToFetch as $char) {
             $charJson = json_encode($char);
             
+            // Passwort über env-Array übergeben, nicht über argv (sonst in ps aux sichtbar)
             $cmd = sprintf(
-                'php %s/sf_fetch_single.php %s %s %s %s 2>&1',
+                'php %s/sf_fetch_single.php %s %s %s 2>&1',
                 escapeshellarg(__DIR__),
                 escapeshellarg($charJson),
                 escapeshellarg($userId),
-                escapeshellarg($account['sf_username']),
-                escapeshellarg($sfPassword)
+                escapeshellarg($account['sf_username'])
             );
-            
+
+            $procEnv = array_merge($_ENV, ['SF_PASSWORD' => $sfPassword]);
+
             $descriptorspec = [
                 0 => ['pipe', 'r'],
                 1 => ['pipe', 'w'],
                 2 => ['pipe', 'w']
             ];
-            
-            $process = proc_open($cmd, $descriptorspec, $procPipes);
+
+            $process = proc_open($cmd, $descriptorspec, $procPipes, null, $procEnv);
             
             if (is_resource($process)) {
                 $processes[] = $process;

@@ -46,7 +46,7 @@ try {
         "SELECT b.guild_id, COUNT(*) AS participated
          FROM sf_eval_participants p
          JOIN sf_eval_battles b ON p.battle_id = b.id
-         WHERE date(b.battle_date) >= date('now', '-30 days')
+         WHERE b.battle_date >= date('now', '-30 days')
            AND p.participated = 1
          GROUP BY b.guild_id"
     );

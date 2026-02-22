@@ -3,14 +3,14 @@
  * API: Fetch Reports for Single Character
  * Called by sf_fetch_reports.php in parallel
  * 
- * Usage: php sf_fetch_single.php '{"name":"Beedle","server":"f25.sfgame.net","guild":"Blutzirkel"}' USER_ID USERNAME PASSWORD
+ * Usage: SF_PASSWORD=secret php sf_fetch_single.php '{"name":"Beedle","server":"f25.sfgame.net","guild":"Blutzirkel"}' USER_ID USERNAME
  */
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/sf_helpers.php';
 
 // Get command line arguments
-if ($argc < 5) {
+if ($argc < 4) {
     echo json_encode(['success' => false, 'error' => 'Missing arguments']);
     exit(1);
 }
@@ -18,7 +18,12 @@ if ($argc < 5) {
 $charData = json_decode($argv[1], true);
 $userId = $argv[2];
 $username = $argv[3];
-$password = $argv[4];
+// Passwort über Umgebungsvariable – nicht in argv (sonst in ps aux sichtbar)
+$password = getenv('SF_PASSWORD');
+if (empty($password)) {
+    echo json_encode(['success' => false, 'error' => 'SF_PASSWORD not set']);
+    exit(1);
+}
 
 $character = $charData['name'];
 $server = $charData['server'];
@@ -34,22 +39,41 @@ try {
     }
     
     // Run Rust fetch_guild_reports script
+    // Passwort über env-Array übergeben, nicht über argv (sonst in ps aux sichtbar)
     $cmd = sprintf(
-        'env SSO_USERNAME=%s PASSWORD=%s SERVER_HOST=%s CHARACTER=%s OUT_DIR=%s /opt/sf-api/target/release/examples/fetch_guild_reports 2>&1',
-        escapeshellarg($username),
-        escapeshellarg($password),
+        '%s SERVER_HOST=%s CHARACTER=%s OUT_DIR=%s 2>&1',
+        escapeshellarg('/opt/sf-api/target/release/examples/fetch_guild_reports'),
         escapeshellarg($server),
         escapeshellarg($character),
         escapeshellarg($tempDir)
     );
-    
-    exec($cmd, $output, $returnCode);
-    
-    // Log output for debugging
+
+    $procEnv = array_merge($_ENV, [
+        'SSO_USERNAME' => $username,
+        'PASSWORD'     => $password,
+    ]);
+
+    $descriptorspec = [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
+    $process = proc_open($cmd, $descriptorspec, $procPipes, null, $procEnv);
+
+    if (!is_resource($process)) {
+        throw new Exception('Prozess konnte nicht gestartet werden');
+    }
+
+    fclose($procPipes[0]);
+    $stdout = stream_get_contents($procPipes[1]);
+    $stderr = stream_get_contents($procPipes[2]);
+    fclose($procPipes[1]);
+    fclose($procPipes[2]);
+    $returnCode = proc_close($process);
+
+    $output = $stdout ? explode("\n", trim($stdout)) : [];
+
+    // Log output for debugging (ohne Passwort)
     $logFile = __DIR__ . '/../storage/sf_reports/fetch_' . sanitizeGuildName($character) . '_' . date('Y-m-d_H-i-s') . '.log';
-    $cmdSafe = preg_replace('/PASSWORD=[^ ]+/', 'PASSWORD=***', $cmd);
+    $cmdSafe = sprintf('fetch_guild_reports SSO_USERNAME=*** PASSWORD=*** SERVER_HOST=%s CHARACTER=%s', $server, $character);
     file_put_contents($logFile, "Command: $cmdSafe\n\n" . implode("\n", $output));
-    
+
     if ($returnCode !== 0) {
         throw new Exception('Rust-Script fehlgeschlagen. Log: ' . $logFile);
     }

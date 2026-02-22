@@ -67,33 +67,6 @@ try {
             ]);
             break;
             
-            if (empty($username) || empty($password)) {
-                jsonResponse(['success' => false, 'message' => 'Benutzername und Passwort erforderlich'], 400);
-            }
-            
-            // Check if username exists
-            $existing = queryOne('SELECT id FROM users WHERE username = ?', [$username]);
-            if ($existing) {
-                jsonResponse(['success' => false, 'message' => 'Benutzername bereits vergeben'], 400);
-            }
-            
-            // Hash password
-            $passwordHash = password_hash($password, PASSWORD_DEFAULT);
-            
-            // Insert user
-            execute(
-                'INSERT INTO users (username, password_hash, created_at) VALUES (?, ?, datetime("now"))',
-                [$username, $passwordHash]
-            );
-            
-            logActivity('Benutzer erstellt', ['Benutzername' => $username]);
-            
-            jsonResponse([
-                'success' => true,
-                'message' => 'Benutzer erfolgreich angelegt'
-            ]);
-            break;
-            
         case 'PUT':
             $input = json_decode(file_get_contents('php://input'), true);
             $userId = $input['user_id'] ?? null;

@@ -37,6 +37,49 @@ try {
 /**
  * POST: Test connection and fetch all characters
  */
+/**
+ * Prozess starten mit explizitem env-Array.
+ * Credentials landen so NICHT in der argv-Kommandozeile
+ * und sind damit nicht über "ps aux" einsehbar.
+ *
+ * @param string $binary  Absoluter Pfad zum Binary
+ * @param array  $args    Zusätzliche Argumente (werden escapeshellarg'd)
+ * @param array  $env     Environment-Variablen (Key => Value)
+ * @return array  Ausgabe-Zeilen des Prozesses
+ * @throws Exception bei Fehler
+ */
+function runWithEnv(string $binary, array $args, array $env): array {
+    $cmd = escapeshellarg($binary);
+    foreach ($args as $arg) {
+        $cmd .= ' ' . escapeshellarg($arg);
+    }
+
+    $descriptorspec = [
+        0 => ['pipe', 'r'],
+        1 => ['pipe', 'w'],
+        2 => ['pipe', 'w'],
+    ];
+
+    $process = proc_open($cmd, $descriptorspec, $pipes, null, $env);
+
+    if (!is_resource($process)) {
+        throw new Exception('Prozess konnte nicht gestartet werden');
+    }
+
+    fclose($pipes[0]);
+    $stdout = stream_get_contents($pipes[1]);
+    $stderr = stream_get_contents($pipes[2]);
+    fclose($pipes[1]);
+    fclose($pipes[2]);
+    $returnCode = proc_close($process);
+
+    if ($returnCode !== 0) {
+        throw new Exception('Fehler beim Abrufen der Charaktere: ' . trim($stderr ?: $stdout));
+    }
+
+    return $stdout ? explode("\n", trim($stdout)) : [];
+}
+
 function handlePost($db, $userId) {
     $input = json_decode(file_get_contents('php://input'), true);
     $username = $input['username'] ?? '';
@@ -66,17 +109,12 @@ function handlePost($db, $userId) {
     }
     
     // Run Rust list_chars script
-    $cmd = sprintf(
-        'env SSO_USERNAME=%s PASSWORD=%s /opt/sf-api/target/release/examples/list_chars 2>&1',
-        escapeshellarg($username),
-        escapeshellarg($password)
-    );
-    
-    exec($cmd, $output, $returnCode);
-    
-    if ($returnCode !== 0) {
-        throw new Exception('Fehler beim Abrufen der Charaktere: ' . implode("\n", $output));
-    }
+    // Credentials als env-Array übergeben (nicht in argv – sonst in ps aux sichtbar)
+    $env = array_merge($_ENV, [
+        'SSO_USERNAME' => $username,
+        'PASSWORD'     => $password,
+    ]);
+    $output = runWithEnv('/opt/sf-api/target/release/examples/list_chars', [], $env);
     
     $characters = parseCharacterList($output);
     
@@ -129,17 +167,12 @@ function handleGet($db, $userId) {
     // Decrypt and fetch characters from S&F
     $sfPassword = decryptData($account['sf_password_encrypted'], $account['sf_iv'], $account['sf_hmac'] ?? null);
     
-    $cmd = sprintf(
-        'env SSO_USERNAME=%s PASSWORD=%s /opt/sf-api/target/release/examples/list_chars 2>&1',
-        escapeshellarg($account['sf_username']),
-        escapeshellarg($sfPassword)
-    );
-    
-    exec($cmd, $output, $returnCode);
-    
-    if ($returnCode !== 0) {
-        throw new Exception('Fehler beim Abrufen der Charaktere: ' . implode("\n", $output));
-    }
+    // Credentials als env-Array übergeben (nicht in argv – sonst in ps aux sichtbar)
+    $env = array_merge($_ENV, [
+        'SSO_USERNAME' => $account['sf_username'],
+        'PASSWORD'     => $sfPassword,
+    ]);
+    $output = runWithEnv('/opt/sf-api/target/release/examples/list_chars', [], $env);
     
     $characters = parseCharacterList($output);
     enrichWithGuildNames($characters, $db, $userId);
