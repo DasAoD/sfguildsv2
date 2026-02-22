@@ -36,7 +36,8 @@ try {
         try {
             // Get inbox report
             $stmt = $db->prepare("
-                SELECT * FROM battle_inbox 
+                SELECT id, user_id, guild_id, message_id, file_path, status,
+                       battle_date, battle_time, battle_type, opponent_guild FROM battle_inbox 
                 WHERE id = ? AND user_id = ? AND status = 'pending'
             ");
             $stmt->execute([$reportId, $userId]);
