@@ -86,7 +86,9 @@ function renderNavbar($activePage = '') {
                     <?php endif; ?>
                 </a>
                 <a href="/reports.php" class="nav-item <?php echo $activePage === 'reports' ? 'active' : ''; ?>">Reports</a>
+                <?php if (isAdmin()): ?>
                 <a href="/admin.php" class="nav-item <?php echo $activePage === 'admin' ? 'active' : ''; ?>">Admin</a>
+                <?php endif; ?>
                 <?php endif; ?>
             </div>
             <div class="user-menu">
