@@ -46,8 +46,6 @@ Runtime-Daten (SQLite, Logs, Uploads, Roh-Reports) sind absichtlich per `.gitign
 - In `.env` mindestens setzen:
   - `ENCRYPTION_KEY` (zufälliger, langer Key)
 
-> Die `.env` gehört nicht ins Repo.
-
 ### 3) Schreibrechte (runtime)
 Diese Ordner müssen vom Webserver beschreibbar sein (z. B. `www-data`):
 
