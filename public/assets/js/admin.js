@@ -385,36 +385,37 @@ async function executeRename() {
     const resultDiv = document.getElementById('renameResult');
     
     if (!guildId || !oldName || !newName) {
-        alert('Bitte Gilde, alten Namen und neuen Namen auswählen.');
+        showAlert('Bitte Gilde, alten Namen und neuen Namen auswählen.', 'error');
         return;
     }
     
     if (oldName === newName) {
-        alert('Alter und neuer Name sind identisch.');
+        showAlert('Alter und neuer Name sind identisch.', 'error');
         return;
     }
     
-    if (!confirm(`"${oldName}" wird zu "${newName}" umbenannt.\n\nAlle Kampfeinträge werden auf den neuen Namen übertragen und der alte Mitgliedseintrag wird entfernt.\n\nFortfahren?`)) {
-        return;
-    }
-    
-    try {
-        const r = await fetch('/api/admin_player_merge.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ guild_id: parseInt(guildId), old_name: oldName, new_name: newName })
-        });
-        const d = await r.json();
-        
-        if (d.success) {
-            resultDiv.innerHTML = `<p style="color:var(--color-success)">✅ ${escapeHtml(d.message)}</p>`;
-            loadGuildMembers(); // Refresh lists
-        } else {
-            resultDiv.innerHTML = `<p style="color:var(--color-error)">❌ ${escapeHtml(d.message)}</p>`;
+    confirmDialog(
+        `"${oldName}" wird zu "${newName}" umbenannt.\n\nAlle Kampfeinträge werden auf den neuen Namen übertragen und der alte Mitgliedseintrag wird entfernt.\n\nFortfahren?`,
+        async () => {
+            try {
+                const r = await fetch('/api/admin_player_merge.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ guild_id: parseInt(guildId), old_name: oldName, new_name: newName })
+                });
+                const d = await r.json();
+
+                if (d.success) {
+                    resultDiv.innerHTML = `<p style="color:var(--color-success)">✅ ${escapeHtml(d.message)}</p>`;
+                    loadGuildMembers(); // Refresh lists
+                } else {
+                    resultDiv.innerHTML = `<p style="color:var(--color-error)">❌ ${escapeHtml(d.message)}</p>`;
+                }
+            } catch (e) {
+                resultDiv.innerHTML = `<p style="color:var(--color-error)">❌ Fehler: ${escapeHtml(e.message)}</p>`;
+            }
         }
-    } catch (e) {
-        resultDiv.innerHTML = `<p style="color:var(--color-error)">❌ Fehler: ${escapeHtml(e.message)}</p>`;
-    }
+    );
 }
 
 function escapeAttr(str) {
