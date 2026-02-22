@@ -52,3 +52,6 @@ Thumbs.db
 
 # --- Install/Setup (vorerst nicht ins Repo) ---
 /install/
+
+# Migration scripts (run once, then delete)
+migrate_*.php
