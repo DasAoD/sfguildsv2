@@ -21,6 +21,11 @@ $username = $input['username'] ?? '';
 $password = $input['password'] ?? '';
 $returnUrl = $input['return'] ?? '/';
 
+// Open Redirect verhindern: nur relative Pfade erlauben
+if (!preg_match('#^/#', $returnUrl) || str_starts_with($returnUrl, '//')) {
+    $returnUrl = '/';
+}
+
 // Validate input
 if (empty($username) || empty($password)) {
     jsonResponse(['success' => false, 'message' => 'Benutzername und Passwort sind erforderlich'], 400);
