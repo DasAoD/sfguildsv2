@@ -385,6 +385,29 @@ unset($acc);
                 </div>
             </div>
 
+            <!-- Passwort ändern -->
+            <div class="card settings-section">
+                <div class="card-header">
+                    <h2>Passwort ändern</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="currentPassword">Aktuelles Passwort</label>
+                        <input type="password" id="currentPassword" placeholder="••••••••">
+                    </div>
+                    <div class="form-group">
+                        <label for="newPassword">Neues Passwort</label>
+                        <input type="password" id="newPassword" placeholder="Mindestens 8 Zeichen">
+                    </div>
+                    <div class="form-group">
+                        <label for="newPasswordConfirm">Neues Passwort bestätigen</label>
+                        <input type="password" id="newPasswordConfirm" placeholder="••••••••">
+                    </div>
+                    <div id="passwordChangeMsg" style="display:none;margin-bottom:0.75rem;font-size:0.875rem"></div>
+                    <button class="btn btn-primary" onclick="changePassword()">Passwort ändern</button>
+                </div>
+            </div>
+
             <!-- SF Accounts -->
             <div class="card settings-section">
                 <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
@@ -416,8 +439,44 @@ unset($acc);
     // State
     let accounts = <?php echo json_encode($sfAccounts); ?>;
     let characterCache = {}; // account_id -> characters array
+
+    // ===== PASSWORT ÄNDERN =====
+
+    async function changePassword() {
+        const current = document.getElementById('currentPassword').value;
+        const newPw   = document.getElementById('newPassword').value;
+        const confirm = document.getElementById('newPasswordConfirm').value;
+        const msg     = document.getElementById('passwordChangeMsg');
+
+        const show = (text, ok) => {
+            msg.textContent = text;
+            msg.style.color = ok ? 'var(--color-success)' : 'var(--color-error)';
+            msg.style.display = 'block';
+        };
+
+        if (!current || !newPw || !confirm) { show('Bitte alle Felder ausfüllen.', false); return; }
+        if (newPw !== confirm)              { show('Neue Passwörter stimmen nicht überein.', false); return; }
+        if (newPw.length < 8)              { show('Neues Passwort muss mindestens 8 Zeichen lang sein.', false); return; }
+
+        try {
+            const r = await fetch('/api/change_password.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ current_password: current, new_password: newPw })
+            });
+            const d = await r.json();
+            show(d.message, d.success);
+            if (d.success) {
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('newPasswordConfirm').value = '';
+            }
+        } catch (e) {
+            show('Fehler: ' + e.message, false);
+        }
+    }
+
     
-    // ===== RENDERING =====
     
     function renderAccounts() {
         const container = document.getElementById('accountList');
