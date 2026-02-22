@@ -56,18 +56,25 @@ try {
                 if (!is_dir($uploadDir)) {
                     mkdir($uploadDir, 0755, true);
                 }
-                // Dateigröße-Limit: 2MB
+                // Dateigröße-Limit: 2MB (non-fatal: Gilde wird trotzdem angelegt)
                 if ($_FILES['crest']['size'] > 2 * 1024 * 1024) {
-                    jsonResponse(['success' => false, 'message' => 'Wappen-Datei zu groß (max. 2MB)'], 400);
-                }
-                $fileExt = strtolower(pathinfo($_FILES['crest']['name'], PATHINFO_EXTENSION));
-                $allowedExts = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
+                    $crestError = 'Wappen-Datei zu groß (max. 2MB)';
+                } else {
+                    $fileExt = strtolower(pathinfo($_FILES['crest']['name'], PATHINFO_EXTENSION));
+                    $allowedExts = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
                 
-                if (in_array($fileExt, $allowedExts)) {
+                    if (in_array($fileExt, $allowedExts)) {
                     $tmpFile = $_FILES['crest']['tmp_name'];
                     $crestFile = 'guild_' . $guildId . '.webp';
                     $outputPath = $uploadDir . $crestFile;
-                    
+
+                    // Dimensionen prüfen bevor GD lädt (verhindert überdimensionierte Bilder)
+                    $imgInfo = @getimagesize($tmpFile);
+                    if ($imgInfo === false) {
+                        $crestError = 'Bilddatei konnte nicht gelesen werden';
+                    } elseif ($imgInfo[0] > 4096 || $imgInfo[1] > 4096) {
+                        $crestError = 'Bild zu groß (max. 4096×4096 Pixel)';
+                    } else {
                     // Convert to WEBP
                     try {
                         $image = null;
@@ -116,9 +123,10 @@ try {
                         $crestError = 'Fehler bei der Bildverarbeitung';
                         logError("Image conversion failed (create guild)", ["error" => $e->getMessage()]);
                     }
-                } else {
+                    } // end dimension check
+                    } else {
                     $crestError = 'Ungültiges Dateiformat (erlaubt: jpg, png, gif, bmp, webp)';
-                }
+                    }
             }
             
             logActivity('Gilde erstellt', ['Name' => $name, 'Server' => $server]);
@@ -156,10 +164,10 @@ try {
                 if (!is_dir($uploadDir)) {
                     mkdir($uploadDir, 0755, true);
                 }
-                // Dateigröße-Limit: 2MB
+                // Dateigröße-Limit: 2MB (non-fatal: Gilde wird trotzdem angelegt)
                 if ($_FILES['crest']['size'] > 2 * 1024 * 1024) {
-                    jsonResponse(['success' => false, 'message' => 'Wappen-Datei zu groß (max. 2MB)'], 400);
-                }
+                    $crestError = 'Wappen-Datei zu groß (max. 2MB)';
+                } else {
                 $fileExt = strtolower(pathinfo($_FILES['crest']['name'], PATHINFO_EXTENSION));
                 $allowedExts = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
                 
@@ -183,7 +191,14 @@ try {
                     $tmpFile = $_FILES['crest']['tmp_name'];
                     $crestFile = 'guild_' . $guildId . '.webp';
                     $outputPath = $uploadDir . $crestFile;
-                    
+
+                    // Dimensionen prüfen bevor GD lädt (verhindert überdimensionierte Bilder)
+                    $imgInfo = @getimagesize($tmpFile);
+                    if ($imgInfo === false) {
+                        $crestError = 'Bilddatei konnte nicht gelesen werden';
+                    } elseif ($imgInfo[0] > 4096 || $imgInfo[1] > 4096) {
+                        $crestError = 'Bild zu groß (max. 4096×4096 Pixel)';
+                    } else {
                     // Convert to WEBP
                     try {
                         $image = null;
@@ -220,6 +235,7 @@ try {
                         logError("Image conversion failed (update guild)", ["error" => $e->getMessage()]);
                         $crestFile = null;
                     }
+                    } // end dimension check
                 }
             }
             

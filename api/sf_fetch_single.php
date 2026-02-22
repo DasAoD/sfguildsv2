@@ -38,23 +38,21 @@ try {
         throw new Exception('Konnte temp-Verzeichnis nicht erstellen');
     }
     
-    // Run Rust fetch_guild_reports script
-    // Passwort über env-Array übergeben, nicht über argv (sonst in ps aux sichtbar)
-    $cmd = sprintf(
-        '%s SERVER_HOST=%s CHARACTER=%s OUT_DIR=%s 2>&1',
-        escapeshellarg('/opt/sf-api/target/release/examples/fetch_guild_reports'),
-        escapeshellarg($server),
-        escapeshellarg($character),
-        escapeshellarg($tempDir)
-    );
-
+    // proc_open mit Array statt String: keine Shell involviert, sicherer und robuster
+    // Credentials über env-Array, nicht in argv (nicht in ps aux sichtbar)
+    $procCmd = [
+        '/opt/sf-api/target/release/examples/fetch_guild_reports',
+    ];
     $procEnv = array_merge($_ENV, [
         'SSO_USERNAME' => $username,
         'PASSWORD'     => $password,
+        'SERVER_HOST'  => $server,
+        'CHARACTER'    => $character,
+        'OUT_DIR'      => $tempDir,
     ]);
 
     $descriptorspec = [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
-    $process = proc_open($cmd, $descriptorspec, $procPipes, null, $procEnv);
+    $process = proc_open($procCmd, $descriptorspec, $procPipes, null, $procEnv);
 
     if (!is_resource($process)) {
         throw new Exception('Prozess konnte nicht gestartet werden');
@@ -71,7 +69,7 @@ try {
 
     // Log output for debugging (ohne Passwort)
     $logFile = __DIR__ . '/../storage/sf_reports/fetch_' . sanitizeGuildName($character) . '_' . date('Y-m-d_H-i-s') . '.log';
-    $cmdSafe = sprintf('fetch_guild_reports SSO_USERNAME=*** PASSWORD=*** SERVER_HOST=%s CHARACTER=%s', $server, $character);
+    $cmdSafe = 'fetch_guild_reports SSO_USERNAME=*** PASSWORD=*** SERVER_HOST=' . $server . ' CHARACTER=' . $character;
     file_put_contents($logFile, "Command: $cmdSafe\n\n" . implode("\n", $output));
 
     if ($returnCode !== 0) {
@@ -96,7 +94,15 @@ try {
     $guild = $guildRow ? $guildRow['name'] : '';
 
     // Cleanup temp directory
-    exec('rm -rf ' . escapeshellarg($tempDir));
+    // PHP-eigene Löschfunktion statt exec('rm -rf') - kein Shell-Aufruf nötig
+    $files = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator($tempDir, RecursiveDirectoryIterator::SKIP_DOTS),
+        RecursiveIteratorIterator::CHILD_FIRST
+    );
+    foreach ($files as $file) {
+        $file->isDir() ? rmdir($file->getPathname()) : unlink($file->getPathname());
+    }
+    rmdir($tempDir);
     
     echo json_encode([
         'success' => true,
