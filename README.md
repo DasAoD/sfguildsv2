@@ -46,6 +46,8 @@ Runtime-Daten (SQLite, Logs, Uploads, Roh-Reports) sind absichtlich per `.gitign
 - In `.env` mindestens setzen:
   - `ENCRYPTION_KEY` (zufälliger, langer Key)
 
+> Die `.env` gehört nicht ins Repo.
+
 ### 3) Schreibrechte (runtime)
 Diese Ordner müssen vom Webserver beschreibbar sein (z. B. `www-data`):
 
@@ -86,3 +88,13 @@ Der Kern der Web-App (UI, Admin, lokale Daten) kann dennoch unabhängig davon be
 
 - **sf-api** (Rust CLI/API) by **the-marenga**: https://github.com/the-marenga/sf-api
   - Wird in diesem Projekt für Report-Fetching genutzt.
+
+---
+
+## Entwicklungsstand & Roadmap
+
+Aktuelle Roadmap und offene Punkte:
+- [`ROADMAP_PUBLIC.md`](ROADMAP_PUBLIC.md) – Phasen-Übersicht (Phase 1-4, davon 1, 3, 4 abgeschlossen)
+- [`TODO_PUBLIC.md`](TODO_PUBLIC.md) – Detaillierte Aufgabenliste
+
+**Aktuell offen:** Phase 2 – Access Control System (Drei-Rollen-System)
