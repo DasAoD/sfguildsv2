@@ -5,7 +5,7 @@ require_once '../includes/auth.php';
 require_once '../includes/logger.php';
 
 // Check authentication
-checkAuth();
+requireAdminAPI();
 
 // Get database connection
 $db = getDB();
