@@ -27,9 +27,13 @@ function encryptData($data) {
         throw new Exception('Encryption failed');
     }
     
+    // HMAC für Integritätsprüfung
+    $hmac = hash_hmac('sha256', $encrypted . $iv, $key, true);
+    
     return [
         'encrypted' => base64_encode($encrypted),
-        'iv' => base64_encode($iv)
+        'iv'        => base64_encode($iv),
+        'hmac'      => base64_encode($hmac)
     ];
 }
 
@@ -41,19 +45,30 @@ function encryptData($data) {
  * @return string Decrypted data
  * @throws Exception if decryption fails
  */
-function decryptData($encrypted, $iv) {
+function decryptData($encrypted, $iv, $hmac = null) {
     if (empty($encrypted) || empty($iv)) {
         return null;
     }
     
     $key = getEncryptionKey();
     
+    $encryptedRaw = base64_decode($encrypted);
+    $ivRaw        = base64_decode($iv);
+
+    // HMAC-Prüfung wenn vorhanden (abwärtskompatibel für alte Einträge ohne HMAC)
+    if ($hmac !== null) {
+        $expectedHmac = hash_hmac('sha256', $encryptedRaw . $ivRaw, $key, true);
+        if (!hash_equals($expectedHmac, base64_decode($hmac))) {
+            throw new Exception('HMAC verification failed – data may have been tampered with');
+        }
+    }
+    
     $decrypted = openssl_decrypt(
-        base64_decode($encrypted),
+        $encryptedRaw,
         'AES-256-CBC',
         $key,
         OPENSSL_RAW_DATA,
-        base64_decode($iv)
+        $ivRaw
     );
     
     if ($decrypted === false) {
