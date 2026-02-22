@@ -358,6 +358,9 @@ unset($acc);
         color: var(--color-primary);
         font-size: 0.75rem;
     }
+        @media (max-width: 900px) {
+            .settings-grid { grid-template-columns: 1fr !important; }
+        }
     </style>
 </head>
 <body>
@@ -371,6 +374,11 @@ unset($acc);
                     Verwalte deine Account-Einstellungen und S&F Verbindungen
                 </p>
             </div>
+
+            <div class="settings-grid" style="display:grid;grid-template-columns:1fr 2fr;gap:1.5rem;align-items:start;">
+
+            <!-- Linke Spalte: Account + Passwort -->
+            <div style="display:flex;flex-direction:column;gap:1.5rem;">
 
             <!-- Account Info -->
             <div class="card settings-section">
@@ -408,6 +416,11 @@ unset($acc);
                 </div>
             </div>
 
+            </div><!-- Ende linke Spalte -->
+
+            <!-- Rechte Spalte: SF Accounts -->
+            <div>
+
             <!-- SF Accounts -->
             <div class="card settings-section">
                 <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
@@ -431,6 +444,9 @@ unset($acc);
                     </button>
                 </div>
             </div>
+
+            </div><!-- Ende rechte Spalte -->
+            </div><!-- Ende Grid -->
 
         </div>
     </main>
