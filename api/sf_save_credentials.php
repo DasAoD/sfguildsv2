@@ -30,8 +30,8 @@ try {
     $encryptedPassword = encryptData($password);
     
     // Save credentials
-    $stmt = $db->prepare("UPDATE users SET sf_username = ?, sf_password_encrypted = ?, sf_iv = ? WHERE id = ?");
-    $stmt->execute([$username, $encryptedPassword['encrypted'], $encryptedPassword['iv'], $userId]);
+    $stmt = $db->prepare("UPDATE users SET sf_username = ?, sf_password_encrypted = ?, sf_iv = ?, sf_hmac = ? WHERE id = ?");
+    $stmt->execute([$username, $encryptedPassword['encrypted'], $encryptedPassword['iv'], $encryptedPassword['hmac'], $userId]);
     
     echo json_encode([
         'success' => true,
