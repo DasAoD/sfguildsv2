@@ -1,6 +1,6 @@
 # 📋 TODO - S&F Guilds v2
 
-**Projekt-Status:** In aktiver Entwicklung  
+**Projekt-Status:** Feature-Complete (Kern-Funktionalität)
 **Stand:** 22. Februar 2026
 
 ---
@@ -33,6 +33,16 @@
 - [x] Passwort-Logging maskiert
 - [x] Stacktrace-Leaks entfernt
 
+### **Access Control (Phase 2)**
+- [x] Drei-Rollen-System: Admin / Moderator / User
+- [x] Alle Admin-APIs abgesichert (`requireAdminAPI`)
+- [x] Schreibende Endpunkte auf Moderator+ eingeschränkt
+- [x] Destruktive Endpunkte (löschen/verschieben) Admin-only
+- [x] Admin-Link in Nav für User ausgeblendet
+- [x] Rollen-Vergabe im Admin-Panel (Badge + Bearbeiten-Modal)
+- [x] Passwort-Selbstverwaltung in den Einstellungen
+- [x] 403-Fehlerseite via nginx korrekt zugestellt
+
 ### **Performance (Phase 3)**
 - [x] SQLite WAL-Mode
 - [x] N+1 Query behoben (guilds.php)
@@ -45,22 +55,11 @@
 
 ### **UI/UX**
 - [x] Einheitliche Custom-Modals statt Browser-`confirm()`/`alert()`
+- [x] Fehlerseiten-Navigation vereinheitlicht (Logo, Links)
 
 ---
 
-## 🔥 **OFFEN: PRIORITÄT HOCH**
-
-### **Access Control System (Phase 2)**
-- [ ] Drei-Rollen-System: Admin / Moderator / User
-- [ ] `isAdmin()` / `requireAdmin()` in `auth.php`
-- [ ] Admin-APIs absichern
-- [ ] Admin-Seite absichern
-- [ ] Rollen-Verwaltung im Admin-Panel
-- [ ] Passwort-Reset Funktion
-
----
-
-## 📊 **OFFEN: PRIORITÄT NIEDRIG**
+## 🎨 **OFFEN: PRIORITÄT NIEDRIG**
 
 ### **UI/UX**
 - [ ] Mobile Optimierung (Touch-friendly Controls)
@@ -80,14 +79,14 @@
 
 ---
 
-## 📈 **FORTSCHRITT**
+## 📈 **FINALER STAND**
 
-| Kategorie | Vorher | Jetzt |
-|-----------|--------|-------|
-| **Kern-Features** | 90% | 90% ✅ |
-| **Sicherheit** | 85% | 85% ⏳ → 95% nach Phase 2 |
-| **Performance** | 85% | 92% ✅ |
-| **Code-Qualität** | 90% | 95% ✅ |
-| **UI/UX** | 95% | 95% ✅ |
+| Kategorie | Status |
+|-----------|--------|
+| **Kern-Features** | 95% ✅ |
+| **Sicherheit** | 97% ✅ |
+| **Performance** | 92% ✅ |
+| **Code-Qualität** | 95% ✅ |
+| **UI/UX** | 95% ✅ |
 
-**Gesamt:** ~92/100 → ~95/100 nach Phase 2
+**Gesamt: ~95/100** 🎯

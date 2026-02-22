@@ -20,17 +20,21 @@
 
 ---
 
-## ⏳ **PHASE 2: ACCESS CONTROL SYSTEM** (IN PLANUNG)
+## ✅ **PHASE 2: ACCESS CONTROL SYSTEM** (ABGESCHLOSSEN)
 
-**Status:** 0% - Nächster Schritt 🔥
+**Status:** 100% ✅
 
-### Geplante Features:
-- Rollenbasiertes Zugriffssystem (Admin / Moderator / User)
-- Unterschiedliche Berechtigungsstufen für alle Funktionen
-- Verbesserte Zugriffskontrolle für sensible Admin-Funktionen
-- User-Rollen-Verwaltung im Admin-Panel
-
-**Priorität:** Hoch 🔥
+### Umgesetzte Features:
+- ✅ Drei-Rollen-System: Admin / Moderator / User
+- ✅ `role`-Spalte in `users`-Tabelle, Rolle in Session gespeichert
+- ✅ `isAdmin()`, `isModerator()`, `requireAdminAPI()`, `requireModeratorAPI()` in `auth.php`
+- ✅ Alle Admin-APIs (`admin_users`, `admin_guilds`, `admin_logs`, `admin_system`, `admin_player_merge`) → Admin-only
+- ✅ Schreibende Aktionen (Datum/Notizen, Posteingang, Reports abholen) → Moderator+
+- ✅ Destruktive Aktionen (Kämpfe löschen/verschieben/importieren, Mitglieder löschen) → Admin
+- ✅ Admin-Link in Navigation für User ausgeblendet
+- ✅ Rollen-Verwaltung im Admin-Panel (Badge, Bearbeiten-Modal)
+- ✅ Passwort-Änderung für alle User in den Einstellungen
+- ✅ 403-Fehlerseite korrekt via nginx
 
 ---
 
@@ -88,13 +92,12 @@
 | Kategorie | Status |
 |-----------|--------|
 | **Kern-Features** | 90% ✅ |
-| **Sicherheit** | 85% ⏳ (95% nach Phase 2) |
+| **Sicherheit** | 97% ✅ |
 | **Performance** | 92% ✅ |
 | **Code-Qualität** | 95% ✅ |
 | **UI/UX** | 95% ✅ |
 
-**Gesamtbewertung:** ~92/100  
-**Nach Phase 2:** ~95/100 🎯
+**Gesamtbewertung:** ~96/100 ✅
 
 ---
 
@@ -113,9 +116,11 @@
 ## 📅 **CHANGELOG**
 
 ### **2026-02-22**
+- Phase 2 abgeschlossen (Rollen-System, API-Absicherung, Passwort-Selbstverwaltung)
 - Phase 3 abgeschlossen (WAL-Mode, N+1 Fix, Open Redirect, SELECT *)
 - Phase 4 abgeschlossen (HMAC, Upload-Validierung)
-- Browser-`confirm()` durch Custom-Modal ersetzt (Admin Wartung)
+- Fehlerseiten-Navigation vereinheitlicht
+- Browser-`alert()`/`confirm()` vollständig durch Custom-Modals ersetzt
 
 ### **2026-02-14**
 - Phase 1 abgeschlossen
@@ -129,6 +134,6 @@
 
 ---
 
-**Stand:** 22. Februar 2026  
+**Stand:** 22. Februar 2026 (aktuell)  
 **Version:** 2.0-dev  
 **Lizenz:** Privates Projekt
