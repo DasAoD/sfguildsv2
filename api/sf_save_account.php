@@ -39,6 +39,7 @@ try {
             SET sf_username = ?,
                 sf_password_encrypted = ?,
                 sf_iv = ?,
+                sf_hmac = ?,
                 sf_updated_at = datetime('now')
             WHERE id = ?
         ");
@@ -47,6 +48,7 @@ try {
             $sfUsername,
             $encrypted['encrypted'],
             $encrypted['iv'],
+            $encrypted['hmac'],
             $userId
         ]);
     } else {
