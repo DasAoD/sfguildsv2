@@ -10,9 +10,7 @@ require_once __DIR__ . '/../includes/logger.php';
 require_once __DIR__ . '/../config/database.php';
 
 // Must be logged in
-if (!isLoggedIn()) {
-    jsonResponse(['success' => false, 'message' => 'Nicht authentifiziert'], 401);
-}
+requireAdminAPI();
 
 // Only allow POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
