@@ -62,6 +62,66 @@ function getCurrentUsername() {
 }
 
 /**
+ * Get current user role
+ * @return string  'admin' | 'moderator' | 'user'
+ */
+function getCurrentUserRole() {
+    return $_SESSION['user_role'] ?? 'user';
+}
+
+/**
+ * Check if current user is admin
+ */
+function isAdmin() {
+    return getCurrentUserRole() === 'admin';
+}
+
+/**
+ * Check if current user is moderator or higher
+ */
+function isModerator() {
+    return in_array(getCurrentUserRole(), ['admin', 'moderator']);
+}
+
+/**
+ * Require admin role for page access – redirects on failure
+ */
+function requireAdmin() {
+    checkAuth();
+    if (!isAdmin()) {
+        http_response_code(403);
+        header('Location: /errors/403.html');
+        exit;
+    }
+}
+
+/**
+ * Require admin role for API endpoints – returns JSON on failure
+ */
+function requireAdminAPI() {
+    checkAuthAPI();
+    if (!isAdmin()) {
+        http_response_code(403);
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'message' => 'Keine Berechtigung', 'error' => 'forbidden']);
+        exit;
+    }
+}
+
+/**
+ * Require moderator role or higher for API endpoints
+ */
+function requireModeratorAPI() {
+    checkAuthAPI();
+    if (!isModerator()) {
+        http_response_code(403);
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'message' => 'Keine Berechtigung', 'error' => 'forbidden']);
+        exit;
+    }
+}
+
+/**
  * Login user
  * @param int $userId
  * @param string $username
@@ -70,7 +130,12 @@ function login($userId, $username) {
     $_SESSION['user_id'] = $userId;
     $_SESSION['username'] = $username;
     $_SESSION['login_time'] = time();
-    
+
+    // Rolle aus DB laden und in Session speichern
+    require_once __DIR__ . '/../config/database.php';
+    $user = queryOne('SELECT role FROM users WHERE id = ?', [$userId]);
+    $_SESSION['user_role'] = $user['role'] ?? 'user';
+
     // Regenerate session ID for security
     session_regenerate_id(true);
 }
