@@ -118,10 +118,10 @@ function handlePost($db, $userId) {
                 $encrypted = encryptData($sfPassword);
                 $stmt = $db->prepare("
                     UPDATE sf_accounts 
-                    SET account_name = ?, sf_username = ?, sf_password_encrypted = ?, sf_iv = ?, updated_at = datetime('now')
+                    SET account_name = ?, sf_username = ?, sf_password_encrypted = ?, sf_iv = ?, sf_hmac = ?, updated_at = datetime('now')
                     WHERE id = ? AND user_id = ?
                 ");
-                $stmt->execute([$accountName, $sfUsername, $encrypted['encrypted'], $encrypted['iv'], $accountId, $userId]);
+                $stmt->execute([$accountName, $sfUsername, $encrypted['encrypted'], $encrypted['iv'], $encrypted['hmac'], $accountId, $userId]);
             } else {
                 // Update without changing password
                 $stmt = $db->prepare("
@@ -162,10 +162,10 @@ function handlePost($db, $userId) {
             }
             
             $stmt = $db->prepare("
-                INSERT INTO sf_accounts (user_id, account_name, sf_username, sf_password_encrypted, sf_iv, is_default)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO sf_accounts (user_id, account_name, sf_username, sf_password_encrypted, sf_iv, sf_hmac, is_default)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
             ");
-            $stmt->execute([$userId, $accountName, $sfUsername, $encrypted['encrypted'], $encrypted['iv'], $isDefault ? 1 : 0]);
+            $stmt->execute([$userId, $accountName, $sfUsername, $encrypted['encrypted'], $encrypted['iv'], $encrypted['hmac'], $isDefault ? 1 : 0]);
             $accountId = $db->lastInsertId();
         }
         
