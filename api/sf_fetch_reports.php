@@ -37,7 +37,7 @@ try {
         $placeholders = implode(',', array_fill(0, count($requestedAccountIds), '?'));
         $params = array_merge($requestedAccountIds, [$userId]);
         $stmt = $db->prepare("
-            SELECT id, account_name, sf_username, sf_password_encrypted, sf_iv, selected_characters
+            SELECT id, account_name, sf_username, sf_password_encrypted, sf_iv, sf_hmac, selected_characters
             FROM sf_accounts 
             WHERE id IN ($placeholders) AND user_id = ?
         ");
@@ -46,7 +46,7 @@ try {
     } else {
         // All accounts with selected characters
         $stmt = $db->prepare("
-            SELECT id, account_name, sf_username, sf_password_encrypted, sf_iv, selected_characters
+            SELECT id, account_name, sf_username, sf_password_encrypted, sf_iv, sf_hmac, selected_characters
             FROM sf_accounts 
             WHERE user_id = ? AND selected_characters IS NOT NULL AND selected_characters != '[]'
         ");
@@ -63,7 +63,7 @@ try {
     $totalCount = 0;
     
     foreach ($accounts as $account) {
-        $sfPassword = decryptData($account['sf_password_encrypted'], $account['sf_iv']);
+        $sfPassword = decryptData($account['sf_password_encrypted'], $account['sf_iv'], $account['sf_hmac'] ?? null);
         
         if ($singleServer && $singleCharacter) {
             $charactersToFetch = [['name' => $singleCharacter, 'server' => $singleServer, 'guild' => 'Unbekannt']];
@@ -162,7 +162,7 @@ try {
 function getLegacyAccount($db, $userId) {
     // Try sf_accounts first
     $stmt = $db->prepare("
-        SELECT id, account_name, sf_username, sf_password_encrypted, sf_iv, selected_characters
+        SELECT id, account_name, sf_username, sf_password_encrypted, sf_iv, sf_hmac, selected_characters
         FROM sf_accounts WHERE user_id = ? AND is_default = 1
     ");
     $stmt->execute([$userId]);
@@ -173,7 +173,7 @@ function getLegacyAccount($db, $userId) {
     }
     
     // Fallback to users table
-    $stmt = $db->prepare("SELECT sf_username, sf_password_encrypted, sf_iv, selected_characters FROM users WHERE id = ?");
+    $stmt = $db->prepare("SELECT sf_username, sf_password_encrypted, sf_iv, sf_hmac, selected_characters FROM users WHERE id = ?");
     $stmt->execute([$userId]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     
@@ -187,6 +187,7 @@ function getLegacyAccount($db, $userId) {
         'sf_username' => $user['sf_username'],
         'sf_password_encrypted' => $user['sf_password_encrypted'],
         'sf_iv' => $user['sf_iv'],
+            'sf_hmac' => $user['sf_hmac'] ?? null,
         'selected_characters' => $user['selected_characters']
     ]];
 }
