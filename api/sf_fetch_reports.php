@@ -17,7 +17,7 @@ require_once __DIR__ . '/../includes/sf_helpers.php';
 
 header('Content-Type: application/json');
 
-checkAuth();
+requireModeratorAPI();
 
 $db = getDB();
 $userId = $_SESSION['user_id'];
