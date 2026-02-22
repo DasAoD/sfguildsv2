@@ -9,9 +9,11 @@ require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/template.php';
 
 checkAuth();
+requireAdmin();
 
 $isLoggedIn = isLoggedIn();
 $currentUser = getCurrentUsername();
+$currentUserRole = getCurrentUserRole();
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -48,12 +50,13 @@ $currentUser = getCurrentUsername();
                     <thead>
                         <tr>
                             <th>Benutzername</th>
+                            <th>Rolle</th>
                             <th>Erstellt am</th>
                             <th>Aktionen</th>
                         </tr>
                     </thead>
                     <tbody id="usersTable">
-                        <tr><td colspan="3" class="loading">Lädt...</td></tr>
+                        <tr><td colspan="4" class="loading">Lädt...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -191,8 +194,17 @@ $currentUser = getCurrentUsername();
                     <input type="text" id="username" required>
                 </div>
                 <div class="form-group">
+                    <label>Rolle</label>
+                    <select id="userRole" style="width:100%;padding:0.5rem;background:var(--color-bg-primary);color:var(--color-text-primary);border:1px solid var(--color-border);border-radius:var(--radius-sm);">
+                        <option value="user">User</option>
+                        <option value="moderator">Moderator</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <div class="form-group" id="passwordGroup">
                     <label id="passwordLabel">Passwort</label>
-                    <input type="password" id="password" required>
+                    <input type="password" id="password">
+                    <small id="passwordHint" style="color:var(--color-text-secondary);display:none;margin-top:0.25rem">Leer lassen um Passwort nicht zu ändern</small>
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeUserModal()">Abbrechen</button>
@@ -247,6 +259,7 @@ $currentUser = getCurrentUsername();
     <script>
         // Set current user for client-side logic
         const CURRENT_USER = '<?php echo e($currentUser); ?>';
+        const CURRENT_USER_ROLE = '<?php echo e($currentUserRole); ?>';
     </script>
 </body>
 </html>
