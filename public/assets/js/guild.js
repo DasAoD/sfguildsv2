@@ -213,11 +213,11 @@ async function saveEdit(idx, field, form) {
             member[field] = newValue;
             loadGuild();
         } else {
-            alert('Fehler beim Speichern: ' + d.message);
+            showAlert('Fehler beim Speichern: ' + d.message);
         }
     } catch (e) {
         console.error(e);
-        alert('Fehler beim Speichern');
+        showAlert('Fehler beim Speichern');
     }
 }
 
@@ -246,11 +246,11 @@ async function clearField(idx, field) {
                 member[field] = null;
                 loadGuild();
             } else {
-                alert('Fehler: ' + d.message);
+                showAlert('Fehler: ' + d.message);
             }
         } catch (e) {
             console.error(e);
-            alert('Fehler beim Löschen');
+            showAlert('Fehler beim Löschen');
         }
     });
 }
