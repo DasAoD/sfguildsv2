@@ -1,265 +1,488 @@
-<?php
-/**
- * Admin Page
- * Management interface for users, guilds, and system
- */
+// Tab switching
+function switchTab(tab){
+document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+event.target.classList.add('active');
+document.getElementById('tab-'+tab).classList.add('active');
+if(tab==='system')loadSystemInfo();
+if(tab==='logs')loadLogs();
+}
 
-require_once __DIR__ . '/../includes/auth.php';
-require_once __DIR__ . '/../includes/functions.php';
-require_once __DIR__ . '/../includes/template.php';
 
-checkAuth();
-requireAdmin();
+// Users
+// Rollen-Badge
+function roleBadge(role) {
+    const map = {
+        admin:     'background:var(--color-error);color:#fff',
+        moderator: 'background:var(--color-warning,#f59e0b);color:#000',
+        user:      'background:var(--color-border);color:var(--color-text-primary)'
+    };
+    const style = map[role] || map.user;
+    return `<span style="padding:0.15rem 0.5rem;border-radius:999px;font-size:0.75rem;font-weight:600;${style}">${escapeHtml(role)}</span>`;
+}
 
-$isLoggedIn = isLoggedIn();
-$currentUser = getCurrentUsername();
-$currentUserRole = getCurrentUserRole();
-?>
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <?php renderHead('Admin', ['/assets/css/admin.css']); ?>
-</head>
-<body>
-    <?php renderNavbar('admin'); ?>
+async function loadUsers(){
+const r=await fetch('/api/admin_users.php');
+const d=await r.json();
+if(d.success){
+const currentUser = CURRENT_USER;
+const tbody=document.getElementById('usersTable');
+tbody.innerHTML=d.users.map(u=>{
+const isCurrentUser=u.username===currentUser;
+return`
+<tr>
+<td>${escapeHtml(u.username)}</td>
+<td>${roleBadge(u.role)}</td>
+<td>${formatDate(u.created_at)}</td>
+<td class="actions">
+<button class="btn btn-secondary" onclick="openEditUser(${u.id},'${escapeHtml(u.username)}','${escapeHtml(u.role)}')">Bearbeiten</button>
+<button class="btn btn-danger" onclick="deleteUser(${u.id},'${escapeHtml(u.username)}')" ${isCurrentUser?'disabled title="Du kannst dich nicht selbst löschen"':''}>Löschen</button>
+</td>
+</tr>
+`;}).join('');
+}
+}
 
-    <div class="container">
-        <div class="page-header">
-            <h1>Admin-Bereich</h1>
-            <p class="subtitle">Verwaltung von Benutzern, Gilden und System</p>
-        </div>
+function openUserModal(){
+document.getElementById('userModalTitle').textContent='Neuer Benutzer';
+document.getElementById('userId').value='';
+document.getElementById('username').value='';
+document.getElementById('username').disabled=false;
+document.getElementById('userRole').value='user';
+document.getElementById('password').value='';
+document.getElementById('password').required=true;
+document.getElementById('passwordHint').style.display='none';
+document.getElementById('userModal').classList.add('active');
+}
 
-        <div id="alertContainer"></div>
+function openEditUser(userId, username, role){
+document.getElementById('userModalTitle').textContent='Benutzer bearbeiten';
+document.getElementById('userId').value=userId;
+document.getElementById('username').value=username;
+document.getElementById('username').disabled=true;
+document.getElementById('userRole').value=role;
+document.getElementById('password').value='';
+document.getElementById('password').required=false;
+document.getElementById('passwordHint').style.display='block';
+document.getElementById('userModal').classList.add('active');
+}
 
-        <div class="tabs">
-            <button class="tab active" onclick="switchTab('users')">Benutzer</button>
-            <button class="tab" onclick="switchTab('guilds')">Gilden</button>
-            <button class="tab" onclick="switchTab('logs')">Logs</button>
-            <button class="tab" onclick="switchTab('maintenance')">Wartung</button>
-            <button class="tab" onclick="switchTab('system')">System</button>
-        </div>
+function closeUserModal(){
+document.getElementById('userModal').classList.remove('active');
+}
 
-        <!-- Users Tab -->
-        <div id="tab-users" class="tab-content active">
-            <div class="section">
-                <div class="section-header">
-                    <h2 class="section-title">Benutzerverwaltung</h2>
-                    <button class="btn btn-primary" onclick="openUserModal()">+ Neuer Benutzer</button>
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Benutzername</th>
-                            <th>Rolle</th>
-                            <th>Erstellt am</th>
-                            <th>Aktionen</th>
-                        </tr>
-                    </thead>
-                    <tbody id="usersTable">
-                        <tr><td colspan="4" class="loading">Lädt...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+document.getElementById('userForm').addEventListener('submit',async(e)=>{
+e.preventDefault();
+const userId=document.getElementById('userId').value;
+const username=document.getElementById('username').value;
+const role=document.getElementById('userRole').value;
+const password=document.getElementById('password').value;
 
-        <!-- Guilds Tab -->
-        <div id="tab-guilds" class="tab-content">
-            <div class="section">
-                <div class="section-header">
-                    <h2 class="section-title">Gildenverwaltung</h2>
-                    <button class="btn btn-primary" onclick="openGuildModal()">+ Neue Gilde</button>
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Wappen</th>
-                            <th>Name</th>
-                            <th>Server</th>
-                            <th>Tag</th>
-                            <th>Notizen</th>
-                            <th>Aktionen</th>
-                        </tr>
-                    </thead>
-                    <tbody id="guildsTable">
-                        <tr><td colspan="6" class="loading">Lädt...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+if(userId){
+    // Edit existing user
+    const updates = [];
 
-        <!-- Logs Tab -->
-        <div id="tab-logs" class="tab-content">
-            <div class="section">
-                <div class="section-header">
-                    <h2 class="section-title">Anwendungs-Logs</h2>
-                    <div class="log-controls">
-                        <div class="log-toggle">
-                            <button class="btn btn-toggle active" id="btnLogActivity" onclick="switchLogType('activity')">📋 Aktivitäten</button>
-                            <button class="btn btn-toggle" id="btnLogError" onclick="switchLogType('error')">⚠️ Fehler</button>
-                        </div>
-                    </div>
-                </div>
+    // Rolle ändern
+    const rRole=await fetch('/api/admin_users.php',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:parseInt(userId),role})});
+    const dRole=await rRole.json();
+    if(!dRole.success){ showAlert(dRole.message,'error'); return; }
+    updates.push('Rolle');
 
-                <div class="log-toolbar">
-                    <div class="log-toolbar-left">
-                        <input type="text" id="logFilter" placeholder="Filter..." class="log-filter-input" oninput="filterLogsDebounced()">
-                        <select id="logLines" class="log-lines-select" onchange="loadLogs()">
-                            <option value="50">50 Einträge</option>
-                            <option value="100" selected>100 Einträge</option>
-                            <option value="200">200 Einträge</option>
-                            <option value="500">500 Einträge</option>
-                        </select>
-                    </div>
-                    <div class="log-toolbar-right">
-                        <span id="logInfo" class="log-info-text"></span>
-                        <button class="btn btn-secondary btn-sm" onclick="loadLogs()">🔄 Aktualisieren</button>
-                        <button class="btn btn-danger btn-sm" onclick="clearCurrentLog()">🗑️ Leeren</button>
-                    </div>
-                </div>
+    // Passwort reset (nur wenn ausgefüllt)
+    if(password){
+        const rPw=await fetch('/api/admin_users.php',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:parseInt(userId),new_password:password})});
+        const dPw=await rPw.json();
+        if(!dPw.success){ showAlert(dPw.message,'error'); return; }
+        updates.push('Passwort');
+    }
+    showAlert(updates.join(' & ')+' erfolgreich geändert','success');
+}else{
+    // Neuer User
+    if(!password){ showAlert('Passwort erforderlich','error'); return; }
+    const r=await fetch('/api/admin_users.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password,role})});
+    const d=await r.json();
+    showAlert(d.message,d.success?'success':'error');
+    if(!d.success) return;
+}
+closeUserModal();
+loadUsers();
+});
 
-                <div class="log-container" id="logContainer">
-                    <div class="log-empty">Log wird geladen...</div>
-                </div>
-            </div>
-        </div>
+async function deleteUser(userId,username){
+confirmDialog(`Benutzer "${username}" wirklich löschen?`, async () => {
+const r=await fetch('/api/admin_users.php',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:userId})});
+const d=await r.json();
+showAlert(d.message,d.success?'success':'error');
+loadUsers();
+});
+}
 
-        <!-- Maintenance Tab -->
-        <div id="tab-maintenance" class="tab-content">
-            <div class="section">
-                <h2 class="section-title">Spieler umbenennen</h2>
-                <p style="color:var(--color-text-secondary);margin-bottom:var(--spacing-lg)">
-                    Führt zwei Spielereinträge zusammen, z.B. nach einer Umbenennung im Spiel. Alle Kampfeinträge des alten Namens werden auf den neuen Namen übertragen und der alte Mitgliedseintrag wird entfernt.
-                </p>
-                <div style="display:flex;flex-direction:column;gap:var(--spacing-md);max-width:500px;">
-                    <div class="form-group">
-                        <label>Gilde</label>
-                        <select id="renameGuild" onchange="loadGuildMembers()" style="width:100%;padding:0.5rem;background:var(--color-bg-primary);color:var(--color-text-primary);border:1px solid var(--color-border);border-radius:var(--radius-sm);">
-                            <option value="">-- Gilde wählen --</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Alter Name (wird entfernt)</label>
-                        <select id="renameOldName" style="width:100%;padding:0.5rem;background:var(--color-bg-primary);color:var(--color-text-primary);border:1px solid var(--color-border);border-radius:var(--radius-sm);">
-                            <option value="">-- Erst Gilde wählen --</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Neuer Name (bleibt bestehen)</label>
-                        <select id="renameNewName" style="width:100%;padding:0.5rem;background:var(--color-bg-primary);color:var(--color-text-primary);border:1px solid var(--color-border);border-radius:var(--radius-sm);">
-                            <option value="">-- Erst Gilde wählen --</option>
-                        </select>
-                    </div>
-                    <div>
-                        <button class="btn btn-primary" onclick="executeRename()">Umbenennen</button>
-                    </div>
-                </div>
-                <div id="renameResult" style="margin-top:var(--spacing-lg);"></div>
-            </div>
-        </div>
+// Guilds
+async function loadGuilds(){
+const r=await fetch('/api/admin_guilds.php');
+const d=await r.json();
+if(d.success){
+const tbody=document.getElementById('guildsTable');
+tbody.innerHTML=d.guilds.map(g=>{
+const crestImg=g.crest_file?`<img src="/assets/images/${g.crest_file}" alt="Wappen" style="width:32px;height:32px;object-fit:contain">`:'—';
+return`
+<tr>
+<td>${crestImg}</td>
+<td>${escapeHtml(g.name)}</td>
+<td>${escapeHtml(g.server)}</td>
+<td>${escapeHtml(g.tag)||'-'}</td>
+<td>${escapeHtml(g.notes)||'-'}</td>
+<td class="actions">
+<button class="btn btn-secondary" onclick="editGuild(${g.id},'${escapeHtml(g.name)}','${escapeHtml(g.server)}','${escapeHtml(g.tag)||''}','${escapeHtml(g.notes)||''}','${escapeHtml(g.crest_file)||''}')">Bearbeiten</button>
+<button class="btn btn-danger" onclick="deleteGuild(${g.id},'${escapeHtml(g.name)}')">Löschen</button>
+</td>
+</tr>
+`;}).join('');
+}
+}
 
-        <!-- System Tab -->
-        <div id="tab-system" class="tab-content">
-            <div class="section">
-                <h2 class="section-title">System-Informationen</h2>
-                <div class="info-grid" id="systemInfo">
-                    <div class="info-card"><div class="info-label">PHP Version</div><div class="info-value">-</div></div>
-                    <div class="info-card"><div class="info-label">SQLite Version</div><div class="info-value">-</div></div>
-                    <div class="info-card"><div class="info-label">DB Größe</div><div class="info-value">-</div></div>
-                    <div class="info-card"><div class="info-label">Freier Speicher</div><div class="info-value">-</div></div>
-                    <div class="info-card"><div class="info-label">Benutzer</div><div class="info-value">-</div></div>
-                    <div class="info-card"><div class="info-label">Gilden</div><div class="info-value">-</div></div>
-                    <div class="info-card"><div class="info-label">Mitglieder</div><div class="info-value">-</div></div>
-                    <div class="info-card"><div class="info-label">Kämpfe</div><div class="info-value">-</div></div>
-                </div>
-            </div>
-            <div class="section">
-                <h2 class="section-title">Datenbank-Backup</h2>
-                <p style="color:var(--color-text-secondary);margin-bottom:var(--spacing-lg)">Erstelle ein Backup der gesamten Datenbank. Die Datei wird mit Zeitstempel heruntergeladen.</p>
-                <button class="btn btn-success" onclick="downloadBackup()">📥 Backup herunterladen</button>
-            </div>
-        </div>
-    </div>
+function openGuildModal(){
+document.getElementById('guildModalTitle').textContent='Neue Gilde';
+document.getElementById('guildId').value='';
+document.getElementById('guildName').value='';
+document.getElementById('guildServer').value='';
+document.getElementById('guildTag').value='';
+document.getElementById('guildNotes').value='';
+document.getElementById('currentCrest').value='';
+document.getElementById('guildCrest').value='';
+document.getElementById('currentCrestPreview').innerHTML='';
+document.getElementById('guildModal').classList.add('active');
+}
 
-    <!-- User Modal -->
-    <div id="userModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title" id="userModalTitle">Neuer Benutzer</h3>
-                <button class="btn-close" onclick="closeUserModal()">×</button>
-            </div>
-            <form id="userForm">
-                <input type="hidden" id="userId">
-                <div class="form-group">
-                    <label>Benutzername</label>
-                    <input type="text" id="username" required>
-                </div>
-                <div class="form-group">
-                    <label>Rolle</label>
-                    <select id="userRole" style="width:100%;padding:0.5rem;background:var(--color-bg-primary);color:var(--color-text-primary);border:1px solid var(--color-border);border-radius:var(--radius-sm);">
-                        <option value="user">User</option>
-                        <option value="moderator">Moderator</option>
-                        <option value="admin">Admin</option>
-                    </select>
-                </div>
-                <div class="form-group" id="passwordGroup">
-                    <label id="passwordLabel">Passwort</label>
-                    <input type="password" id="password">
-                    <small id="passwordHint" style="color:var(--color-text-secondary);display:none;margin-top:0.25rem">Leer lassen um Passwort nicht zu ändern</small>
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeUserModal()">Abbrechen</button>
-                    <button type="submit" class="btn btn-primary">Speichern</button>
-                </div>
-            </form>
-        </div>
-    </div>
+function closeGuildModal(){
+document.getElementById('guildModal').classList.remove('active');
+}
 
-    <!-- Guild Modal -->
-    <div id="guildModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title" id="guildModalTitle">Neue Gilde</h3>
-                <button class="btn-close" onclick="closeGuildModal()">×</button>
-            </div>
-            <form id="guildForm" enctype="multipart/form-data">
-                <input type="hidden" id="guildId">
-                <input type="hidden" id="currentCrest">
-                <div class="form-group">
-                    <label>Gildenname</label>
-                    <input type="text" id="guildName" required>
-                </div>
-                <div class="form-group">
-                    <label>Server</label>
-                    <input type="text" id="guildServer" required>
-                </div>
-                <div class="form-group">
-                    <label>Tag (optional)</label>
-                    <input type="text" id="guildTag">
-                </div>
-                <div class="form-group">
-                    <label>Notizen (optional)</label>
-                    <input type="text" id="guildNotes">
-                </div>
-                <div class="form-group">
-                    <label>Wappen (optional)</label>
-                    <div id="currentCrestPreview" style="margin-bottom:0.5rem"></div>
-                    <input type="file" id="guildCrest" accept="image/*">
-                    <small style="color:var(--color-text-secondary);display:block;margin-top:0.5rem">Unterstützte Formate: PNG, JPG, GIF, BMP, WEBP · max. 2MB (wird zu WEBP konvertiert)</small>
-                    <div id="guildCrestError" style="display:none;color:var(--color-error);font-size:0.875rem;margin-top:0.4rem"></div>
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-secondary" onclick="closeGuildModal()">Abbrechen</button>
-                    <button type="submit" class="btn btn-primary">Speichern</button>
-                </div>
-            </form>
-        </div>
-    </div>
+function editGuild(id,name,server,tag,notes,crest){
+document.getElementById('guildModalTitle').textContent='Gilde bearbeiten';
+document.getElementById('guildId').value=id;
+document.getElementById('guildName').value=name;
+document.getElementById('guildServer').value=server;
+document.getElementById('guildTag').value=tag;
+document.getElementById('guildNotes').value=notes;
+document.getElementById('currentCrest').value=crest;
+document.getElementById('guildCrest').value='';
+if(crest){
+document.getElementById('currentCrestPreview').innerHTML=`<div style="display:flex;align-items:center;gap:0.5rem"><img src="/assets/images/${crest}" style="width:32px;height:32px;object-fit:contain"><span style="color:var(--color-text-secondary);font-size:0.875rem">${crest}</span></div>`;
+}else{
+document.getElementById('currentCrestPreview').innerHTML='';
+}
+document.getElementById('guildModal').classList.add('active');
+}
 
-    <?php renderScripts(['/assets/js/admin.js']); ?>
-    <script>
-        // Set current user for client-side logic
-        const CURRENT_USER = '<?php echo e($currentUser); ?>';
-        const CURRENT_USER_ROLE = '<?php echo e($currentUserRole); ?>';
-    </script>
-</body>
-</html>
+document.getElementById('guildForm').addEventListener('submit',async(e)=>{
+e.preventDefault();
+const guildId=document.getElementById('guildId').value;
+const name=document.getElementById('guildName').value;
+const server=document.getElementById('guildServer').value;
+const tag=document.getElementById('guildTag').value;
+const notes=document.getElementById('guildNotes').value;
+const crestFile=document.getElementById('guildCrest').files[0];
+const crestError=document.getElementById('guildCrestError');
+
+// Client-side Größencheck
+crestError.style.display='none';
+if(crestFile && crestFile.size > 2*1024*1024){
+    crestError.textContent='Wappen-Datei zu groß (max. 2MB)';
+    crestError.style.display='block';
+    return;
+}
+
+const formData=new FormData();
+formData.append('name',name);
+formData.append('server',server);
+formData.append('tag',tag);
+formData.append('notes',notes);
+if(guildId){
+formData.append('_method','PUT');
+formData.append('guild_id',guildId);
+}
+if(crestFile){
+formData.append('crest',crestFile);
+}
+const r=await fetch('/api/admin_guilds.php',{method:'POST',body:formData});
+const d=await r.json();
+if(d.success){
+showAlert(d.message,'success');
+closeGuildModal();
+loadGuilds();
+}else{
+// Wappen-Fehler direkt im Modal anzeigen, andere als Toast
+if(d.message && d.message.toLowerCase().includes('wappen')){
+    crestError.textContent=d.message;
+    crestError.style.display='block';
+}else{
+    showAlert(d.message,'error');
+}
+}
+});
+
+async function deleteGuild(guildId,name){
+confirmDialog(`Gilde "${name}" wirklich löschen?\n\nAlle Mitglieder, Kampfdaten und das Wappen werden ebenfalls gelöscht!\n\nDiese Aktion kann nicht rückgängig gemacht werden.`, async () => {
+const r=await fetch('/api/admin_guilds.php',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({guild_id:guildId,force:true})});
+const d=await r.json();
+showAlert(d.message,d.success?'success':'error');
+loadGuilds();
+});
+}
+
+// System
+async function loadSystemInfo(){
+const r=await fetch('/api/admin_system.php?action=info',{credentials:'same-origin'});
+const d=await r.json();
+if(d.success){
+const cards=document.querySelectorAll('#systemInfo .info-card');
+const values=['php_version','sqlite_version','db_size','disk_free','users','guilds','members','battles'];
+values.forEach((key,i)=>{
+cards[i].querySelector('.info-value').textContent=d.info[key];
+});
+}else{
+console.error('System info error:',d);
+}
+}
+
+function downloadBackup(){
+window.location.href='/api/admin_system.php?action=backup';
+showAlert('Backup wird heruntergeladen...','success');
+}
+
+// ─── Logs ───────────────────────────────────────────────────────
+let currentLogType = 'activity';
+let filterTimeout = null;
+
+function switchLogType(type) {
+    currentLogType = type;
+    document.getElementById('btnLogActivity').classList.toggle('active', type === 'activity');
+    document.getElementById('btnLogError').classList.toggle('active', type === 'error');
+    document.getElementById('logFilter').value = '';
+    loadLogs();
+}
+
+function filterLogsDebounced() {
+    clearTimeout(filterTimeout);
+    filterTimeout = setTimeout(loadLogs, 300);
+}
+
+async function loadLogs() {
+    const lines = document.getElementById('logLines').value;
+    const filter = document.getElementById('logFilter').value;
+    const container = document.getElementById('logContainer');
+    
+    container.innerHTML = '<div class="log-empty">Lade...</div>';
+    
+    const params = new URLSearchParams({
+        type: currentLogType,
+        lines: lines,
+        filter: filter
+    });
+    
+    try {
+        const r = await fetch(`/api/admin_logs.php?action=read&${params}`);
+        const d = await r.json();
+        
+        if (!d.success) {
+            container.innerHTML = '<div class="log-empty">Fehler beim Laden</div>';
+            return;
+        }
+        
+        // Update info text
+        const info = d.info;
+        const infoEl = document.getElementById('logInfo');
+        if (info.exists) {
+            infoEl.textContent = `${info.lines} Einträge · ${info.size_human}`;
+        } else {
+            infoEl.textContent = 'Keine Log-Datei vorhanden';
+        }
+        
+        // Render entries
+        if (!d.entries.length) {
+            container.innerHTML = '<div class="log-empty">Keine Einträge' + (filter ? ` für "${escapeHtml(filter)}"` : '') + '</div>';
+            return;
+        }
+        
+        container.innerHTML = d.entries.map(entry => {
+            const ctx = entry.context;
+            let contextHtml = '';
+            
+            if (ctx) {
+                contextHtml = '<div class="log-context">' + formatContext(ctx) + '</div>';
+            }
+            
+            // Determine icon based on log type and content
+            let icon = currentLogType === 'error' ? '⚠️' : '📋';
+            const msg = entry.message.toLowerCase();
+            if (msg.includes('gelöscht') || msg.includes('geleert')) icon = '🗑️';
+            else if (msg.includes('aktualisiert') || msg.includes('geändert')) icon = '✏️';
+            else if (msg.includes('importiert')) icon = '📥';
+            else if (msg.includes('login')) icon = '🔑';
+            else if (msg.includes('erstellt')) icon = '➕';
+            else if (msg.includes('backup')) icon = '💾';
+            
+            return `<div class="log-entry log-${currentLogType}">
+                <div class="log-header">
+                    <span class="log-icon">${icon}</span>
+                    <span class="log-message">${escapeHtml(entry.message)}</span>
+                    <span class="log-time">${formatLogTimestamp(entry.timestamp)}</span>
+                </div>
+                ${contextHtml}
+            </div>`;
+        }).join('');
+        
+    } catch (e) {
+        container.innerHTML = '<div class="log-empty">Netzwerkfehler</div>';
+    }
+}
+
+function formatContext(ctx) {
+    if (!ctx) return '';
+    
+    return Object.entries(ctx).map(([key, val]) => {
+        let displayVal = val;
+        
+        // Truncate long values (like stack traces)
+        if (typeof val === 'string' && val.length > 200) {
+            displayVal = val.substring(0, 200) + '…';
+        }
+        
+        return `<span class="log-ctx-item"><span class="log-ctx-key">${escapeHtml(key)}:</span> ${escapeHtml(String(displayVal))}</span>`;
+    }).join('');
+}
+
+async function clearCurrentLog() {
+    const label = currentLogType === 'activity' ? 'Aktivitäten' : 'Fehler';
+    confirmDialog(`${label}-Log wirklich leeren?\n\nDiese Aktion kann nicht rückgängig gemacht werden!`, async () => {
+        try {
+            const r = await fetch(`/api/admin_logs.php?action=clear&type=${currentLogType}`, {
+                method: 'POST'
+            });
+            const d = await r.json();
+            showAlert(d.message, d.success ? 'success' : 'error');
+            loadLogs();
+        } catch (e) {
+            showAlert('Fehler beim Leeren', 'error');
+        }
+    });
+}
+
+// Utils
+function escapeHtml(t){if(!t)return'';const d=document.createElement('div');d.textContent=t;return d.innerHTML;}
+function formatDate(d){if(!d)return'-';const date=new Date(d);return date.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});}
+
+// Format log timestamp from "2026-02-07 00:43:00" to "07.02.2026 00:43:00"
+function formatLogTimestamp(ts) {
+    if (!ts) return '-';
+    const m = ts.match(/^(\d{4})-(\d{2})-(\d{2}) (\d{2}:\d{2}:\d{2})$/);
+    if (m) return `${m[3]}.${m[2]}.${m[1]} ${m[4]}`;
+    return ts;
+}
+
+// Load initial data
+loadUsers();
+loadGuilds();
+loadSystemInfo();
+
+// === Maintenance: Player Rename ===
+
+async function loadRenameGuilds() {
+    // Reuse guilds data from admin_guilds API
+    try {
+        const r = await fetch('/api/admin_guilds.php');
+        const d = await r.json();
+        if (d.success) {
+            const select = document.getElementById('renameGuild');
+            select.innerHTML = '<option value="">-- Gilde wählen --</option>' +
+                d.guilds.map(g => `<option value="${g.id}">${escapeHtml(g.name)}</option>`).join('');
+        }
+    } catch (e) {}
+}
+
+async function loadGuildMembers() {
+    const guildId = document.getElementById('renameGuild').value;
+    const oldSelect = document.getElementById('renameOldName');
+    const newSelect = document.getElementById('renameNewName');
+    
+    if (!guildId) {
+        oldSelect.innerHTML = '<option value="">-- Erst Gilde wählen --</option>';
+        newSelect.innerHTML = '<option value="">-- Erst Gilde wählen --</option>';
+        return;
+    }
+    
+    oldSelect.innerHTML = '<option value="">Lade...</option>';
+    newSelect.innerHTML = '<option value="">Lade...</option>';
+    
+    try {
+        const r = await fetch(`/api/admin_player_merge.php?action=members&guild_id=${guildId}`);
+        const d = await r.json();
+        
+        if (d.success) {
+            const options = '<option value="">-- Spieler wählen --</option>' +
+                d.members.map(m => `<option value="${escapeAttr(m.name)}">${escapeHtml(m.name)} (${m.level || '?'})</option>`).join('');
+            oldSelect.innerHTML = options;
+            newSelect.innerHTML = options;
+        }
+    } catch (e) {
+        oldSelect.innerHTML = '<option value="">Fehler beim Laden</option>';
+        newSelect.innerHTML = '<option value="">Fehler beim Laden</option>';
+    }
+}
+
+async function executeRename() {
+    const guildId = document.getElementById('renameGuild').value;
+    const oldName = document.getElementById('renameOldName').value;
+    const newName = document.getElementById('renameNewName').value;
+    const resultDiv = document.getElementById('renameResult');
+    
+    if (!guildId || !oldName || !newName) {
+        showAlert('Bitte Gilde, alten Namen und neuen Namen auswählen.', 'error');
+        return;
+    }
+    
+    if (oldName === newName) {
+        showAlert('Alter und neuer Name sind identisch.', 'error');
+        return;
+    }
+    
+    confirmDialog(
+        `"${oldName}" wird zu "${newName}" umbenannt.\n\nAlle Kampfeinträge werden auf den neuen Namen übertragen und der alte Mitgliedseintrag wird entfernt.\n\nFortfahren?`,
+        async () => {
+            try {
+                const r = await fetch('/api/admin_player_merge.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ guild_id: parseInt(guildId), old_name: oldName, new_name: newName })
+                });
+                const d = await r.json();
+
+                if (d.success) {
+                    resultDiv.innerHTML = `<p style="color:var(--color-success)">✅ ${escapeHtml(d.message)}</p>`;
+                    loadGuildMembers(); // Refresh lists
+                } else {
+                    resultDiv.innerHTML = `<p style="color:var(--color-error)">❌ ${escapeHtml(d.message)}</p>`;
+                }
+            } catch (e) {
+                resultDiv.innerHTML = `<p style="color:var(--color-error)">❌ Fehler: ${escapeHtml(e.message)}</p>`;
+            }
+        }
+    );
+}
+
+function escapeAttr(str) {
+    return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+
+function showAlert(message, type = 'success') {
+    const container = document.getElementById('alertContainer');
+    const el = document.createElement('div');
+    el.className = `alert alert-${type}`;
+    el.textContent = message;
+    container.appendChild(el);
+    setTimeout(() => el.remove(), 5000);
+}
+
+// Init maintenance guilds on load
+loadRenameGuilds();
