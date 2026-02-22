@@ -25,7 +25,7 @@ try {
     switch ($method) {
         case 'GET':
             // List all guilds
-            $guilds = query('SELECT * FROM guilds ORDER BY name');
+            $guilds = query('SELECT id, name, server, emblem, description, created_at FROM guilds ORDER BY name');
             jsonResponse([
                 'success' => true,
                 'guilds' => $guilds
