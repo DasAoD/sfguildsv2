@@ -13,7 +13,7 @@ require_once __DIR__ . '/../includes/logger.php';
 
 try {
     // Get all guilds
-    $guilds = query('SELECT id, name, server, emblem, description, created_at FROM guilds ORDER BY name');
+    $guilds = query('SELECT * FROM guilds ORDER BY name');
 
     if (empty($guilds)) {
         jsonResponse(['success' => true, 'guilds' => []]);
