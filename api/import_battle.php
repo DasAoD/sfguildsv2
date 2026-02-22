@@ -7,7 +7,7 @@ require_once '../config/database.php';
 require_once '../includes/auth.php';
 
 // Check authentication
-checkAuth();
+requireAdminAPI();
 
 // Get database connection
 $db = getDB();
