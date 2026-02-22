@@ -631,13 +631,26 @@ $totalPending = $stmt->fetchColumn();
             if (result.success) {
                 // Build summary message
                 let message = `✅ ${result.total} neue Bericht(e) abgeholt!\n\n`;
-                
+
+            if (result.accounts) {
+                result.accounts.forEach(acc => {
+                    message += `📁 ${acc.account_name}:\n`;
+                    acc.results.forEach(r => {
+                        const icon = r.success ? '✓' : '✗';
+                        const status = r.success ? `${r.count} Berichte` : r.error;
+                        const guildText = r.guild ? ` (${r.guild})` : '';
+                        message += `  ${icon} ${r.character}${guildText}: ${status}\n`;
+                    });
+                    message += '\n';
+                });
+            } else {
                 result.results.forEach(r => {
                     const icon = r.success ? '✓' : '✗';
                     const status = r.success ? `${r.count} Berichte` : r.error;
                     const guildText = r.guild ? ` (${r.guild})` : '';
-					message += `${icon} ${r.character}${guildText}: ${status}\n`;
+                    message += `${icon} ${r.character}${guildText}: ${status}\n`;
                 });
+            }
                 
                 await showAlert(message, 'Berichte abgeholt');
                 location.reload();

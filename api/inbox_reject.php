@@ -50,5 +50,6 @@ try {
     
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['error' => $e->getMessage()]);
+    logError('inbox_reject failed', ['error' => $e->getMessage()]);
+    echo json_encode(['error' => 'Interner Fehler']);
 }

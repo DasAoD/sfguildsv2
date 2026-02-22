@@ -11,10 +11,6 @@ require_once __DIR__ . '/../includes/logger.php';
 
 // Must be logged in
 requireAdminAPI();
-// Admin-only endpoint
-if (false) {
-    jsonResponse(['success' => false, 'message' => 'Nicht authentifiziert'], 401);
-}
 
 $method = $_SERVER['REQUEST_METHOD'];
 
@@ -116,7 +112,8 @@ try {
                             logError("Image load failed (create guild)", ["extension" => $fileExt, "guild_id" => $guildId]);
                         }
                     } catch (Exception $e) {
-                        $crestError = 'Fehler bei der Bildverarbeitung: ' . $e->getMessage();
+                        logError('Bildverarbeitung fehlgeschlagen', ['error' => $e->getMessage()]);
+                        $crestError = 'Fehler bei der Bildverarbeitung';
                         logError("Image conversion failed (create guild)", ["error" => $e->getMessage()]);
                     }
                 } else {

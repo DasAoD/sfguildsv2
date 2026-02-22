@@ -13,10 +13,6 @@ require_once __DIR__ . '/../includes/logger.php';
 require_once __DIR__ . '/../config/database.php';
 
 requireAdminAPI();
-// Admin-only endpoint
-if (false) {
-    jsonResponse(['success' => false, 'message' => 'Nicht authentifiziert'], 401);
-}
 
 function normalizeName(string $name): string {
     $name = mb_strtolower(trim($name), 'UTF-8');
@@ -202,5 +198,6 @@ try {
     }
     
 } catch (Exception $e) {
-    jsonResponse(['success' => false, 'message' => 'Fehler: ' . $e->getMessage()], 500);
+    logError('admin_player_merge failed', ['error' => $e->getMessage()]);
+    jsonResponse(['success' => false, 'message' => 'Interner Fehler'], 500);
 }

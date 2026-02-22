@@ -138,7 +138,8 @@ try {
             $imported++;
             
         } catch (Exception $e) {
-            $errors[] = "Report ID $reportId: " . $e->getMessage();
+            logError("inbox_import report failed", ["report_id" => $reportId, "error" => $e->getMessage()]);
+                $errors[] = "Report ID $reportId: Verarbeitungsfehler";
         }
     }
     
@@ -167,7 +168,8 @@ try {
 } catch (Exception $e) {
     $db->rollBack();
     http_response_code(500);
-    echo json_encode(['error' => $e->getMessage()]);
+    logError('inbox_import failed', ['error' => $e->getMessage()]);
+    echo json_encode(['error' => 'Interner Fehler']);
 }
 
 /**
