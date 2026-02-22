@@ -148,6 +148,16 @@ const server=document.getElementById('guildServer').value;
 const tag=document.getElementById('guildTag').value;
 const notes=document.getElementById('guildNotes').value;
 const crestFile=document.getElementById('guildCrest').files[0];
+const crestError=document.getElementById('guildCrestError');
+
+// Client-side Größencheck
+crestError.style.display='none';
+if(crestFile && crestFile.size > 2*1024*1024){
+    crestError.textContent='Wappen-Datei zu groß (max. 2MB)';
+    crestError.style.display='block';
+    return;
+}
+
 const formData=new FormData();
 formData.append('name',name);
 formData.append('server',server);
@@ -162,10 +172,18 @@ formData.append('crest',crestFile);
 }
 const r=await fetch('/api/admin_guilds.php',{method:'POST',body:formData});
 const d=await r.json();
-showAlert(d.message,d.success?'success':'error');
 if(d.success){
+showAlert(d.message,'success');
 closeGuildModal();
 loadGuilds();
+}else{
+// Wappen-Fehler direkt im Modal anzeigen, andere als Toast
+if(d.message && d.message.toLowerCase().includes('wappen')){
+    crestError.textContent=d.message;
+    crestError.style.display='block';
+}else{
+    showAlert(d.message,'error');
+}
 }
 });
 
