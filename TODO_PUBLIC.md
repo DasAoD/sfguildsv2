@@ -1,7 +1,7 @@
 # 📋 TODO - S&F Guilds v2
 
 **Projekt-Status:** In aktiver Entwicklung  
-**Version:** 2.0-dev
+**Stand:** 22. Februar 2026
 
 ---
 
@@ -18,69 +18,55 @@
 - [x] Spieler-Detail Modal
 - [x] Kampf-Details Modal
 - [x] CSV-Export für Reports
+- [x] Spieler-Umbenennen Tool (nach Serverfusionen/Namensänderungen)
 
 ### **Admin & System**
-- [x] Admin-Panel (User, Gilden, System, Logs)
+- [x] Admin-Panel (User, Gilden, System, Logs, Wartung)
 - [x] Activity & Error Logging
 - [x] System-Backup Funktion
 - [x] Automatischer CSV-Import (systemd)
 
-### **Security & Quality**
+### **Security & Quality (Phase 1)**
 - [x] Session-Management
-- [x] Input-Validierung
-- [x] XSS-Schutz
+- [x] Input-Validierung & XSS-Schutz
 - [x] Debug-Code entfernt
-- [x] Production-Ready
+- [x] Passwort-Logging maskiert
+- [x] Stacktrace-Leaks entfernt
+
+### **Performance (Phase 3)**
+- [x] SQLite WAL-Mode
+- [x] N+1 Query behoben (guilds.php)
+- [x] Open Redirect geschlossen (login.php)
+- [x] SELECT * bereinigt
+
+### **Encryption & Validation (Phase 4)**
+- [x] HMAC-Integritätsprüfung für Zugangsdaten
+- [x] Upload-Größenlimit (2MB) mit Modal-Fehlermeldung
+
+### **UI/UX**
+- [x] Einheitliche Custom-Modals statt Browser-`confirm()`/`alert()`
 
 ---
 
-## 🔥 **PRIORITÄT: HOCH**
+## 🔥 **OFFEN: PRIORITÄT HOCH**
 
-### **Access Control System**
-- [ ] Rollenbasiertes Zugriffssystem
-- [ ] Berechtigungs-Management
-- [ ] User-Rollen-Verwaltung
-
-**Zeitaufwand:** ~60 Minuten  
-**Status:** Geplant für nächste Woche
-
----
-
-## 📊 **PRIORITÄT: MITTEL**
-
-### **Performance Optimierungen**
-- [ ] Datenbank-Optimierungen
-- [ ] Query-Performance verbessern
-- [ ] Caching-Strategien
-
-**Zeitaufwand:** ~40 Minuten  
-**Status:** Geplant
-
-### **Code-Qualität**
-- [ ] Code-Review durchführen
-- [ ] Best Practices umsetzen
-- [ ] Refactoring wo nötig
-
-**Zeitaufwand:** ~30 Minuten  
-**Status:** Geplant
+### **Access Control System (Phase 2)**
+- [ ] Drei-Rollen-System: Admin / Moderator / User
+- [ ] `isAdmin()` / `requireAdmin()` in `auth.php`
+- [ ] Admin-APIs absichern
+- [ ] Admin-Seite absichern
+- [ ] Rollen-Verwaltung im Admin-Panel
+- [ ] Passwort-Reset Funktion
 
 ---
 
-## 🎨 **PRIORITÄT: NIEDRIG**
+## 📊 **OFFEN: PRIORITÄT NIEDRIG**
 
-### **UI/UX Verbesserungen**
-- [ ] Mobile Optimierung
-- [ ] Touch-friendly Controls
-- [ ] Accessibility verbessern
+### **UI/UX**
+- [ ] Mobile Optimierung (Touch-friendly Controls)
 
-**Status:** Später
-
-### **Nice-to-have Features**
+### **Nice-to-have**
 - [ ] Dark/Light Theme Toggle
-- [ ] Keyboard Shortcuts
-- [ ] Bulk-Aktionen
-
-**Status:** Backlog
 
 ---
 
@@ -89,47 +75,19 @@
 - ~~Dashboard Charts~~ (Reports reichen aus)
 - ~~Email-Benachrichtigungen~~ (Nicht benötigt)
 - ~~Externe API~~ (Privates Projekt)
+- ~~Keyboard Shortcuts~~
+- ~~Bulk-Aktionen~~
 
 ---
 
 ## 📈 **FORTSCHRITT**
 
-**Kern-Features:** 90% ✅  
-**Sicherheit:** 85% ⏳  
-**Performance:** 85% ⏳  
-**Code-Qualität:** 90% ⏳  
-**UI/UX:** 95% ✅
+| Kategorie | Vorher | Jetzt |
+|-----------|--------|-------|
+| **Kern-Features** | 90% | 90% ✅ |
+| **Sicherheit** | 85% | 85% ⏳ → 95% nach Phase 2 |
+| **Performance** | 85% | 92% ✅ |
+| **Code-Qualität** | 90% | 95% ✅ |
+| **UI/UX** | 95% | 95% ✅ |
 
-**Gesamt:** 88/100
-
-**Ziel nach Phasen 2-4:** 95/100
-
----
-
-## 🎯 **NÄCHSTE SCHRITTE**
-
-1. Access Control System implementieren
-2. Performance optimieren
-3. Code-Qualität verbessern
-
-**Geschätzte Fertigstellung:** ~2.5 Stunden
-
----
-
-## 📅 **UPDATES**
-
-**14.02.2026**
-- TODO-Liste überarbeitet
-- Prioritäten definiert
-
-**01.02.2026**
-- Phase 1 abgeschlossen
-- Security Audit durchgeführt
-
-**25.01.2026**
-- Reports-Feature implementiert
-- CSV-Export hinzugefügt
-
----
-
-**Letzte Aktualisierung:** 14. Februar 2026
+**Gesamt:** ~92/100 → ~95/100 nach Phase 2
