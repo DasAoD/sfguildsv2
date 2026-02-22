@@ -44,7 +44,7 @@ function handlePost($db, $userId) {
     
     // If account_id provided but no credentials, use stored ones
     if ($accountId && (empty($username) || empty($password))) {
-        $stmt = $db->prepare("SELECT sf_username, sf_password_encrypted, sf_iv FROM sf_accounts WHERE id = ? AND user_id = ?");
+        $stmt = $db->prepare("SELECT sf_username, sf_password_encrypted, sf_iv, sf_hmac FROM sf_accounts WHERE id = ? AND user_id = ?");
         $stmt->execute([$accountId, $userId]);
         $account = $stmt->fetch(PDO::FETCH_ASSOC);
         
@@ -55,7 +55,7 @@ function handlePost($db, $userId) {
         }
         
         $username = $account['sf_username'];
-        $password = decryptData($account['sf_password_encrypted'], $account['sf_iv']);
+        $password = decryptData($account['sf_password_encrypted'], $account['sf_iv'], $account['sf_hmac'] ?? null);
     }
     
     if (empty($username) || empty($password)) {
@@ -96,7 +96,7 @@ function handleGet($db, $userId) {
     
     if ($accountId) {
         // Specific account
-        $stmt = $db->prepare("SELECT sf_username, sf_password_encrypted, sf_iv, selected_characters FROM sf_accounts WHERE id = ? AND user_id = ?");
+        $stmt = $db->prepare("SELECT sf_username, sf_password_encrypted, sf_iv, sf_hmac, selected_characters FROM sf_accounts WHERE id = ? AND user_id = ?");
         $stmt->execute([$accountId, $userId]);
         $account = $stmt->fetch(PDO::FETCH_ASSOC);
         
@@ -107,13 +107,13 @@ function handleGet($db, $userId) {
         }
     } else {
         // Fallback: Try legacy users table, then default account
-        $stmt = $db->prepare("SELECT sf_username, sf_password_encrypted, sf_iv, selected_characters FROM sf_accounts WHERE user_id = ? AND is_default = 1");
+        $stmt = $db->prepare("SELECT sf_username, sf_password_encrypted, sf_iv, sf_hmac, selected_characters FROM sf_accounts WHERE user_id = ? AND is_default = 1");
         $stmt->execute([$userId]);
         $account = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if (!$account) {
             // Legacy fallback
-            $stmt = $db->prepare("SELECT sf_username, sf_password_encrypted, sf_iv, selected_characters FROM users WHERE id = ?");
+            $stmt = $db->prepare("SELECT sf_username, sf_password_encrypted, sf_iv, sf_hmac, selected_characters FROM users WHERE id = ?");
             $stmt->execute([$userId]);
             $account = $stmt->fetch(PDO::FETCH_ASSOC);
         }
@@ -126,7 +126,7 @@ function handleGet($db, $userId) {
     }
     
     // Decrypt and fetch characters from S&F
-    $sfPassword = decryptData($account['sf_password_encrypted'], $account['sf_iv']);
+    $sfPassword = decryptData($account['sf_password_encrypted'], $account['sf_iv'], $account['sf_hmac'] ?? null);
     
     $cmd = sprintf(
         'env SSO_USERNAME=%s PASSWORD=%s /opt/sf-api/target/release/examples/list_chars 2>&1',
