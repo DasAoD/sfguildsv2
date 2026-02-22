@@ -87,18 +87,25 @@ function decryptData($encrypted, $iv, $hmac = null) {
 function getEncryptionKey() {
     // Try environment variable first
     $key = getenv('ENCRYPTION_KEY');
-    
+
     // Fallback to config file if exists
     if (!$key && file_exists(__DIR__ . '/../config/.env')) {
         $env = parse_ini_file(__DIR__ . '/../config/.env');
         $key = $env['ENCRYPTION_KEY'] ?? null;
     }
-    
+
     if (!$key) {
         throw new Exception('ENCRYPTION_KEY not configured. Set it in environment or config/.env file');
     }
-    
-    return $key;
+
+    // Key ist Base64-kodiert gespeichert (generateEncryptionKey() erzeugt base64(random_bytes(32)))
+    // Dekodieren damit AES-256 wirklich 32 zufällige Bytes bekommt, nicht 44 ASCII-Zeichen
+    $decoded = base64_decode($key, true);
+    if ($decoded === false || strlen($decoded) !== 32) {
+        throw new Exception('ENCRYPTION_KEY is invalid – must be base64-encoded 32-byte key (use generateEncryptionKey())');
+    }
+
+    return $decoded;
 }
 
 /**

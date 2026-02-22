@@ -33,7 +33,7 @@ try {
     );
     $memberStatsMap = array_column($memberStats, null, 'guild_id');
 
-    // --- Batch Query 2: Battle counts per guild ---
+    // --- Batch Query 2: Battle counts per guild (total, for display) ---
     $battleStats = query(
         "SELECT guild_id, COUNT(*) AS total_battles
          FROM sf_eval_battles
@@ -42,12 +42,15 @@ try {
     $battleStatsMap = array_column($battleStats, null, 'guild_id');
 
     // --- Batch Query 3: Participation (last 30 days) per guild ---
+    // Beide Werte (participated + possible) auf denselben 30-Tage-Zeitraum beschränken,
+    // damit die Quote konsistent ist (nicht "Teilnahmen aus 30 Tagen" / "alle jemals")
     $participationStats = query(
-        "SELECT b.guild_id, COUNT(*) AS participated
+        "SELECT b.guild_id,
+                SUM(p.participated) AS participated,
+                COUNT(*) AS possible
          FROM sf_eval_participants p
          JOIN sf_eval_battles b ON p.battle_id = b.id
          WHERE b.battle_date >= date('now', '-30 days')
-           AND p.participated = 1
          GROUP BY b.guild_id"
     );
     $participationMap = array_column($participationStats, null, 'guild_id');
@@ -63,9 +66,9 @@ try {
         $activeMembersCount  = (int)($members['active_members']  ?? 0);
         $totalBattlesCount   = (int)($battles['total_battles']   ?? 0);
         $participated        = (int)($partRow['participated']    ?? 0);
+        $possible            = (int)($partRow['possible']        ?? 0);
 
-        if ($activeMembersCount > 0 && $totalBattlesCount > 0) {
-            $possible = $activeMembersCount * $totalBattlesCount;
+        if ($possible > 0) {
             $participationQuote = min(100, round(($participated / $possible) * 100));
         } else {
             $participationQuote = 0;

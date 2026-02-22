@@ -67,6 +67,9 @@ function runWithEnv(string $binary, array $args, array $env): array {
     }
 
     fclose($pipes[0]);
+    // Timeout: Prozess nach 30s abbrechen
+    stream_set_timeout($pipes[1], 30);
+    stream_set_timeout($pipes[2], 30);
     $stdout = stream_get_contents($pipes[1]);
     $stderr = stream_get_contents($pipes[2]);
     fclose($pipes[1]);

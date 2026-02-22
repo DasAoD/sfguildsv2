@@ -54,7 +54,7 @@ try {
             $passwordHash = password_hash($password, PASSWORD_DEFAULT);
             
             // Insert user
-            execute(
+            insert(
                 'INSERT INTO users (username, password_hash, role, created_at) VALUES (?, ?, ?, datetime("now"))',
                 [$username, $passwordHash, $role]
             );

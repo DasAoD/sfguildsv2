@@ -54,23 +54,34 @@ try {
         case 'backup':
             // Create database backup
             $dbPath = __DIR__ . '/../data/sfguilds.sqlite';
-            
+
             if (!file_exists($dbPath)) {
                 jsonResponse(['success' => false, 'message' => 'Datenbank nicht gefunden'], 404);
             }
-            
+
             // Generate filename with timestamp
             $timestamp = date('Y-m-d_H-i-s');
-            $filename = "sfguilds_backup_{$timestamp}.sqlite";
-            
-            // Set headers for download
-            logActivity('Backup heruntergeladen', ['Größe' => filesize($dbPath)]);
+            $filename  = "sfguilds_backup_{$timestamp}.sqlite";
+            $tmpPath   = sys_get_temp_dir() . '/' . $filename;
+
+            try {
+                // VACUUM INTO erzeugt ein konsistentes Backup das alle WAL-Änderungen einschließt.
+                // readfile() auf die Live-DB würde in WAL-Mode ggf. einen inkonsistenten Zustand liefern,
+                // da aktuelle Änderungen noch in der -wal Datei stecken können.
+                $db = getDB();
+                $db->exec("VACUUM INTO " . $db->quote($tmpPath));
+            } catch (Exception $e) {
+                logError('Backup VACUUM INTO failed', ['error' => $e->getMessage()]);
+                jsonResponse(['success' => false, 'message' => 'Backup fehlgeschlagen'], 500);
+            }
+
+            logActivity('Backup heruntergeladen', ['Größe' => filesize($tmpPath)]);
             header('Content-Type: application/x-sqlite3');
             header('Content-Disposition: attachment; filename="' . $filename . '"');
-            header('Content-Length: ' . filesize($dbPath));
-            
-            // Output file
-            readfile($dbPath);
+            header('Content-Length: ' . filesize($tmpPath));
+
+            readfile($tmpPath);
+            @unlink($tmpPath);
             exit;
             
         default:

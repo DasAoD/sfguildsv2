@@ -45,7 +45,7 @@ try {
             }
             
             // Insert guild first to get ID
-            $guildId = execute(
+            $guildId = insert(
                 'INSERT INTO guilds (name, server, tag, notes, created_at) VALUES (?, ?, ?, ?, datetime("now"))',
                 [$name, $server, $tag, $notes]
             );

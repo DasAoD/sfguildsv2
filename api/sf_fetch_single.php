@@ -75,7 +75,8 @@ try {
     file_put_contents($logFile, "Command: $cmdSafe\n\n" . implode("\n", $output));
 
     if ($returnCode !== 0) {
-        throw new Exception('Rust-Script fehlgeschlagen. Log: ' . $logFile);
+        logError('Rust-Script fehlgeschlagen', ['log' => $logFile, 'char' => $character]);
+        throw new Exception('Fetch fehlgeschlagen');
     }
     
     // Import files to inbox

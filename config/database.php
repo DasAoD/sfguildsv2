@@ -66,14 +66,27 @@ function queryOne($sql, $params = []) {
 }
 
 /**
- * Execute an insert/update/delete query
+ * Execute an update/delete query
  * @param string $sql
  * @param array $params
- * @return int Last insert ID or affected rows
+ * @return int Affected rows
  */
 function execute($sql, $params = []) {
     $db = getDB();
     $stmt = $db->prepare($sql);
     $stmt->execute($params);
-    return $db->lastInsertId() ?: $stmt->rowCount();
+    return $stmt->rowCount();
+}
+
+/**
+ * Execute an INSERT query and return the new row ID
+ * @param string $sql
+ * @param array $params
+ * @return int Last insert ID
+ */
+function insert($sql, $params = []) {
+    $db = getDB();
+    $stmt = $db->prepare($sql);
+    $stmt->execute($params);
+    return (int)$db->lastInsertId();
 }

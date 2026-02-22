@@ -99,6 +99,13 @@ try {
             ];
 
             $process = proc_open($cmd, $descriptorspec, $procPipes, null, $procEnv);
+            if (!is_resource($process)) {
+                logError('proc_open failed for character', ['char' => $char['name']]);
+                continue;
+            }
+            // Timeout: Prozess nach 60s abbrechen
+            stream_set_timeout($procPipes[1], 60);
+            stream_set_timeout($procPipes[2], 60);
             
             if (is_resource($process)) {
                 $processes[] = $process;
