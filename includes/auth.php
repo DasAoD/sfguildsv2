@@ -90,7 +90,6 @@ function requireAdmin() {
     checkAuth();
     if (!isAdmin()) {
         http_response_code(403);
-        header('Location: /errors/403.html');
         exit;
     }
 }
