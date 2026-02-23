@@ -186,8 +186,13 @@ try {
                                     case 'webp':             $image = @imagecreatefromwebp($tmpFile); break;
                                 }
                                 if ($image) {
-                                    imagewebp($image, $outputPath, 90);
-                                    imagedestroy($image);
+                                    if (imagewebp($image, $outputPath, 90)) {
+                                        imagedestroy($image);
+                                    } else {
+                                        imagedestroy($image);
+                                        $crestFile = null;
+                                        logError("WEBP conversion failed (update guild)", ["guild_id" => $guildId]);
+                                    }
                                 } else {
                                     $crestFile = null;
                                 }

@@ -70,7 +70,7 @@ function getCurrentUsername() {
 }
 
 /**
- * Get current user role
+ * Get current user role from session (UI/display use only)
  * @return string  'admin' | 'moderator' | 'user'
  */
 function getCurrentUserRole() {
@@ -78,17 +78,35 @@ function getCurrentUserRole() {
 }
 
 /**
- * Check if current user is admin
+ * Get current user role fresh from DB and sync session.
+ * Used for privilege checks so role changes take effect immediately
+ * without requiring a re-login.
+ * @return string  'admin' | 'moderator' | 'user'
  */
-function isAdmin() {
-    return getCurrentUserRole() === 'admin';
+function getCurrentUserRoleFresh() {
+    if (!isset($_SESSION['user_id'])) {
+        return 'user';
+    }
+    require_once __DIR__ . '/../config/database.php';
+    $user = queryOne('SELECT role FROM users WHERE id = ?', [$_SESSION['user_id']]);
+    $role = $user['role'] ?? 'user';
+    // Session aktualisieren damit UI konsistent bleibt
+    $_SESSION['user_role'] = $role;
+    return $role;
 }
 
 /**
- * Check if current user is moderator or higher
+ * Check if current user is admin (DB-fresh check)
+ */
+function isAdmin() {
+    return getCurrentUserRoleFresh() === 'admin';
+}
+
+/**
+ * Check if current user is moderator or higher (DB-fresh check)
  */
 function isModerator() {
-    return in_array(getCurrentUserRole(), ['admin', 'moderator']);
+    return in_array(getCurrentUserRoleFresh(), ['admin', 'moderator']);
 }
 
 /**
@@ -199,24 +217,4 @@ function verifyUser($username, $password) {
  */
 function hashPassword($password) {
     return password_hash($password, PASSWORD_DEFAULT);
-}
-
-/**
- * Generate CSRF token
- * @return string
- */
-function generateCSRFToken() {
-    if (!isset($_SESSION['csrf_token'])) {
-        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-    }
-    return $_SESSION['csrf_token'];
-}
-
-/**
- * Verify CSRF token
- * @param string $token
- * @return bool
- */
-function verifyCSRFToken($token) {
-    return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
 }
