@@ -169,9 +169,8 @@ function importToInbox($dir, $userId, $db) {
         }
         
         $newPath = $guildDir . '/' . basename($file);
-        rename($file, $newPath);
-        
-        // Insert into inbox (ignore if duplicate)
+
+        // Insert into inbox BEFORE rename – so a duplicate skips without touching the file
         try {
             $stmt = $db->prepare("
                 INSERT INTO battle_inbox 
@@ -193,9 +192,11 @@ function importToInbox($dir, $userId, $db) {
                 $newPath
             ]);
             
+            // Only move file after successful insert
+            rename($file, $newPath);
             $count++;
         } catch (PDOException $e) {
-            // Duplicate message_id - skip
+            // Duplicate message_id - skip (file stays in temp location)
             if ($e->getCode() == 23000) {
                 continue;
             }

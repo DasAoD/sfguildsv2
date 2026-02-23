@@ -139,6 +139,13 @@ function clearLog(string $type): bool {
 // ─── Internal Functions ────────────────────────────────────────
 
 /**
+ * Strip control characters to prevent log-forging via newlines/special chars
+ */
+function stripLogControlChars(string $s): string {
+    return preg_replace('/[\x00-\x1F\x7F]/u', '', $s);
+}
+
+/**
  * Write a log entry
  */
 function writeLog(string $type, string $message, array $context): void {
@@ -149,6 +156,14 @@ function writeLog(string $type, string $message, array $context): void {
     // Rotate if too large
     rotateLog($file);
     
+    // Steuerzeichen aus Message und Context entfernen (verhindert Log-Forging)
+    $message = stripLogControlChars($message);
+    array_walk_recursive($context, function (&$val) {
+        if (is_string($val)) {
+            $val = stripLogControlChars($val);
+        }
+    });
+
     // Build log line (CET/CEST)
     $timestamp = (new DateTime('now', new DateTimeZone('Europe/Berlin')))->format('Y-m-d H:i:s');
     $line = "[{$timestamp}] {$message}";

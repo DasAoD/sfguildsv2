@@ -94,7 +94,7 @@ Der Kern der Web-App (UI, Admin, lokale Daten) kann dennoch unabhängig davon be
 ## Entwicklungsstand & Roadmap
 
 Aktuelle Roadmap und offene Punkte:
-- [`ROADMAP_PUBLIC.md`](ROADMAP_PUBLIC.md) – Phasen-Übersicht (Phase 1-4, davon 1, 3, 4 abgeschlossen)
+- [`ROADMAP_PUBLIC.md`](ROADMAP_PUBLIC.md) – Phasen-Übersicht (Phase 1-4, alle abgeschlossen)
 - [`TODO_PUBLIC.md`](TODO_PUBLIC.md) – Detaillierte Aufgabenliste
 
-**Aktuell offen:** Phase 2 – Access Control System (Drei-Rollen-System)
+**Aktuell offen:** Mobile-Optimierung und optionaler Theme-Toggle (Low Priority)

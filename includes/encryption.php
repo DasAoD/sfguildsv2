@@ -13,7 +13,7 @@
  */
 function encryptData($data) {
     $key = getEncryptionKey();
-    $iv = openssl_random_pseudo_bytes(16);
+    $iv = random_bytes(16);
     
     $encrypted = openssl_encrypt(
         $data,
@@ -115,5 +115,5 @@ function getEncryptionKey() {
  * @return string Base64 encoded random key
  */
 function generateEncryptionKey() {
-    return base64_encode(openssl_random_pseudo_bytes(32));
+    return base64_encode(random_bytes(32));
 }
