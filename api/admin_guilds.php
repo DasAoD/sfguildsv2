@@ -62,71 +62,50 @@ try {
                 } else {
                     $fileExt = strtolower(pathinfo($_FILES['crest']['name'], PATHINFO_EXTENSION));
                     $allowedExts = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
-                
-                    if (in_array($fileExt, $allowedExts)) {
-                    $tmpFile = $_FILES['crest']['tmp_name'];
-                    $crestFile = 'guild_' . $guildId . '.webp';
-                    $outputPath = $uploadDir . $crestFile;
 
-                    // Dimensionen prüfen bevor GD lädt (verhindert überdimensionierte Bilder)
-                    $imgInfo = @getimagesize($tmpFile);
-                    if ($imgInfo === false) {
-                        $crestError = 'Bilddatei konnte nicht gelesen werden';
-                    } elseif ($imgInfo[0] > 4096 || $imgInfo[1] > 4096) {
-                        $crestError = 'Bild zu groß (max. 4096×4096 Pixel)';
+                    if (!in_array($fileExt, $allowedExts)) {
+                        $crestError = 'Ungültiges Dateiformat (erlaubt: jpg, png, gif, bmp, webp)';
                     } else {
-                    // Convert to WEBP
-                    try {
-                        $image = null;
-                        
-                        // Load image based on type
-                        switch ($fileExt) {
-                            case 'jpg':
-                            case 'jpeg':
-                                $image = @imagecreatefromjpeg($tmpFile);
-                                break;
-                            case 'png':
-                                $image = @imagecreatefrompng($tmpFile);
-                                break;
-                            case 'gif':
-                                $image = @imagecreatefromgif($tmpFile);
-                                break;
-                            case 'bmp':
-                                $image = @imagecreatefrombmp($tmpFile);
-                                break;
-                            case 'webp':
-                                $image = @imagecreatefromwebp($tmpFile);
-                                break;
-                        }
-                        
-                        if ($image) {
-                            // Convert to WEBP with 90% quality
-                            if (imagewebp($image, $outputPath, 90)) {
-                                imagedestroy($image);
-                                
-                                // Update guild with crest filename
-                                execute(
-                                    'UPDATE guilds SET crest_file = ? WHERE id = ?',
-                                    [$crestFile, $guildId]
-                                );
-                                $crestUploaded = true;
-                            } else {
-                                $crestError = 'Konvertierung zu WEBP fehlgeschlagen';
-                                logError("WEBP conversion failed (create guild)", ["guild_id" => $guildId]);
-                            }
+                        $tmpFile  = $_FILES['crest']['tmp_name'];
+                        $crestFile = 'guild_' . $guildId . '.webp';
+                        $outputPath = $uploadDir . $crestFile;
+
+                        // Dimensionen prüfen bevor GD lädt
+                        $imgInfo = @getimagesize($tmpFile);
+                        if ($imgInfo === false) {
+                            $crestError = 'Bilddatei konnte nicht gelesen werden';
+                        } elseif ($imgInfo[0] > 4096 || $imgInfo[1] > 4096) {
+                            $crestError = 'Bild zu groß (max. 4096×4096 Pixel)';
                         } else {
-                            $crestError = 'Bildformat nicht unterstützt oder Datei beschädigt';
-                            logError("Image load failed (create guild)", ["extension" => $fileExt, "guild_id" => $guildId]);
+                            try {
+                                $image = null;
+                                switch ($fileExt) {
+                                    case 'jpg': case 'jpeg': $image = @imagecreatefromjpeg($tmpFile); break;
+                                    case 'png':              $image = @imagecreatefrompng($tmpFile);  break;
+                                    case 'gif':              $image = @imagecreatefromgif($tmpFile);  break;
+                                    case 'bmp':              $image = @imagecreatefrombmp($tmpFile);  break;
+                                    case 'webp':             $image = @imagecreatefromwebp($tmpFile); break;
+                                }
+                                if ($image) {
+                                    if (imagewebp($image, $outputPath, 90)) {
+                                        imagedestroy($image);
+                                        execute('UPDATE guilds SET crest_file = ? WHERE id = ?', [$crestFile, $guildId]);
+                                        $crestUploaded = true;
+                                    } else {
+                                        $crestError = 'Konvertierung zu WEBP fehlgeschlagen';
+                                        logError("WEBP conversion failed (create guild)", ["guild_id" => $guildId]);
+                                    }
+                                } else {
+                                    $crestError = 'Bildformat nicht unterstützt oder Datei beschädigt';
+                                    logError("Image load failed (create guild)", ["extension" => $fileExt, "guild_id" => $guildId]);
+                                }
+                            } catch (Exception $e) {
+                                logError('Bildverarbeitung fehlgeschlagen (create)', ['error' => $e->getMessage()]);
+                                $crestError = 'Fehler bei der Bildverarbeitung';
+                            }
                         }
-                    } catch (Exception $e) {
-                        logError('Bildverarbeitung fehlgeschlagen', ['error' => $e->getMessage()]);
-                        $crestError = 'Fehler bei der Bildverarbeitung';
-                        logError("Image conversion failed (create guild)", ["error" => $e->getMessage()]);
                     }
-                    } // end dimension check
-                    } else {
-                    $crestError = 'Ungültiges Dateiformat (erlaubt: jpg, png, gif, bmp, webp)';
-                    }
+                }
             }
             
             logActivity('Gilde erstellt', ['Name' => $name, 'Server' => $server]);
@@ -164,78 +143,60 @@ try {
                 if (!is_dir($uploadDir)) {
                     mkdir($uploadDir, 0755, true);
                 }
-                // Dateigröße-Limit: 2MB (non-fatal: Gilde wird trotzdem angelegt)
+                // Dateigröße-Limit: 2MB (non-fatal: Update wird trotzdem durchgeführt)
                 if ($_FILES['crest']['size'] > 2 * 1024 * 1024) {
                     $crestError = 'Wappen-Datei zu groß (max. 2MB)';
                 } else {
-                $fileExt = strtolower(pathinfo($_FILES['crest']['name'], PATHINFO_EXTENSION));
-                $allowedExts = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
-                
-                if (in_array($fileExt, $allowedExts)) {
-                    // Delete old crest files for this guild (all extensions)
-                    $oldGuild = queryOne('SELECT crest_file FROM guilds WHERE id = ?', [$guildId]);
-                    if ($oldGuild && $oldGuild['crest_file']) {
-                        $oldFile = $uploadDir . $oldGuild['crest_file'];
-                        if (file_exists($oldFile)) {
-                            unlink($oldFile);
-                        }
-                    }
-                    
-                    // Also clean up any timestamp-based files
-                    foreach (glob($uploadDir . 'guild_' . $guildId . '.*') as $file) {
-                        if (file_exists($file)) {
-                            unlink($file);
-                        }
-                    }
-                    
-                    $tmpFile = $_FILES['crest']['tmp_name'];
-                    $crestFile = 'guild_' . $guildId . '.webp';
-                    $outputPath = $uploadDir . $crestFile;
+                    $fileExt = strtolower(pathinfo($_FILES['crest']['name'], PATHINFO_EXTENSION));
+                    $allowedExts = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
 
-                    // Dimensionen prüfen bevor GD lädt (verhindert überdimensionierte Bilder)
-                    $imgInfo = @getimagesize($tmpFile);
-                    if ($imgInfo === false) {
-                        $crestError = 'Bilddatei konnte nicht gelesen werden';
-                    } elseif ($imgInfo[0] > 4096 || $imgInfo[1] > 4096) {
-                        $crestError = 'Bild zu groß (max. 4096×4096 Pixel)';
+                    if (!in_array($fileExt, $allowedExts)) {
+                        $crestError = 'Ungültiges Dateiformat (erlaubt: jpg, png, gif, bmp, webp)';
                     } else {
-                    // Convert to WEBP
-                    try {
-                        $image = null;
-                        
-                        // Load image based on type
-                        switch ($fileExt) {
-                            case 'jpg':
-                            case 'jpeg':
-                                $image = @imagecreatefromjpeg($tmpFile);
-                                break;
-                            case 'png':
-                                $image = @imagecreatefrompng($tmpFile);
-                                break;
-                            case 'gif':
-                                $image = @imagecreatefromgif($tmpFile);
-                                break;
-                            case 'bmp':
-                                $image = @imagecreatefrombmp($tmpFile);
-                                break;
-                            case 'webp':
-                                $image = @imagecreatefromwebp($tmpFile);
-                                break;
+                        // Altes Wappen löschen
+                        $oldGuild = queryOne('SELECT crest_file FROM guilds WHERE id = ?', [$guildId]);
+                        if ($oldGuild && $oldGuild['crest_file']) {
+                            $oldFile = $uploadDir . $oldGuild['crest_file'];
+                            if (file_exists($oldFile)) { unlink($oldFile); }
                         }
-                        
-                        if ($image) {
-                            // Convert to WEBP with 90% quality
-                            imagewebp($image, $outputPath, 90);
-                            imagedestroy($image);
-                        } else {
-                            // If conversion failed, don't update crest_file
+                        foreach (glob($uploadDir . 'guild_' . $guildId . '.*') as $file) {
+                            if (file_exists($file)) { unlink($file); }
+                        }
+
+                        $tmpFile   = $_FILES['crest']['tmp_name'];
+                        $crestFile = 'guild_' . $guildId . '.webp';
+                        $outputPath = $uploadDir . $crestFile;
+
+                        // Dimensionen prüfen bevor GD lädt
+                        $imgInfo = @getimagesize($tmpFile);
+                        if ($imgInfo === false) {
+                            $crestError = 'Bilddatei konnte nicht gelesen werden';
                             $crestFile = null;
+                        } elseif ($imgInfo[0] > 4096 || $imgInfo[1] > 4096) {
+                            $crestError = 'Bild zu groß (max. 4096×4096 Pixel)';
+                            $crestFile = null;
+                        } else {
+                            try {
+                                $image = null;
+                                switch ($fileExt) {
+                                    case 'jpg': case 'jpeg': $image = @imagecreatefromjpeg($tmpFile); break;
+                                    case 'png':              $image = @imagecreatefrompng($tmpFile);  break;
+                                    case 'gif':              $image = @imagecreatefromgif($tmpFile);  break;
+                                    case 'bmp':              $image = @imagecreatefrombmp($tmpFile);  break;
+                                    case 'webp':             $image = @imagecreatefromwebp($tmpFile); break;
+                                }
+                                if ($image) {
+                                    imagewebp($image, $outputPath, 90);
+                                    imagedestroy($image);
+                                } else {
+                                    $crestFile = null;
+                                }
+                            } catch (Exception $e) {
+                                logError("Image conversion failed (update guild)", ["error" => $e->getMessage()]);
+                                $crestFile = null;
+                            }
                         }
-                    } catch (Exception $e) {
-                        logError("Image conversion failed (update guild)", ["error" => $e->getMessage()]);
-                        $crestFile = null;
                     }
-                    } // end dimension check
                 }
             }
             
