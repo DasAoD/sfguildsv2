@@ -4,7 +4,6 @@
  * Encrypts and stores SF username/password for user
  */
 
-session_start();
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/sf_helpers.php';

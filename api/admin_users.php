@@ -120,9 +120,17 @@ try {
             if ($userId == $_SESSION['user_id']) {
                 jsonResponse(['success' => false, 'message' => 'Du kannst dich nicht selbst löschen'], 400);
             }
-            
+
+            // Don't allow deleting the last admin
+            $targetUser = queryOne('SELECT username, role FROM users WHERE id = ?', [$userId]);
+            if ($targetUser && $targetUser['role'] === 'admin') {
+                $adminCount = queryOne("SELECT COUNT(*) as cnt FROM users WHERE role = 'admin'");
+                if ($adminCount['cnt'] <= 1) {
+                    jsonResponse(['success' => false, 'message' => 'Der letzte Admin kann nicht gelöscht werden'], 400);
+                }
+            }
+
             // Delete user
-            $targetUser = queryOne('SELECT username FROM users WHERE id = ?', [$userId]);
             execute('DELETE FROM users WHERE id = ?', [$userId]);
             
             logActivity('Benutzer gelöscht', ['Ziel-User' => $targetUser['username'] ?? '?', 'Ziel-ID' => $userId]);

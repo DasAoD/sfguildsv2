@@ -6,6 +6,14 @@
 
 // Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
+    // Sichere Cookie-Parameter setzen bevor session_start() aufgerufen wird
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path'     => '/',
+        'secure'   => true,   // Nur über HTTPS
+        'httponly' => true,   // Kein JS-Zugriff auf Session-Cookie
+        'samesite' => 'Strict',
+    ]);
     session_start();
 }
 
@@ -145,12 +153,20 @@ function login($userId, $username) {
 function logout() {
     // Unset all session variables
     $_SESSION = array();
-    
-    // Destroy the session cookie
+
+    // Destroy the session cookie with the same parameters it was created with
     if (isset($_COOKIE[session_name()])) {
-        setcookie(session_name(), '', time() - 3600, '/');
+        $params = session_get_cookie_params();
+        setcookie(
+            session_name(), '',
+            time() - 3600,
+            $params['path'],
+            $params['domain'],
+            $params['secure'],
+            $params['httponly']
+        );
     }
-    
+
     // Destroy the session
     session_destroy();
 }

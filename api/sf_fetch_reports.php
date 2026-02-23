@@ -10,7 +10,6 @@
 set_time_limit(300);
 ini_set('max_execution_time', '300');
 
-session_start();
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/sf_helpers.php';

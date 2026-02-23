@@ -4,7 +4,6 @@
  * Imports selected reports from inbox to sf_eval_battles
  */
 
-session_start();
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/sf_helpers.php';

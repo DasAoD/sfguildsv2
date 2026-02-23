@@ -147,12 +147,12 @@ try {
             
         case 'PUT':
             // Update guild (via POST with _method=PUT)
-            $guildId = $_POST['guild_id'] ?? null;
+            $guildId = isset($_POST['guild_id']) ? (int)$_POST['guild_id'] : 0;
             $name = trim($_POST['name'] ?? '');
             $server = trim($_POST['server'] ?? '');
             $tag = trim($_POST['tag'] ?? '');
             $notes = trim($_POST['notes'] ?? '');
-            
+
             if (!$guildId || empty($name) || empty($server)) {
                 jsonResponse(['success' => false, 'message' => 'Guild ID, Name und Server erforderlich'], 400);
             }
@@ -263,9 +263,9 @@ try {
         case 'DELETE':
             // Delete guild
             $input = json_decode(file_get_contents('php://input'), true);
-            $guildId = $input['guild_id'] ?? null;
+            $guildId = isset($input['guild_id']) ? (int)$input['guild_id'] : 0;
             $force = $input['force'] ?? false; // Optional: Force delete with members
-            
+
             if (!$guildId) {
                 jsonResponse(['success' => false, 'message' => 'Guild ID erforderlich'], 400);
             }
