@@ -263,11 +263,20 @@ try {
                 execute('DELETE FROM sf_eval_battles WHERE guild_id = ?', [$guildId]);
             }
             
+            // Block delete if members exist and force is not set
+            if (!$force && $memberCount['count'] > 0) {
+                jsonResponse([
+                    'success' => false,
+                    'message' => 'Gilde hat noch ' . $memberCount['count'] . ' Mitglieder. Bitte "force" setzen um die Gilde samt Mitgliedern zu löschen.',
+                    'member_count' => $memberCount['count'],
+                ], 409);
+            }
+
             // Delete members if force is enabled
             if ($force && $memberCount['count'] > 0) {
                 execute('DELETE FROM members WHERE guild_id = ?', [$guildId]);
             }
-            
+
             // Delete guild
             execute('DELETE FROM guilds WHERE id = ?', [$guildId]);
             

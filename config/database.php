@@ -26,6 +26,7 @@ function getDB() {
             $db->exec('PRAGMA synchronous=NORMAL;');
             $db->exec('PRAGMA cache_size=-8000;'); // 8MB Cache
             $db->exec('PRAGMA foreign_keys=ON;');
+            $db->exec('PRAGMA busy_timeout=5000;'); // 5s warten bei Locks statt sofort Fehler
         } catch (PDOException $e) {
             // Logger might not be loaded yet, use both
             if (function_exists('logError')) {

@@ -38,21 +38,19 @@ try {
  * POST: Test connection and fetch all characters
  */
 /**
- * Prozess starten mit explizitem env-Array.
+ * Prozess starten mit explizitem env-Array (Array-Command, keine Shell).
  * Credentials landen so NICHT in der argv-Kommandozeile
  * und sind damit nicht über "ps aux" einsehbar.
  *
  * @param string $binary  Absoluter Pfad zum Binary
- * @param array  $args    Zusätzliche Argumente (werden escapeshellarg'd)
+ * @param array  $args    Zusätzliche Argumente
  * @param array  $env     Environment-Variablen (Key => Value)
  * @return array  Ausgabe-Zeilen des Prozesses
  * @throws Exception bei Fehler
  */
 function runWithEnv(string $binary, array $args, array $env): array {
-    $cmd = escapeshellarg($binary);
-    foreach ($args as $arg) {
-        $cmd .= ' ' . escapeshellarg($arg);
-    }
+    // Array-Command: keine Shell involviert, kein Escaping nötig
+    $procCmd = array_merge([$binary], $args);
 
     $descriptorspec = [
         0 => ['pipe', 'r'],
@@ -60,7 +58,7 @@ function runWithEnv(string $binary, array $args, array $env): array {
         2 => ['pipe', 'w'],
     ];
 
-    $process = proc_open($cmd, $descriptorspec, $pipes, null, $env);
+    $process = proc_open($procCmd, $descriptorspec, $pipes, null, $env);
 
     if (!is_resource($process)) {
         throw new Exception('Prozess konnte nicht gestartet werden');
