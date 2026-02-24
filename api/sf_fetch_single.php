@@ -90,11 +90,7 @@ try {
     // Dateien vom Heimserver per scp zurückholen
     $scpCmd = [
         'sudo', '-u', 'sfetch',
-        '/usr/bin/scp',
-        '-P', $sshPort,
-        '-i', $sshKey,
-        '-o', 'BatchMode=yes',
-        '-r',
+        '/opt/sfetch/run_scp.sh',
         $sshTarget . ':' . $remoteTempDir . '/',
         $tempDir . '/',
     ];
@@ -182,8 +178,9 @@ function importToInbox($dir, $userId, $db) {
     $count = 0;
     $storagePath = __DIR__ . '/../storage/sf_reports';
     
-    // Scan all guild subdirectories
-    foreach (glob("$dir/*/*.txt") as $file) {
+    // Scan all guild subdirectories (scp kopiert inkl. Remote-Ordnername, daher auch tiefere Ebene)
+    $files = array_merge(glob("$dir/*/*.txt") ?: [], glob("$dir/*/*/*.txt") ?: []);
+    foreach ($files as $file) {
         $content = file_get_contents($file);
         
         // Parse Rust format
