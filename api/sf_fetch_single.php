@@ -56,11 +56,7 @@ try {
 
     $procCmd = [
         'sudo', '-u', 'sfetch',
-        '/usr/bin/ssh',
-        '-p', $sshPort,
-        '-i', $sshKey,
-        '-o', 'BatchMode=yes',
-        $sshTarget,
+        '/opt/sfetch/run_fetch.sh',
         $remoteCmd,
     ];
     $procEnv = $_ENV;
@@ -119,11 +115,7 @@ try {
     // Remote temp-Verzeichnis aufräumen
     $cleanCmd = [
         'sudo', '-u', 'sfetch',
-        '/usr/bin/ssh',
-        '-p', $sshPort,
-        '-i', $sshKey,
-        '-o', 'BatchMode=yes',
-        $sshTarget,
+        '/opt/sfetch/run_fetch.sh',
         'rm -rf ' . escapeshellarg($remoteTempDir),
     ];
     $cleanProcess = proc_open($cleanCmd, [0 => ['pipe','r'], 1 => ['pipe','w'], 2 => ['pipe','w']], $cleanPipes, null, $_ENV);
