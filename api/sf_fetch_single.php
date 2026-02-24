@@ -128,6 +128,16 @@ try {
         logError('tar entpacken fehlgeschlagen', ['error' => trim($extractErr), 'char' => $character]);
         throw new Exception('Entpacken fehlgeschlagen');
     }
+    // Ownership auf www-data setzen damit rename() funktioniert
+    $chownProcess = proc_open(['sudo', '/bin/chown', '-R', 'www-data:www-data', $tempDir], [0 => ['pipe','r'], 1 => ['pipe','w'], 2 => ['pipe','w']], $chownPipes, null, $_ENV);
+    if (is_resource($chownProcess)) {
+        fclose($chownPipes[0]);
+        stream_get_contents($chownPipes[1]);
+        stream_get_contents($chownPipes[2]);
+        fclose($chownPipes[1]);
+        fclose($chownPipes[2]);
+        proc_close($chownProcess);
+    }
 
     // Remote temp-Verzeichnis aufräumen
     $cleanCmd = [
