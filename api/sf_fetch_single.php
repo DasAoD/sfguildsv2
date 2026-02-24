@@ -34,9 +34,12 @@ try {
     
     // Create temp directory for this fetch
     $tempDir = __DIR__ . '/../storage/sf_reports/temp/' . $userId . '_' . time() . '_' . sanitizeGuildName($character);
+    $oldUmask = umask(0002);
     if (!mkdir($tempDir, 0775, true)) {
+        umask($oldUmask);
         throw new Exception('Konnte temp-Verzeichnis nicht erstellen');
     }
+    umask($oldUmask);
     
     // Binary läuft auf Heimserver (Residential-IP) via SSH über WireGuard-Tunnel
     // Credentials als env-Vars im SSH-Kommando, Ergebnisse werden per scp zurückgeholt
