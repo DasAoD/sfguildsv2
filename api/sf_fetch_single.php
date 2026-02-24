@@ -90,25 +90,43 @@ try {
         throw new Exception('Fetch fehlgeschlagen');
     }
 
-    // Dateien vom Heimserver per scp zurückholen
-    $scpCmd = [
+    // Dateien vom Heimserver per SSH+tar zurückholen (vermeidet Extra-Verzeichnisebene von scp)
+    $tarCmd = 'cd ' . escapeshellarg($remoteTempDir) . ' && tar cf - .';
+    $transferCmd = [
         'sudo', '-u', 'sfetch',
-        '/opt/sfetch/run_scp.sh',
-        $sshTarget . ':' . $remoteTempDir . '/',
-        $tempDir . '/',
+        '/opt/sfetch/run_fetch.sh',
+        $tarCmd,
     ];
-    $scpProcess = proc_open($scpCmd, [0 => ['pipe','r'], 1 => ['pipe','w'], 2 => ['pipe','w']], $scpPipes, null, $_ENV);
-    if (is_resource($scpProcess)) {
-        fclose($scpPipes[0]);
-        stream_get_contents($scpPipes[1]);
-        $scpErr = stream_get_contents($scpPipes[2]);
-        fclose($scpPipes[1]);
-        fclose($scpPipes[2]);
-        $scpReturn = proc_close($scpProcess);
-        if ($scpReturn !== 0) {
-            logError('scp vom Heimserver fehlgeschlagen', ['error' => trim($scpErr), 'char' => $character]);
-            throw new Exception('Dateiübertragung fehlgeschlagen');
-        }
+    $transferProcess = proc_open($transferCmd, [0 => ['pipe','r'], 1 => ['pipe','w'], 2 => ['pipe','w']], $transferPipes, null, $_ENV);
+    if (!is_resource($transferProcess)) {
+        throw new Exception('Dateiübertragung konnte nicht gestartet werden');
+    }
+    fclose($transferPipes[0]);
+    // tar-Stream in lokales tempDir entpacken
+    $tarData = stream_get_contents($transferPipes[1]);
+    $tarErr  = stream_get_contents($transferPipes[2]);
+    fclose($transferPipes[1]);
+    fclose($transferPipes[2]);
+    $transferReturn = proc_close($transferProcess);
+    if ($transferReturn !== 0 || empty($tarData)) {
+        logError('SSH+tar vom Heimserver fehlgeschlagen', ['error' => trim($tarErr), 'char' => $character]);
+        throw new Exception('Dateiübertragung fehlgeschlagen');
+    }
+    // tar-Daten lokal entpacken
+    $extractProcess = proc_open(['tar', 'xf', '-', '-C', $tempDir], [0 => ['pipe','r'], 1 => ['pipe','w'], 2 => ['pipe','w']], $extractPipes, null, $_ENV);
+    if (!is_resource($extractProcess)) {
+        throw new Exception('Entpacken fehlgeschlagen');
+    }
+    fwrite($extractPipes[0], $tarData);
+    fclose($extractPipes[0]);
+    stream_get_contents($extractPipes[1]);
+    $extractErr = stream_get_contents($extractPipes[2]);
+    fclose($extractPipes[1]);
+    fclose($extractPipes[2]);
+    $extractReturn = proc_close($extractProcess);
+    if ($extractReturn !== 0) {
+        logError('tar entpacken fehlgeschlagen', ['error' => trim($extractErr), 'char' => $character]);
+        throw new Exception('Entpacken fehlgeschlagen');
     }
 
     // Remote temp-Verzeichnis aufräumen
@@ -181,8 +199,8 @@ function importToInbox($dir, $userId, $db) {
     $count = 0;
     $storagePath = __DIR__ . '/../storage/sf_reports';
     
-    // Scan all guild subdirectories (scp kopiert inkl. Remote-Ordnername, daher auch tiefere Ebene)
-    $files = array_merge(glob("$dir/*/*.txt") ?: [], glob("$dir/*/*/*.txt") ?: []);
+    // Scan all guild subdirectories
+    $files = glob("$dir/*/*.txt") ?: [];
     foreach ($files as $file) {
         $content = file_get_contents($file);
         
