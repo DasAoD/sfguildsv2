@@ -38,18 +38,32 @@ try {
         throw new Exception('Konnte temp-Verzeichnis nicht erstellen');
     }
     
-    // proc_open mit Array statt String: keine Shell involviert, sicherer und robuster
-    // Credentials über env-Array, nicht in argv (nicht in ps aux sichtbar)
+    // Binary läuft auf Heimserver (Residential-IP) via SSH über WireGuard-Tunnel
+    // Credentials als env-Vars im SSH-Kommando, Ergebnisse werden per scp zurückgeholt
+    $remoteTempDir = '/tmp/sfetch_' . $userId . '_' . time() . '_' . sanitizeGuildName($character);
+    $sshTarget = 'root@10.8.0.10';
+    $sshKey    = '/opt/sfetch/.ssh/id_ed25519';
+    $sshPort   = '3785';
+    $binary    = '/root/sf-api/target/release/examples/fetch_guild_reports';
+
+    $remoteCmd = 'mkdir -p ' . escapeshellarg($remoteTempDir) . ' && '
+        . 'SSO_USERNAME=' . escapeshellarg($username)
+        . ' PASSWORD=' . escapeshellarg($password)
+        . ' SERVER_HOST=' . escapeshellarg($server)
+        . ' CHARACTER=' . escapeshellarg($character)
+        . ' OUT_DIR=' . escapeshellarg($remoteTempDir)
+        . ' ' . $binary;
+
     $procCmd = [
-        '/opt/sf-api/target/release/examples/fetch_guild_reports',
+        'sudo', '-u', 'sfetch',
+        '/usr/bin/ssh',
+        '-p', $sshPort,
+        '-i', $sshKey,
+        '-o', 'BatchMode=yes',
+        $sshTarget,
+        $remoteCmd,
     ];
-    $procEnv = array_merge($_ENV, [
-        'SSO_USERNAME' => $username,
-        'PASSWORD'     => $password,
-        'SERVER_HOST'  => $server,
-        'CHARACTER'    => $character,
-        'OUT_DIR'      => $tempDir,
-    ]);
+    $procEnv = $_ENV;
 
     $descriptorspec = [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
     $process = proc_open($procCmd, $descriptorspec, $procPipes, null, $procEnv);
@@ -75,6 +89,51 @@ try {
     if ($returnCode !== 0) {
         logError('Rust-Script fehlgeschlagen', ['log' => $logFile, 'char' => $character]);
         throw new Exception('Fetch fehlgeschlagen');
+    }
+
+    // Dateien vom Heimserver per scp zurückholen
+    $scpCmd = [
+        'sudo', '-u', 'sfetch',
+        '/usr/bin/scp',
+        '-P', $sshPort,
+        '-i', $sshKey,
+        '-o', 'BatchMode=yes',
+        '-r',
+        $sshTarget . ':' . $remoteTempDir . '/',
+        $tempDir . '/',
+    ];
+    $scpProcess = proc_open($scpCmd, [0 => ['pipe','r'], 1 => ['pipe','w'], 2 => ['pipe','w']], $scpPipes, null, $_ENV);
+    if (is_resource($scpProcess)) {
+        fclose($scpPipes[0]);
+        stream_get_contents($scpPipes[1]);
+        $scpErr = stream_get_contents($scpPipes[2]);
+        fclose($scpPipes[1]);
+        fclose($scpPipes[2]);
+        $scpReturn = proc_close($scpProcess);
+        if ($scpReturn !== 0) {
+            logError('scp vom Heimserver fehlgeschlagen', ['error' => trim($scpErr), 'char' => $character]);
+            throw new Exception('Dateiübertragung fehlgeschlagen');
+        }
+    }
+
+    // Remote temp-Verzeichnis aufräumen
+    $cleanCmd = [
+        'sudo', '-u', 'sfetch',
+        '/usr/bin/ssh',
+        '-p', $sshPort,
+        '-i', $sshKey,
+        '-o', 'BatchMode=yes',
+        $sshTarget,
+        'rm -rf ' . escapeshellarg($remoteTempDir),
+    ];
+    $cleanProcess = proc_open($cleanCmd, [0 => ['pipe','r'], 1 => ['pipe','w'], 2 => ['pipe','w']], $cleanPipes, null, $_ENV);
+    if (is_resource($cleanProcess)) {
+        fclose($cleanPipes[0]);
+        stream_get_contents($cleanPipes[1]);
+        stream_get_contents($cleanPipes[2]);
+        fclose($cleanPipes[1]);
+        fclose($cleanPipes[2]);
+        proc_close($cleanProcess);
     }
     
     // Import files to inbox
