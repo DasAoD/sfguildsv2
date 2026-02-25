@@ -57,7 +57,7 @@ try {
                     mkdir($uploadDir, 0755, true);
                 }
                 // Dateigröße-Limit: 2MB (non-fatal: Gilde wird trotzdem angelegt)
-                if ($_FILES['crest']['size'] > 2,5 * 1024 * 1024) {
+                if ($_FILES['crest']['size'] > 2.5 * 1024 * 1024) {
                     $crestError = 'Wappen-Datei zu groß (max. 2,5MB)';
                 } else {
                     $fileExt = strtolower(pathinfo($_FILES['crest']['name'], PATHINFO_EXTENSION));
