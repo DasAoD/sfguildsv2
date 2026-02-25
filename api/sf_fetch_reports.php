@@ -142,7 +142,7 @@ try {
                     ]);
                     break;
                 }
-                $ready = stream_select($r = [$stream], $w = [], $e = [], 1);
+                $r = [$stream]; $w = []; $e = []; $ready = stream_select($r, $w, $e, 1);
                 if ($ready) {
                     $chunk = fread($stream, 8192);
                     if ($chunk !== false) { $output .= $chunk; }
