@@ -8,9 +8,14 @@ require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/template.php';
 
-renderHead('Hellevator - Höllen-Angriffe', ['/assets/css/hellevator.css']);
-renderNavbar('hellevator');
 ?>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <?php renderHead('Hellevator - Höllen-Angriffe', ['/assets/css/hellevator.css']); ?>
+</head>
+<body>
+    <?php renderNavbar('hellevator'); ?>
 
     <!-- Background Music -->
     <audio id="bgMusic" loop preload="auto">
@@ -237,3 +242,5 @@ renderNavbar('hellevator');
 <?php
 renderFooter();
 ?>
+</body>
+</html>
