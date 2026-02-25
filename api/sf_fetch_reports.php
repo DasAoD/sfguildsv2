@@ -21,6 +21,22 @@ requireModeratorAPI();
 $db = getDB();
 $userId = $_SESSION['user_id'];
 
+// Lock: verhindert parallele Fetches desselben Users
+$lockDir  = __DIR__ . '/../storage/locks';
+$lockFile = $lockDir . '/fetch_user_' . $userId . '.lock';
+if (!is_dir($lockDir)) {
+    mkdir($lockDir, 0775, true);
+}
+if (file_exists($lockFile) && (time() - filemtime($lockFile)) < 180) {
+    http_response_code(429);
+    echo json_encode(['error' => 'Fetch läuft bereits – bitte warten']);
+    exit;
+}
+touch($lockFile);
+register_shutdown_function(function() use ($lockFile) {
+    if (file_exists($lockFile)) { unlink($lockFile); }
+});
+
 $input = json_decode(file_get_contents('php://input'), true);
 $requestedAccountIds = $input['account_ids'] ?? [];
 $singleServer = $input['server'] ?? null;
@@ -102,24 +118,38 @@ try {
                 logError('proc_open failed for character', ['char' => $char['name']]);
                 continue;
             }
-            // Timeout: Prozess nach 60s abbrechen
-            stream_set_timeout($procPipes[1], 60);
-            stream_set_timeout($procPipes[2], 60);
-            
-            if (is_resource($process)) {
-                $processes[] = $process;
-                $pipes[] = $procPipes;
-                fclose($procPipes[0]);
-            }
+            $processes[] = $process;
+            $pipes[] = $procPipes;
+            fclose($procPipes[0]);
         }
         
-        // Wait for all processes and collect results
+        // Wait for all processes and collect results (Hard-Timeout: 90s pro Prozess)
         $accountResults = [];
+        $fetchTimeout = 90;
         
         foreach ($processes as $i => $process) {
-            $output = stream_get_contents($pipes[$i][1]);
+            $startTime = time();
+            $output = '';
+            $stream = $pipes[$i][1];
+            stream_set_blocking($stream, false);
+
+            while (!feof($stream)) {
+                if ((time() - $startTime) > $fetchTimeout) {
+                    proc_terminate($process, 9);
+                    logError('Fetch-Timeout: Prozess abgebrochen', [
+                        'char' => $charactersToFetch[$i]['name'] ?? 'Unbekannt',
+                        'timeout' => $fetchTimeout
+                    ]);
+                    break;
+                }
+                $ready = stream_select($r = [$stream], $w = [], $e = [], 1);
+                if ($ready) {
+                    $chunk = fread($stream, 8192);
+                    if ($chunk !== false) { $output .= $chunk; }
+                }
+            }
             fclose($pipes[$i][1]);
-            
+
             $errors = stream_get_contents($pipes[$i][2]);
             fclose($pipes[$i][2]);
             
