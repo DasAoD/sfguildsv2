@@ -32,11 +32,11 @@ $currentUserRole = getCurrentUserRole();
         <div id="alertContainer"></div>
 
         <div class="tabs">
-            <button class="tab active" onclick=\"switchTab('users', event)\">Benutzer</button>
-            <button class="tab" onclick=\"switchTab('guilds', event)\">Gilden</button>
-            <button class="tab" onclick=\"switchTab('logs', event)\">Logs</button>
-            <button class="tab" onclick=\"switchTab('maintenance', event)\">Wartung</button>
-            <button class="tab" onclick=\"switchTab('system', event)\">System</button>
+            <button class="tab active" onclick="switchTab('users', event)">Benutzer</button>
+            <button class="tab" onclick="switchTab('guilds', event)">Gilden</button>
+            <button class="tab" onclick="switchTab('logs', event)">Logs</button>
+            <button class="tab" onclick="switchTab('maintenance', event)">Wartung</button>
+            <button class="tab" onclick="switchTab('system', event)">System</button>
         </div>
 
         <!-- Users Tab -->
