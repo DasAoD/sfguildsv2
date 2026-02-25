@@ -78,14 +78,19 @@ try {
                             $crestError = 'Bild zu groß (max. 4096×4096 Pixel)';
                         } else {
                             try {
-                                $image = null;
-                                switch ($fileExt) {
-                                    case 'jpg': case 'jpeg': $image = @imagecreatefromjpeg($tmpFile); break;
-                                    case 'png':              $image = @imagecreatefrompng($tmpFile);  break;
-                                    case 'gif':              $image = @imagecreatefromgif($tmpFile);  break;
-                                    case 'bmp':              $image = @imagecreatefrombmp($tmpFile);  break;
-                                    case 'webp':             $image = @imagecreatefromwebp($tmpFile); break;
-                                }
+                                // finfo_file() prüft echten MIME-Typ der Datei, nicht den Client-Input
+                                $finfo    = new finfo(FILEINFO_MIME_TYPE);
+                                $mimeType = $finfo->file($tmpFile);
+                                $mimeToLoader = [
+                                    'image/jpeg' => 'imagecreatefromjpeg',
+                                    'image/png'  => 'imagecreatefrompng',
+                                    'image/gif'  => 'imagecreatefromgif',
+                                    'image/bmp'  => 'imagecreatefrombmp',
+                                    'image/x-bmp'=> 'imagecreatefrombmp',
+                                    'image/webp' => 'imagecreatefromwebp',
+                                ];
+                                $loader = $mimeToLoader[$mimeType] ?? null;
+                                $image  = $loader ? @$loader($tmpFile) : null;
                                 if ($image) {
                                     if (imagewebp($image, $outputPath, 90)) {
                                         imagedestroy($image);
@@ -97,7 +102,7 @@ try {
                                     }
                                 } else {
                                     $crestError = 'Bildformat nicht unterstützt oder Datei beschädigt';
-                                    logError("Image load failed (create guild)", ["extension" => $fileExt, "guild_id" => $guildId]);
+                                    logError("Image load failed (create guild)", ["mime" => $mimeType, "guild_id" => $guildId]);
                                 }
                             } catch (Exception $e) {
                                 logError('Bildverarbeitung fehlgeschlagen (create)', ['error' => $e->getMessage()]);
@@ -177,14 +182,19 @@ try {
                             $crestFile = null;
                         } else {
                             try {
-                                $image = null;
-                                switch ($fileExt) {
-                                    case 'jpg': case 'jpeg': $image = @imagecreatefromjpeg($tmpFile); break;
-                                    case 'png':              $image = @imagecreatefrompng($tmpFile);  break;
-                                    case 'gif':              $image = @imagecreatefromgif($tmpFile);  break;
-                                    case 'bmp':              $image = @imagecreatefrombmp($tmpFile);  break;
-                                    case 'webp':             $image = @imagecreatefromwebp($tmpFile); break;
-                                }
+                                // finfo_file() prüft echten MIME-Typ der Datei, nicht den Client-Input
+                                $finfo    = new finfo(FILEINFO_MIME_TYPE);
+                                $mimeType = $finfo->file($tmpFile);
+                                $mimeToLoader = [
+                                    'image/jpeg' => 'imagecreatefromjpeg',
+                                    'image/png'  => 'imagecreatefrompng',
+                                    'image/gif'  => 'imagecreatefromgif',
+                                    'image/bmp'  => 'imagecreatefrombmp',
+                                    'image/x-bmp'=> 'imagecreatefrombmp',
+                                    'image/webp' => 'imagecreatefromwebp',
+                                ];
+                                $loader = $mimeToLoader[$mimeType] ?? null;
+                                $image  = $loader ? @$loader($tmpFile) : null;
                                 if ($image) {
                                     if (imagewebp($image, $outputPath, 90)) {
                                         imagedestroy($image);
@@ -195,6 +205,7 @@ try {
                                     }
                                 } else {
                                     $crestFile = null;
+                                    logError("Image load failed (update guild)", ["mime" => $mimeType, "guild_id" => $guildId]);
                                 }
                             } catch (Exception $e) {
                                 logError("Image conversion failed (update guild)", ["error" => $e->getMessage()]);
