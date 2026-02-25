@@ -47,6 +47,15 @@ async function loadGuild() {
             document.getElementById('guildCrest').innerHTML = crestHtml;
             document.getElementById('guildName').textContent = d.guild.name;
             document.getElementById('guildServer').textContent = `Server: ${d.guild.server}`;
+            const notesEl = document.getElementById('guildNotes');
+            if (notesEl) {
+                if (d.guild.notes && d.guild.notes.trim()) {
+                    notesEl.textContent = d.guild.notes;
+                    notesEl.style.display = '';
+                } else {
+                    notesEl.style.display = 'none';
+                }
+            }
             renderStats(d.stats);
             currentMembers = d.members;
             renderTable(d.members, d.is_logged_in);

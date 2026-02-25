@@ -32,6 +32,7 @@ $guildId = isset($_GET['id']) ? (int)$_GET['id'] : 1;
                         <div>
                             <h1 class="guild-title" id="guildName">Lädt...</h1>
                             <div class="guild-server" id="guildServer"></div>
+                            <div class="guild-notes" id="guildNotes" style="display:none;color:var(--color-text-secondary);font-size:0.875rem;margin-top:0.25rem"></div>
                         </div>
                     </div>
                     <button onclick="openImportModal()" class="btn btn-primary" id="importBtn" style="display:none">+ Mitglieder importieren</button>

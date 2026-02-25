@@ -135,9 +135,19 @@ try {
         unset($member); // Break the reference
     }
     
+    // Guild-Daten für Public-View whitelisten – nie SELECT * ungefiltert zurückgeben
+    $guildPublic = $isLoggedIn ? $guild : [
+        'id'             => $guild['id'],
+        'name'           => $guild['name'],
+        'server'         => $guild['server'],
+        'crest_file'     => $guild['crest_file'],
+        'last_import_at' => $guild['last_import_at'] ?? null,
+        'notes'          => $guild['notes'] ?? null,
+    ];
+
     jsonResponse([
         'success' => true,
-        'guild' => $guild,
+        'guild' => $guildPublic,
         'members' => $members,
         'stats' => [
             'active_members' => $activeMembers,
