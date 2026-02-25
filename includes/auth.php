@@ -6,6 +6,10 @@
 
 // Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
+    // Session strict mode: ungültige Session-IDs werden abgelehnt statt akzeptiert
+    ini_set('session.use_strict_mode', '1');
+    // Nur Cookie-basierte Sessions erlauben (keine Session-ID in der URL)
+    ini_set('session.use_only_cookies', '1');
     // Sichere Cookie-Parameter setzen bevor session_start() aufgerufen wird
     session_set_cookie_params([
         'lifetime' => 0,
@@ -87,11 +91,17 @@ function getCurrentUserRoleFresh() {
     if (!isset($_SESSION['user_id'])) {
         return 'user';
     }
+    // Pro Request einmal aus der DB holen und danach cachen
+    static $cachedRole = null;
+    if ($cachedRole !== null) {
+        return $cachedRole;
+    }
     require_once __DIR__ . '/../config/database.php';
     $user = queryOne('SELECT role FROM users WHERE id = ?', [$_SESSION['user_id']]);
     $role = $user['role'] ?? 'user';
     // Session aktualisieren damit UI konsistent bleibt
     $_SESSION['user_role'] = $role;
+    $cachedRole = $role;
     return $role;
 }
 
@@ -204,6 +214,11 @@ function verifyUser($username, $password) {
     );
     
     if ($user && password_verify($password, $user['password_hash'])) {
+        // Hash automatisch aktualisieren wenn PHP einen neueren Algorithmus empfiehlt
+        if (password_needs_rehash($user['password_hash'], PASSWORD_DEFAULT)) {
+            $newHash = password_hash($password, PASSWORD_DEFAULT);
+            execute('UPDATE users SET password_hash = ? WHERE id = ?', [$newHash, $user['id']]);
+        }
         return $user;
     }
     

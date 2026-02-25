@@ -79,6 +79,7 @@ try {
             header('Content-Type: application/x-sqlite3');
             header('Content-Disposition: attachment; filename="' . $filename . '"');
             header('Content-Length: ' . filesize($tmpPath));
+            header('Cache-Control: no-store');
 
             readfile($tmpPath);
             @unlink($tmpPath);

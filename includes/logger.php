@@ -59,39 +59,66 @@ function readLog(string $type, int $lines = 100, string $filter = ''): array {
     if (!file_exists($file)) {
         return [];
     }
-    
-    // Read file and get last N lines
-    $allLines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    if (!$allLines) {
+
+    // fseek-basiertes Tail: liest nur das Ende der Datei statt die komplette Datei in den Speicher
+    $rawLines = [];
+    $fp = fopen($file, 'rb');
+    if (!$fp) {
         return [];
     }
-    
-    // Reverse for newest first
-    $allLines = array_reverse($allLines);
-    
+
+    fseek($fp, 0, SEEK_END);
+    $pos      = ftell($fp);
+    $buffer   = '';
+    $chunkSize = 8192;
+    // Wir lesen mehr als benötigt als Puffer für den Filter
+    $target = max($lines * 3, 200);
+
+    while ($pos > 0 && count($rawLines) < $target) {
+        $read = min($chunkSize, $pos);
+        $pos -= $read;
+        fseek($fp, $pos);
+        $chunk  = fread($fp, $read);
+        $buffer = $chunk . $buffer;
+        $parts  = explode("\n", $buffer);
+        // Letztes Element ist unvollständige Zeile – als neuen Buffer behalten
+        $buffer = array_shift($parts);
+        // Neue vollständige Zeilen vorne einfügen
+        $rawLines = array_merge($parts, $rawLines);
+    }
+    fclose($fp);
+
+    // Verbleibenden Buffer-Rest noch hinzufügen
+    if ($buffer !== '') {
+        array_unshift($rawLines, $buffer);
+    }
+
+    // Leere Zeilen entfernen und neueste zuerst
+    $rawLines = array_filter($rawLines, fn($l) => trim($l) !== '');
+    $rawLines = array_reverse(array_values($rawLines));
+
     $entries = [];
-    $count = 0;
-    
-    foreach ($allLines as $line) {
+    $count   = 0;
+
+    foreach ($rawLines as $line) {
         if ($count >= $lines) break;
-        
-        // Apply filter
+
+        // Filter anwenden
         if ($filter && stripos($line, $filter) === false) {
             continue;
         }
-        
-        // Parse log line: [2026-02-07 00:08:21] ACTION | {"context":"data"}
+
+        // Log-Zeile parsen: [2026-02-07 00:08:21] ACTION | {"context":"data"}
         if (preg_match('/^\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\] (.+?)(?:\s*\|\s*(.+))?$/', $line, $matches)) {
-            $entry = [
+            $entries[] = [
                 'timestamp' => $matches[1],
                 'message'   => $matches[2],
-                'context'   => isset($matches[3]) ? json_decode($matches[3], true) : null
+                'context'   => isset($matches[3]) ? json_decode($matches[3], true) : null,
             ];
-            $entries[] = $entry;
             $count++;
         }
     }
-    
+
     return $entries;
 }
 

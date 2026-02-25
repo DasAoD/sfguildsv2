@@ -74,8 +74,9 @@ try {
                         $imgInfo = @getimagesize($tmpFile);
                         if ($imgInfo === false) {
                             $crestError = 'Bilddatei konnte nicht gelesen werden';
-                        } elseif ($imgInfo[0] > 4096 || $imgInfo[1] > 4096) {
-                            $crestError = 'Bild zu groß (max. 4096×4096 Pixel)';
+                        } elseif ($imgInfo[0] > 4096 || $imgInfo[1] > 4096
+                               || ($imgInfo[0] * $imgInfo[1]) > 16_777_216) { // max 16 Megapixel
+                            $crestError = 'Bild zu groß (max. 4096×4096 Pixel oder 16 MP)';
                         } else {
                             try {
                                 // finfo_file() prüft echten MIME-Typ der Datei, nicht den Client-Input
@@ -167,8 +168,9 @@ try {
                         if ($imgInfo === false) {
                             $crestError = 'Bilddatei konnte nicht gelesen werden';
                             $crestFile = null;
-                        } elseif ($imgInfo[0] > 4096 || $imgInfo[1] > 4096) {
-                            $crestError = 'Bild zu groß (max. 4096×4096 Pixel)';
+                        } elseif ($imgInfo[0] > 4096 || $imgInfo[1] > 4096
+                               || ($imgInfo[0] * $imgInfo[1]) > 16_777_216) { // max 16 Megapixel
+                            $crestError = 'Bild zu groß (max. 4096×4096 Pixel oder 16 MP)';
                             $crestFile = null;
                         } else {
                             try {

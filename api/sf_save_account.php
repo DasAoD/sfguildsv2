@@ -17,7 +17,13 @@ $db = getDB();
 $userId = $_SESSION['user_id'];
 
 // Get POST data
-$input = json_decode(file_get_contents('php://input'), true);
+try {
+    $input = json_decode(file_get_contents('php://input'), true, 512, JSON_THROW_ON_ERROR);
+} catch (JsonException $e) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Ungültige JSON-Daten']);
+    exit;
+}
 $sfUsername = trim($input['sf_username'] ?? '');
 $sfPassword = $input['sf_password'] ?? '';
 

@@ -15,7 +15,11 @@ $db = getDB();
 $userId = $_SESSION['user_id'];
 
 // Get POST data
-$input = json_decode(file_get_contents('php://input'), true);
+try {
+    $input = json_decode(file_get_contents('php://input'), true, 512, JSON_THROW_ON_ERROR);
+} catch (JsonException $e) {
+    jsonResponse(['success' => false, 'message' => 'Ungültige JSON-Daten'], 400);
+}
 $reportIds = $input['report_ids'] ?? [];
 
 if (empty($reportIds) || !is_array($reportIds)) {

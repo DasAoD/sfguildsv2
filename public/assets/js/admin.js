@@ -1,8 +1,8 @@
 // Tab switching
-function switchTab(tab){
+function switchTab(tab, e){
 document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
 document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
-event.target.classList.add('active');
+(e ? e.target : document.querySelector(`[onclick*="'${tab}'"]`)).classList.add('active');
 document.getElementById('tab-'+tab).classList.add('active');
 if(tab==='system')loadSystemInfo();
 if(tab==='logs')loadLogs();
@@ -370,7 +370,7 @@ async function clearCurrentLog() {
 }
 
 // Utils
-function escapeHtml(t){if(!t)return'';const d=document.createElement('div');d.textContent=t;return d.innerHTML;}
+// escapeHtml ist in main.js definiert und wird dort für alle Seiten geladen
 function formatDate(d){if(!d)return'-';const date=new Date(d);return date.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});}
 
 // Format log timestamp from "2026-02-07 00:43:00" to "07.02.2026 00:43:00"
