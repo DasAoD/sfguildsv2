@@ -56,9 +56,9 @@ try {
                 if (!is_dir($uploadDir)) {
                     mkdir($uploadDir, 0755, true);
                 }
-                // Dateigröße-Limit: 2MB (non-fatal: Gilde wird trotzdem angelegt)
+                // Dateigröße-Limit: 2.5MB (non-fatal: Gilde wird trotzdem angelegt)
                 if ($_FILES['crest']['size'] > 2.5 * 1024 * 1024) {
-                    $crestError = 'Wappen-Datei zu groß (max. 2,5MB)';
+                    $crestError = 'Wappen-Datei zu groß (max. 2.5MB)';
                 } else {
                     $fileExt = strtolower(pathinfo($_FILES['crest']['name'], PATHINFO_EXTENSION));
                     $allowedExts = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
@@ -148,9 +148,9 @@ try {
                 if (!is_dir($uploadDir)) {
                     mkdir($uploadDir, 0755, true);
                 }
-                // Dateigröße-Limit: 2MB (non-fatal: Update wird trotzdem durchgeführt)
-                if ($_FILES['crest']['size'] > 2 * 1024 * 1024) {
-                    $crestError = 'Wappen-Datei zu groß (max. 2MB)';
+                // Dateigröße-Limit: 2.5MB (non-fatal: Update wird trotzdem durchgeführt)
+                if ($_FILES['crest']['size'] > 2.5 * 1024 * 1024) {
+                    $crestError = 'Wappen-Datei zu groß (max. 2.5MB)';
                 } else {
                     $fileExt = strtolower(pathinfo($_FILES['crest']['name'], PATHINFO_EXTENSION));
                     $allowedExts = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
