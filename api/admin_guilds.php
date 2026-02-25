@@ -158,16 +158,6 @@ try {
                     if (!in_array($fileExt, $allowedExts)) {
                         $crestError = 'Ungültiges Dateiformat (erlaubt: jpg, png, gif, bmp, webp)';
                     } else {
-                        // Altes Wappen löschen
-                        $oldGuild = queryOne('SELECT crest_file FROM guilds WHERE id = ?', [$guildId]);
-                        if ($oldGuild && $oldGuild['crest_file']) {
-                            $oldFile = $uploadDir . $oldGuild['crest_file'];
-                            if (file_exists($oldFile)) { unlink($oldFile); }
-                        }
-                        foreach (glob($uploadDir . 'guild_' . $guildId . '.*') as $file) {
-                            if (file_exists($file)) { unlink($file); }
-                        }
-
                         $tmpFile   = $_FILES['crest']['tmp_name'];
                         $crestFile = 'guild_' . $guildId . '.webp';
                         $outputPath = $uploadDir . $crestFile;
@@ -198,6 +188,17 @@ try {
                                 if ($image) {
                                     if (imagewebp($image, $outputPath, 90)) {
                                         imagedestroy($image);
+                                        // Altes Wappen erst löschen, nachdem das neue erfolgreich geschrieben wurde
+                                        $oldGuild = queryOne('SELECT crest_file FROM guilds WHERE id = ?', [$guildId]);
+                                        if ($oldGuild && $oldGuild['crest_file']) {
+                                            $oldFile = $uploadDir . $oldGuild['crest_file'];
+                                            if (file_exists($oldFile) && $oldFile !== $outputPath) {
+                                                unlink($oldFile);
+                                            }
+                                        }
+                                        foreach (glob($uploadDir . 'guild_' . $guildId . '.*') as $f) {
+                                            if ($f !== $outputPath && file_exists($f)) { unlink($f); }
+                                        }
                                     } else {
                                         imagedestroy($image);
                                         $crestFile = null;
