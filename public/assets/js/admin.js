@@ -187,7 +187,7 @@ const crestError=document.getElementById('guildCrestError');
 
 // Client-side Größencheck
 crestError.style.display='none';
-if(crestFile && crestFile.size > 2*1024*2048){
+if(crestFile && crestFile.size > 2.5*1024*1024){
     crestError.textContent='Wappen-Datei zu groß (max. 2.5MB)';
     crestError.style.display='block';
     return;
