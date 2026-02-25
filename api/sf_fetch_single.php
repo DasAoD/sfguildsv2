@@ -42,36 +42,31 @@ try {
     umask($oldUmask);
     
     // Binary läuft auf Heimserver (Residential-IP) via SSH über WireGuard-Tunnel
-    // Credentials als env-Vars im SSH-Kommando, Ergebnisse werden per scp zurückgeholt
+    // Credentials via stdin – nie im Command-String oder Prozessliste sichtbar
     $remoteTempDir = '/tmp/sfetch_' . $userId . '_' . time() . '_' . sanitizeGuildName($character);
-    $sshTarget = 'root@10.8.0.10';
-    $sshKey    = '/opt/sfetch/.ssh/id_ed25519';
-    $sshPort   = '3785';
-    $binary    = '/root/sf-api/target/release/examples/fetch_guild_reports';
-
-    $remoteCmd = 'mkdir -p ' . escapeshellarg($remoteTempDir) . ' && '
-        . 'SSO_USERNAME=' . escapeshellarg($username)
-        . ' PASSWORD=' . escapeshellarg($password)
-        . ' SERVER_HOST=' . escapeshellarg($server)
-        . ' CHARACTER=' . escapeshellarg($character)
-        . ' OUT_DIR=' . escapeshellarg($remoteTempDir)
-        . ' ' . $binary;
+    $remoteWrapper = '/root/sf-api/run_fetch_wrapper.sh';
 
     $procCmd = [
         'sudo', '-u', 'sfetch',
         '/opt/sfetch/run_fetch.sh',
-        $remoteCmd,
+        $remoteWrapper,
     ];
-    $procEnv = $_ENV;
 
     $descriptorspec = [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
-    $process = proc_open($procCmd, $descriptorspec, $procPipes, null, $procEnv);
+    $process = proc_open($procCmd, $descriptorspec, $procPipes, null, $_ENV);
 
     if (!is_resource($process)) {
         throw new Exception('Prozess konnte nicht gestartet werden');
     }
 
+    // Credentials zeilenweise via stdin übergeben – Wrapper liest sie remote
+    fwrite($procPipes[0], $username . "\n");
+    fwrite($procPipes[0], $password . "\n");
+    fwrite($procPipes[0], $server . "\n");
+    fwrite($procPipes[0], $character . "\n");
+    fwrite($procPipes[0], $remoteTempDir . "\n");
     fclose($procPipes[0]);
+
     $stdout = stream_get_contents($procPipes[1]);
     $stderr = stream_get_contents($procPipes[2]);
     fclose($procPipes[1]);
@@ -90,53 +85,54 @@ try {
         throw new Exception('Fetch fehlgeschlagen');
     }
 
-    // Dateien vom Heimserver per SSH+tar zurückholen (vermeidet Extra-Verzeichnisebene von scp)
+    // Dateien vom Heimserver holen: tar-Stream direkt pipen – kein Memory-Buffer
+    // tar läuft als www-data → Dateien bekommen automatisch www-data Ownership, kein chown nötig
+    $extractProcess = proc_open(
+        ['tar', 'xf', '-', '-C', $tempDir],
+        [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
+        $extractPipes, null, $_ENV
+    );
+    if (!is_resource($extractProcess)) {
+        throw new Exception('Entpacken konnte nicht gestartet werden');
+    }
+
+    // SSH stdout direkt in tar stdin verdrahten – kein $tarData-Buffer
     $tarCmd = 'cd ' . escapeshellarg($remoteTempDir) . ' && tar cf - .';
     $transferCmd = [
         'sudo', '-u', 'sfetch',
         '/opt/sfetch/run_fetch.sh',
         $tarCmd,
     ];
-    $transferProcess = proc_open($transferCmd, [0 => ['pipe','r'], 1 => ['pipe','w'], 2 => ['pipe','w']], $transferPipes, null, $_ENV);
+    $transferProcess = proc_open(
+        $transferCmd,
+        [0 => ['pipe', 'r'], 1 => $extractPipes[0], 2 => ['pipe', 'w']],
+        $transferPipes, null, $_ENV
+    );
     if (!is_resource($transferProcess)) {
+        fclose($extractPipes[0]);
         throw new Exception('Dateiübertragung konnte nicht gestartet werden');
     }
-    fclose($transferPipes[0]);
-    // tar-Stream in lokales tempDir entpacken
-    $tarData = stream_get_contents($transferPipes[1]);
-    $tarErr  = stream_get_contents($transferPipes[2]);
-    fclose($transferPipes[1]);
+
+    fclose($transferPipes[0]); // kein stdin für SSH+tar nötig
+    $transferErr = stream_get_contents($transferPipes[2]);
     fclose($transferPipes[2]);
     $transferReturn = proc_close($transferProcess);
-    if ($transferReturn !== 0 || empty($tarData)) {
-        logError('SSH+tar vom Heimserver fehlgeschlagen', ['error' => trim($tarErr), 'char' => $character]);
-        throw new Exception('Dateiübertragung fehlgeschlagen');
-    }
-    // tar-Daten lokal entpacken
-    $extractProcess = proc_open(['tar', 'xf', '-', '-C', $tempDir], [0 => ['pipe','r'], 1 => ['pipe','w'], 2 => ['pipe','w']], $extractPipes, null, $_ENV);
-    if (!is_resource($extractProcess)) {
-        throw new Exception('Entpacken fehlgeschlagen');
-    }
-    fwrite($extractPipes[0], $tarData);
+
+    // tar stdin schließen (EOF) und auf Abschluss warten
     fclose($extractPipes[0]);
     stream_get_contents($extractPipes[1]);
     $extractErr = stream_get_contents($extractPipes[2]);
     fclose($extractPipes[1]);
     fclose($extractPipes[2]);
     $extractReturn = proc_close($extractProcess);
+
+    if ($transferReturn !== 0) {
+        logError('SSH+tar vom Heimserver fehlgeschlagen', ['error' => trim($transferErr), 'char' => $character]);
+        throw new Exception('Dateiübertragung fehlgeschlagen');
+    }
     if ($extractReturn !== 0) {
         logError('tar entpacken fehlgeschlagen', ['error' => trim($extractErr), 'char' => $character]);
         throw new Exception('Entpacken fehlgeschlagen');
-    }
-    // Ownership auf www-data setzen damit rename() funktioniert
-    $chownProcess = proc_open(['sudo', '/bin/chown', '-R', 'www-data:www-data', $tempDir], [0 => ['pipe','r'], 1 => ['pipe','w'], 2 => ['pipe','w']], $chownPipes, null, $_ENV);
-    if (is_resource($chownProcess)) {
-        fclose($chownPipes[0]);
-        stream_get_contents($chownPipes[1]);
-        stream_get_contents($chownPipes[2]);
-        fclose($chownPipes[1]);
-        fclose($chownPipes[2]);
-        proc_close($chownProcess);
     }
 
     // Remote temp-Verzeichnis aufräumen
