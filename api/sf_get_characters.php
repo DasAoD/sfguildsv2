@@ -65,11 +65,54 @@ function runWithEnv(string $binary, array $args, array $env): array {
     }
 
     fclose($pipes[0]);
-    // Timeout: Prozess nach 30s abbrechen
-    stream_set_timeout($pipes[1], 30);
-    stream_set_timeout($pipes[2], 30);
-    $stdout = stream_get_contents($pipes[1]);
-    $stderr = stream_get_contents($pipes[2]);
+
+    // Hard-Timeout: Prozess nach 30s per SIGKILL abbrechen
+    stream_set_blocking($pipes[1], false);
+    stream_set_blocking($pipes[2], false);
+
+    $stdout = '';
+    $stderr = '';
+    $deadline = microtime(true) + 30;
+
+    while (true) {
+        $remaining = $deadline - microtime(true);
+        if ($remaining <= 0) {
+            proc_terminate($process, 9); // SIGKILL
+            fclose($pipes[1]);
+            fclose($pipes[2]);
+            proc_close($process);
+            throw new Exception('Timeout: Zeichenabruf hat 30 Sekunden überschritten');
+        }
+
+        $read = [$pipes[1], $pipes[2]];
+        $write = null;
+        $except = null;
+        $sec  = (int) $remaining;
+        $usec = (int)(($remaining - $sec) * 1_000_000);
+
+        $ready = stream_select($read, $write, $except, $sec, $usec);
+
+        if ($ready === false) {
+            break; // Fehler in stream_select
+        }
+
+        foreach ($read as $stream) {
+            $chunk = fread($stream, 8192);
+            if ($chunk !== false) {
+                if ($stream === $pipes[1]) {
+                    $stdout .= $chunk;
+                } else {
+                    $stderr .= $chunk;
+                }
+            }
+        }
+
+        // Beide Pipes geschlossen = Prozess fertig
+        if (feof($pipes[1]) && feof($pipes[2])) {
+            break;
+        }
+    }
+
     fclose($pipes[1]);
     fclose($pipes[2]);
     $returnCode = proc_close($process);
