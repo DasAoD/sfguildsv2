@@ -66,7 +66,7 @@ try {
                 CASE WHEN cnt > 50 THEN 50 WHEN cnt < 0 THEN 0 ELSE cnt END AS completed_raids
          FROM (
              SELECT guild_id,
-                    COUNT(DISTINCT CAST(opponent_guild AS INTEGER)) - 1 AS cnt
+                    COUNT(DISTINCT opponent_guild) - 1 AS cnt
              FROM sf_eval_battles
              WHERE battle_type = 'raid'
              GROUP BY guild_id

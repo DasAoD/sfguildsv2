@@ -130,7 +130,7 @@ try {
     $raidRow = queryOne(
         "SELECT CASE WHEN cnt > 50 THEN 50 WHEN cnt < 0 THEN 0 ELSE cnt END AS completed_raids
          FROM (
-             SELECT COUNT(DISTINCT CAST(opponent_guild AS INTEGER)) - 1 AS cnt
+             SELECT COUNT(DISTINCT opponent_guild) - 1 AS cnt
              FROM sf_eval_battles
              WHERE guild_id = ? AND battle_type = 'raid'
          )",
