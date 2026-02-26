@@ -135,9 +135,21 @@ function getLogInfo(string $type): array {
         return ['exists' => false, 'size' => 0, 'lines' => 0, 'modified' => null];
     }
     
-    $size = filesize($file);
-    $lines = count(file($file, FILE_SKIP_EMPTY_LINES));
+    $size     = filesize($file);
     $modified = date('Y-m-d H:i:s', filemtime($file));
+
+    // Zeilenzähler per Streaming (konstanter RAM-Verbrauch statt file() ins RAM laden)
+    $lines = 0;
+    $fh = fopen($file, 'rb');
+    if ($fh) {
+        while (!feof($fh)) {
+            $chunk = fread($fh, 65536);
+            if ($chunk !== false && $chunk !== '') {
+                $lines += substr_count($chunk, "\n");
+            }
+        }
+        fclose($fh);
+    }
     
     return [
         'exists'   => true,
