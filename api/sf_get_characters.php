@@ -14,6 +14,8 @@
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/encryption.php';
+require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/logger.php';
 
 header('Content-Type: application/json');
 
@@ -152,15 +154,39 @@ function handlePost($db, $userId) {
         return;
     }
     
-    // Run Rust list_chars script
-    // Credentials als env-Array übergeben (nicht in argv – sonst in ps aux sichtbar)
-    $env = array_merge($_ENV, [
-        'SSO_USERNAME' => $username,
-        'PASSWORD'     => $password,
-    ]);
-    $output = runWithEnv('/opt/sf-api/target/release/examples/list_chars', [], $env);
-    
-    $characters = parseCharacterList($output);
+    // list_chars läuft auf Heimserver (Residential-IP) via SSH über WireGuard-Tunnel
+    $sshCmd = ['sudo', '-u', 'sfetch',
+        '/opt/sfetch/run_fetch.sh', '/root/sf-api/run_list_chars_wrapper.sh'];
+    $descriptorspec = [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
+    $process = proc_open($sshCmd, $descriptorspec, $procPipes, null, $_ENV);
+
+    if (!is_resource($process)) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Prozess konnte nicht gestartet werden']);
+        return;
+    }
+
+    fwrite($procPipes[0], $username . "
+");
+    fwrite($procPipes[0], $password . "
+");
+    fclose($procPipes[0]);
+
+    $output = stream_get_contents($procPipes[1]);
+    $stderr = stream_get_contents($procPipes[2]);
+    fclose($procPipes[1]);
+    fclose($procPipes[2]);
+    proc_close($process);
+
+    if (empty($output) || str_contains($output, 'Login failed')) {
+        logError('list_chars failed', ['stderr' => $stderr]);
+        http_response_code(500);
+        echo json_encode(['error' => 'Keine Charaktere gefunden oder Login fehlgeschlagen']);
+        return;
+    }
+
+    $characters = parseCharacterList(explode("
+", $output));
     
     // Enrich with guild names from database
     enrichWithGuildNames($characters, $db, $userId);
@@ -208,6 +234,7 @@ function handleGet($db, $userId) {
     // list_chars läuft auf Heimserver (Residential-IP) via SSH über WireGuard-Tunnel
     // Credentials via stdin – nie im Command-String oder Prozessliste sichtbar
     $sshCmd = [
+        'sudo', '-u', 'sfetch',
         '/opt/sfetch/run_fetch.sh',
         '/root/sf-api/run_list_chars_wrapper.sh',
     ];
