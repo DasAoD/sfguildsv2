@@ -189,17 +189,11 @@ function handleGet($db, $userId) {
             return;
         }
     } else {
-        // Fallback: Try legacy users table, then default account
+        // Kein account_id angegeben → Standard-Account laden
         $stmt = $db->prepare("SELECT sf_username, sf_password_encrypted, sf_iv, sf_hmac, selected_characters FROM sf_accounts WHERE user_id = ? AND is_default = 1");
         $stmt->execute([$userId]);
         $account = $stmt->fetch(PDO::FETCH_ASSOC);
         
-        if (!$account) {
-            // Legacy fallback
-            $stmt = $db->prepare("SELECT sf_username, sf_password_encrypted, sf_iv, sf_hmac, selected_characters FROM users WHERE id = ?");
-            $stmt->execute([$userId]);
-            $account = $stmt->fetch(PDO::FETCH_ASSOC);
-        }
         
         if (!$account || !$account['sf_username'] || !$account['sf_password_encrypted']) {
             http_response_code(400);

@@ -46,7 +46,7 @@ try {
     // Get accounts to fetch from
     if ($singleServer && $singleCharacter) {
         // Legacy single-character mode - find the account
-        $accounts = getLegacyAccount($db, $userId);
+        $accounts = getDefaultAccounts($db, $userId);
     } elseif (!empty($requestedAccountIds)) {
         // Specific accounts requested
         $placeholders = implode(',', array_fill(0, count($requestedAccountIds), '?'));
@@ -198,35 +198,17 @@ try {
 /**
  * Get legacy account from users table (backward compatibility)
  */
-function getLegacyAccount($db, $userId) {
-    // Try sf_accounts first
+function getDefaultAccounts($db, $userId) {
     $stmt = $db->prepare("
         SELECT id, account_name, sf_username, sf_password_encrypted, sf_iv, sf_hmac, selected_characters
         FROM sf_accounts WHERE user_id = ? AND is_default = 1
     ");
     $stmt->execute([$userId]);
     $account = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    if ($account) {
-        return [$account];
-    }
-    
-    // Fallback to users table
-    $stmt = $db->prepare("SELECT sf_username, sf_password_encrypted, sf_iv, sf_hmac, selected_characters FROM users WHERE id = ?");
-    $stmt->execute([$userId]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    if (!$user || !$user['sf_password_encrypted']) {
+
+    if (!$account || !$account['sf_password_encrypted']) {
         throw new Exception('Keine S&F Credentials gefunden');
     }
-    
-    return [[
-        'id' => 0,
-        'account_name' => 'Legacy',
-        'sf_username' => $user['sf_username'],
-        'sf_password_encrypted' => $user['sf_password_encrypted'],
-        'sf_iv' => $user['sf_iv'],
-            'sf_hmac' => $user['sf_hmac'] ?? null,
-        'selected_characters' => $user['selected_characters']
-    ]];
+
+    return [$account];
 }
