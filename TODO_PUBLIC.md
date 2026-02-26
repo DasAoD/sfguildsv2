@@ -51,7 +51,7 @@
 
 ### **Encryption & Validation (Phase 4)**
 - [x] HMAC-Integritätsprüfung für Zugangsdaten
-- [x] Upload-Größenlimit (2MB) mit Modal-Fehlermeldung
+- [x] Upload-Größenlimit (2,5MB) mit Modal-Fehlermeldung
 
 ### **Security & Cleanup (14. Audit)**
 - [x] `sf_fetch_reports.php`: proc_open String-Command durch Array-Command ersetzt (PHP_BINARY)

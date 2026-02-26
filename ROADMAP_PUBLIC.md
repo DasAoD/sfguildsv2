@@ -58,7 +58,7 @@
 ### Umgesetzte Features:
 - ✅ HMAC-Integritätsprüfung für verschlüsselte SF-Zugangsdaten
 - ✅ Abwärtskompatible Migration (bestehende Einträge bleiben gültig)
-- ✅ Upload-Validierung: 2MB Dateigrößen-Limit für Gildenwappen
+- ✅ Upload-Validierung: 2,5MB Dateigrößen-Limit für Gildenwappen
 - ✅ Client-seitige Validierung mit Fehlermeldung direkt im Modal
 
 ---
