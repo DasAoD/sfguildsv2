@@ -23,7 +23,7 @@ $db = getDB();
 $userId = $_SESSION['user_id'];
 
 try {
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
         handlePost($db, $userId);
     } else {
         handleGet($db, $userId);
@@ -204,15 +204,41 @@ function handleGet($db, $userId) {
     
     // Decrypt and fetch characters from S&F
     $sfPassword = decryptData($account['sf_password_encrypted'], $account['sf_iv'], $account['sf_hmac'] ?? null);
+
+    // list_chars läuft auf Heimserver (Residential-IP) via SSH über WireGuard-Tunnel
+    // Credentials via stdin – nie im Command-String oder Prozessliste sichtbar
+    $sshCmd = [
+        '/opt/sfetch/run_fetch.sh',
+        '/root/sf-api/run_list_chars_wrapper.sh',
+    ];
+
+    $descriptorspec = [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
+    $process = proc_open($sshCmd, $descriptorspec, $procPipes, null, $_ENV);
+
+    if (!is_resource($process)) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Prozess konnte nicht gestartet werden']);
+        return;
+    }
+
+    fwrite($procPipes[0], $account['sf_username'] . "\n");
+    fwrite($procPipes[0], $sfPassword . "\n");
+    fclose($procPipes[0]);
+
+    $output = stream_get_contents($procPipes[1]);
+    $stderr = stream_get_contents($procPipes[2]);
+    fclose($procPipes[1]);
+    fclose($procPipes[2]);
+    proc_close($process);
+
+    if (empty($output) || str_contains($output, 'Login failed')) {
+        logError('list_chars failed', ['stderr' => $stderr]);
+        http_response_code(500);
+        echo json_encode(['error' => 'Keine Charaktere gefunden oder Login fehlgeschlagen']);
+        return;
+    }
     
-    // Credentials als env-Array übergeben (nicht in argv – sonst in ps aux sichtbar)
-    $env = array_merge($_ENV, [
-        'SSO_USERNAME' => $account['sf_username'],
-        'PASSWORD'     => $sfPassword,
-    ]);
-    $output = runWithEnv('/opt/sf-api/target/release/examples/list_chars', [], $env);
-    
-    $characters = parseCharacterList($output);
+    $characters = parseCharacterList(explode("\n", $output));
     enrichWithGuildNames($characters, $db, $userId);
     
     echo json_encode([
