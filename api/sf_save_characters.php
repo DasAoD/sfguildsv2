@@ -45,19 +45,25 @@ try {
     $json = json_encode($selectedCharacters);
     
     if ($accountId) {
-        // Save to sf_accounts table
+        // Spezifischen Account speichern
         $stmt = $db->prepare("UPDATE sf_accounts SET selected_characters = ?, updated_at = datetime('now') WHERE id = ? AND user_id = ?");
         $stmt->execute([$json, $accountId, $userId]);
-        
+
         if ($stmt->rowCount() === 0) {
             http_response_code(404);
             echo json_encode(['error' => 'Account nicht gefunden']);
             exit;
         }
     } else {
-        // Legacy: Save to users table (backward compatibility)
-        $stmt = $db->prepare("UPDATE users SET selected_characters = ? WHERE id = ?");
+        // Kein account_id → Standard-Account verwenden
+        $stmt = $db->prepare("UPDATE sf_accounts SET selected_characters = ?, updated_at = datetime('now') WHERE user_id = ? AND is_default = 1");
         $stmt->execute([$json, $userId]);
+
+        if ($stmt->rowCount() === 0) {
+            http_response_code(404);
+            echo json_encode(['error' => 'Kein Standard-Account gefunden']);
+            exit;
+        }
     }
     
     echo json_encode([
