@@ -8,6 +8,7 @@ require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/logger.php';
+require_once __DIR__ . '/../includes/raid_names.php';
 
 // Get guild ID
 $guildId = get('guild_id');
@@ -126,22 +127,31 @@ try {
     }
 
     // Abgeschlossene Raids für Prozent-Berechnung
+    // Höchsten bekannten Raid-Namen holen → in ID umwandeln → max_id - 1 = abgeschlossene Raids
     $completedRaids = 0;
-    $raidRow = queryOne(
-        "SELECT CASE WHEN cnt > 50 THEN 50 WHEN cnt < 0 THEN 0 ELSE cnt END AS completed_raids
-         FROM (
-             SELECT COUNT(DISTINCT opponent_guild) - 1 AS cnt
-             FROM sf_eval_battles
-             WHERE guild_id = ? AND battle_type = 'raid'
-         )",
+    $raidRows = query(
+        "SELECT DISTINCT opponent_guild
+         FROM sf_eval_battles
+         WHERE guild_id = ? AND battle_type = 'raid'",
         [$guildId]
     );
-    if ($raidRow) {
-        $completedRaids = (int)$raidRow['completed_raids'];
+    if ($raidRows) {
+        $maxId = 0;
+        foreach ($raidRows as $row) {
+            $id = resolveRaidId($row['opponent_guild']);
+            if ($id > $maxId) $maxId = $id;
+        }
+        $completedRaids = min(50, max(0, $maxId - 1));
     }
 
-    $goldschatzPct  = min(200, round(min(100, ($goldschatzTotal  / 1000) * 100) + ($completedRaids * 2), 1));
-    $lehrmeisterPct = min(200, round(min(100, ($lehrmeisterTotal / 1000) * 100) + ($completedRaids * 2), 1));
+    // Korrekte Formel laut Helpshift:
+    // Gruppenskill = Mitglieder-Skills + min(50, abgeschl. Raids) × 10, gedeckelt auf 1000
+    // Bonus% = Gruppenskill ÷ 5
+    $raidPoints     = min(50, $completedRaids) * 10;
+    $gsGruppenskill = min(1000, $goldschatzTotal  + $raidPoints);
+    $lmGruppenskill = min(1000, $lehrmeisterTotal + $raidPoints);
+    $goldschatzPct  = round($gsGruppenskill / 5, 1);
+    $lehrmeisterPct = round($lmGruppenskill / 5, 1);
     
     // Now remove sensitive data for public view
     if (!$isLoggedIn) {
@@ -175,8 +185,8 @@ try {
             'active_members'   => $activeMembers,
             'avg_level'        => $avgLevel,
             'knight_hall_total' => $knightHallTotal,
-            'goldschatz_total'  => $goldschatzTotal,
-            'lehrmeister_total' => $lehrmeisterTotal,
+            'goldschatz_total'  => $gsGruppenskill,
+            'lehrmeister_total' => $lmGruppenskill,
             'goldschatz_pct'    => $goldschatzPct,
             'lehrmeister_pct'   => $lehrmeisterPct,
         ],

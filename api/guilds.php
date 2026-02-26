@@ -8,6 +8,7 @@ require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/logger.php';
+require_once __DIR__ . '/../includes/raid_names.php';
 
 // Guilds API is publicly accessible (no login required)
 
@@ -57,22 +58,30 @@ try {
     );
     $participationMap = array_column($participationStats, null, 'guild_id');
 
-    // --- Batch Query 4: Abgeschlossene Raids pro Gilde ---
-    // DISTINCT opponent_guild zählt jeden Raid nur einmal (mehrere Mitglieder = mehrere Berichte).
-    // -1 schließt den aktuell laufenden/letzten Raid aus – nur sicher abgeschlossene zählen.
-    // Maximum 50, da ab Raid 50 der volle Bonus (100%) erreicht ist.
-    $raidStats = query(
-        "SELECT guild_id,
-                CASE WHEN cnt > 50 THEN 50 WHEN cnt < 0 THEN 0 ELSE cnt END AS completed_raids
-         FROM (
-             SELECT guild_id,
-                    COUNT(DISTINCT opponent_guild) - 1 AS cnt
-             FROM sf_eval_battles
-             WHERE battle_type = 'raid'
-             GROUP BY guild_id
-         )"
+    // --- Batch Query 4: Raid-Namen pro Gilde für Max-ID-Berechnung ---
+    // Holt alle verschiedenen Raid-Namen pro Gilde.
+    // In PHP wird der höchste Name in eine Raid-ID aufgelöst → max_id - 1 = abgeschlossene Raids.
+    $raidNames = query(
+        "SELECT guild_id, opponent_guild
+         FROM sf_eval_battles
+         WHERE battle_type = 'raid'
+         GROUP BY guild_id, opponent_guild"
     );
-    $raidStatsMap = array_column($raidStats, null, 'guild_id');
+    // Gruppieren nach guild_id
+    $raidNamesMap = [];
+    foreach ($raidNames as $row) {
+        $raidNamesMap[$row['guild_id']][] = $row['opponent_guild'];
+    }
+    // Pro Gilde: höchste Raid-ID bestimmen → abgeschlossene = max_id - 1, cap 50
+    $completedRaidsMap = [];
+    foreach ($raidNamesMap as $gid => $names) {
+        $maxId = 0;
+        foreach ($names as $name) {
+            $id = resolveRaidId($name);
+            if ($id > $maxId) $maxId = $id;
+        }
+        $completedRaidsMap[$gid] = min(50, max(0, $maxId - 1));
+    }
 
     // --- Assemble ---
     foreach ($guilds as &$guild) {
@@ -81,7 +90,7 @@ try {
         $members  = $memberStatsMap[$id]  ?? [];
         $battles  = $battleStatsMap[$id]  ?? [];
         $partRow  = $participationMap[$id] ?? [];
-        $raids    = $raidStatsMap[$id]    ?? [];
+        $raids    = $completedRaidsMap[$id] ?? 0;
 
         $activeMembersCount  = (int)($members['active_members']  ?? 0);
         $totalBattlesCount   = (int)($battles['total_battles']   ?? 0);
@@ -89,7 +98,7 @@ try {
         $possible            = (int)($partRow['possible']        ?? 0);
         $goldschatzTotal     = (int)($members['goldschatz_total']  ?? 0);
         $lehrmeisterTotal    = (int)($members['lehrmeister_total'] ?? 0);
-        $completedRaids      = (int)($raids['completed_raids']   ?? 0);
+        $completedRaids      = (int)$raids;
 
         if ($possible > 0) {
             $participationQuote = min(100, round(($participated / $possible) * 100));
@@ -97,15 +106,20 @@ try {
             $participationQuote = 0;
         }
 
-        // Prozent-Bonus: Skills (max 100%) + Raids (je 2%, max 100%) = max 200%
-        $goldschatzPct  = min(200, round(min(100, ($goldschatzTotal  / 1000) * 100) + ($completedRaids * 2), 1));
-        $lehrmeisterPct = min(200, round(min(100, ($lehrmeisterTotal / 1000) * 100) + ($completedRaids * 2), 1));
+        // Korrekte Formel laut Helpshift:
+        // Gruppenskill = Mitglieder-Skills + min(50, abgeschl. Raids) × 10, gedeckelt auf 1000
+        // Bonus% = Gruppenskill ÷ 5
+        $raidPoints      = min(50, $completedRaids) * 10;
+        $gsGruppenskill  = min(1000, $goldschatzTotal  + $raidPoints);
+        $lmGruppenskill  = min(1000, $lehrmeisterTotal + $raidPoints);
+        $goldschatzPct   = round($gsGruppenskill  / 5, 1);
+        $lehrmeisterPct  = round($lmGruppenskill  / 5, 1);
 
         $guild['active_members']     = $activeMembersCount;
         $guild['avg_level']          = (int)($members['avg_level']       ?? 0);
         $guild['knight_hall_total']  = (int)($members['knight_hall_total'] ?? 0);
-        $guild['goldschatz_total']   = $goldschatzTotal;
-        $guild['lehrmeister_total']  = $lehrmeisterTotal;
+        $guild['goldschatz_total']   = $gsGruppenskill;
+        $guild['lehrmeister_total']  = $lmGruppenskill;
         $guild['goldschatz_pct']     = $goldschatzPct;
         $guild['lehrmeister_pct']    = $lehrmeisterPct;
         $guild['last_update']        = $members['last_update']            ?? null;

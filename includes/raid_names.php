@@ -84,8 +84,56 @@ function toRoman(int $num): string {
 }
 
 /**
+ * Raid-Name zurück in eine Raid-ID auflösen (Umkehrfunktion zu resolveRaidName)
+ *
+ * @param string $name  z.B. "Im Dunkel der Nacht (II)" oder "Das Planschbecken"
+ * @return int          Raid-ID (1-basiert), oder 0 wenn nicht erkannt
+ */
+function resolveRaidId(string $name): int {
+    // Zyklus aus optionalem Suffix "(II)", "(III)", ... extrahieren
+    $cycle = 1;
+    if (preg_match('/^(.+?)\s*\(([IVXLCDM]+)\)\s*$/u', $name, $m)) {
+        $baseName = trim($m[1]);
+        $cycle    = fromRoman($m[2]);
+    } else {
+        $baseName = trim($name);
+    }
+
+    // Etagen-Nummer per Reverse-Lookup suchen
+    $stage = array_search($baseName, RAID_NAMES, true);
+    if ($stage === false) {
+        return 0; // Unbekannter Name
+    }
+
+    return ($cycle - 1) * 50 + (int)$stage;
+}
+
+/**
+ * Römische Zahl in Integer umwandeln
+ */
+function fromRoman(string $roman): int {
+    $map = ['M'=>1000,'CM'=>900,'D'=>500,'CD'=>400,'C'=>100,'XC'=>90,
+            'L'=>50,'XL'=>40,'X'=>10,'IX'=>9,'V'=>5,'IV'=>4,'I'=>1];
+    $result = 0;
+    $i = 0;
+    $roman = strtoupper($roman);
+    while ($i < strlen($roman)) {
+        // Zweizeichentoken zuerst prüfen
+        if ($i + 1 < strlen($roman) && isset($map[substr($roman, $i, 2)])) {
+            $result += $map[substr($roman, $i, 2)];
+            $i += 2;
+        } elseif (isset($map[$roman[$i]])) {
+            $result += $map[$roman[$i]];
+            $i++;
+        } else {
+            break;
+        }
+    }
+    return $result ?: 1;
+}
+
+/**
  * Raid-ID aus der API in einen lesbaren Namen auflösen
- * 
  * @param string|int $raidId  Die Gegner-ID aus dem Kampfbericht
  * @return string             z.B. "Fest der Fressfeinde (II)"
  */
