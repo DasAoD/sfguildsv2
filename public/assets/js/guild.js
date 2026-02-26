@@ -70,10 +70,24 @@ async function loadGuild() {
 
 function renderStats(s) {
     const grid = document.getElementById('statsGrid');
+    const gsTotal  = (s.goldschatz_total  || 0).toLocaleString('de-DE');
+    const lmTotal  = (s.lehrmeister_total || 0).toLocaleString('de-DE');
+    const gsPct    = s.goldschatz_pct  ?? null;
+    const lmPct    = s.lehrmeister_pct ?? null;
     grid.innerHTML = `
         <div class="stat-card"><div class="stat-label">Aktive Mitglieder</div><div class="stat-value">${s.active_members}</div></div>
         <div class="stat-card"><div class="stat-label">Level Ø</div><div class="stat-value">${s.avg_level}</div></div>
         <div class="stat-card"><div class="stat-label">Ritterhallenpunkte</div><div class="stat-value">${s.knight_hall_total.toLocaleString('de-DE')}</div></div>
+        <div class="stat-card">
+            <div class="stat-label">Goldschatz</div>
+            <div class="stat-value">${gsTotal} <span class="stat-max">/ 1000</span></div>
+            ${gsPct !== null ? `<div class="stat-bonus">${gsPct}% Bonus</div>` : ''}
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Lehrmeister</div>
+            <div class="stat-value">${lmTotal} <span class="stat-max">/ 1000</span></div>
+            ${lmPct !== null ? `<div class="stat-bonus">${lmPct}% Bonus</div>` : ''}
+        </div>
     `;
 }
 

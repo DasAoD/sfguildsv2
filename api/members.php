@@ -107,19 +107,41 @@ try {
     $avgLevel = 0;
     $totalLevel = 0;
     $knightHallTotal = 0;
+    $goldschatzTotal = 0;
+    $lehrmeisterTotal = 0;
     
     foreach ($members as $member) {
         // Only count active members (not fired, not left)
         if ((!$member['fired_at'] || $member['fired_at'] === '') && (!$member['left_at'] || $member['left_at'] === '')) {
             $activeMembers++;
             $totalLevel += $member['level'];
-            $knightHallTotal += $member['knight_hall'] ?? 0;
+            $knightHallTotal  += $member['knight_hall'] ?? 0;
+            $goldschatzTotal  += $member['gold']   ?? 0;
+            $lehrmeisterTotal += $member['mentor'] ?? 0;
         }
     }
     
     if ($activeMembers > 0) {
         $avgLevel = round($totalLevel / $activeMembers);
     }
+
+    // Abgeschlossene Raids für Prozent-Berechnung
+    $completedRaids = 0;
+    $raidRow = queryOne(
+        "SELECT CASE WHEN cnt > 50 THEN 50 WHEN cnt < 0 THEN 0 ELSE cnt END AS completed_raids
+         FROM (
+             SELECT COUNT(DISTINCT CAST(opponent_guild AS INTEGER)) - 1 AS cnt
+             FROM sf_eval_battles
+             WHERE guild_id = ? AND battle_type = 'raid'
+         )",
+        [$guildId]
+    );
+    if ($raidRow) {
+        $completedRaids = (int)$raidRow['completed_raids'];
+    }
+
+    $goldschatzPct  = min(200, round(min(100, ($goldschatzTotal  / 1000) * 100) + ($completedRaids * 2), 1));
+    $lehrmeisterPct = min(200, round(min(100, ($lehrmeisterTotal / 1000) * 100) + ($completedRaids * 2), 1));
     
     // Now remove sensitive data for public view
     if (!$isLoggedIn) {
@@ -150,9 +172,13 @@ try {
         'guild' => $guildPublic,
         'members' => $members,
         'stats' => [
-            'active_members' => $activeMembers,
-            'avg_level' => $avgLevel,
-            'knight_hall_total' => $knightHallTotal
+            'active_members'   => $activeMembers,
+            'avg_level'        => $avgLevel,
+            'knight_hall_total' => $knightHallTotal,
+            'goldschatz_total'  => $goldschatzTotal,
+            'lehrmeister_total' => $lehrmeisterTotal,
+            'goldschatz_pct'    => $goldschatzPct,
+            'lehrmeister_pct'   => $lehrmeisterPct,
         ],
         'is_logged_in' => $isLoggedIn
     ]);
