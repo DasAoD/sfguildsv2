@@ -65,22 +65,44 @@ Sobald die Felder/Layouts feststehen, folgt eine eigene Doku.
 
 ---
 
+## Bootstrap / Wie die App startet
+
+Es gibt **kein zentrales Bootstrap-File** und kein `auto_prepend_file`.  
+Jeder API-Endpunkt in `api/` lädt seine Abhängigkeiten explizit per `require_once`:
+
+| Include | Zweck |
+|---|---|
+| `config/database.php` | PDO-Verbindung, `getDB()` |
+| `includes/auth.php` | Session, `checkAuth()`, `requireAdminAPI()` etc. |
+| `includes/functions.php` | Shared Helpers (`jsonResponse()`, etc.) |
+| `includes/logger.php` | `logError()`, `logActivity()` |
+| `includes/encryption.php` | AES-256-CBC + HMAC |
+| `includes/sf_helpers.php` | Rust-Output-Parser, Battle-Report-Parser |
+
+**Reihenfolge:** `database.php` → `auth.php` → weitere Includes → eigene Logik.  
+Neue Endpunkte sollten diesem Muster folgen.
+
+---
+
 ## Optional: sf-api (Rust) Integration (Fetch/Characters)
 
-Einige Endpunkte nutzen externe Rust-Tools aus dem Projekt **sf-api** (liegt aktuell außerhalb dieses Repos).
-Die PHP-API ruft dazu vorkompilierte Binaries auf und parst deren Ausgabe.
+Einige Endpunkte nutzen externe Rust-Tools aus dem Projekt **sf-api**.  
+Da der VPS von Playa Games geblockt wird, laufen die Binaries auf einem **Heimserver mit Residential-IP**  
+und werden via SSH über einen WireGuard-Tunnel aufgerufen.
 
-**Verwendete Binaries (aktuell hardcoded):**
-- `/opt/sf-api/target/release/examples/list_chars`
-- `/opt/sf-api/target/release/examples/fetch_guild_reports`
+**Infrastruktur:**
+- `/opt/sfetch/run_fetch.sh` – SSH-Wrapper (ruft `sudo -u sfetch` auf den Heimserver)
+- `/root/sf-api/run_fetch_wrapper.sh` – Wrapper auf Heimserver für `fetch_guild_reports`
+- `/root/sf-api/run_list_chars_wrapper.sh` – Wrapper auf Heimserver für `list_chars`
+- Credentials werden **via stdin** übergeben (nie in argv / Prozessliste sichtbar)
 
-**Betroffene Dateien:**
-- `api/sf_get_characters.php` (Characters via `list_chars`)
-- `api/sf_fetch_single.php` (Reports via `fetch_guild_reports`)
-- `includes/sf_helpers.php` (`parseRustBattleReport()`)
+**Betroffene PHP-Dateien:**
+- `api/sf_get_characters.php` – Characters via `runListChars()` → SSH → `list_chars`
+- `api/sf_fetch_single.php` – Reports via SSH → `fetch_guild_reports`
+- `includes/sf_helpers.php` – `parseRustBattleReport()`
 
-Wenn sf-api nicht vorhanden ist, funktionieren diese Endpunkte entsprechend nicht bzw. liefern Fehler.
-Der Kern der Web-App (UI, Admin, lokale Daten) kann dennoch unabhängig davon betrieben werden.
+Wenn sf-api oder der SSH-Tunnel nicht verfügbar sind, funktionieren diese Endpunkte nicht.  
+Der Kern der Web-App (UI, Admin, lokale Daten) läuft unabhängig davon.
 
 ---
 
