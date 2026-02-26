@@ -3,9 +3,8 @@
  * API: Import Battle Reports from Inbox
  * Imports selected reports from inbox to sf_eval_battles
  */
+require_once __DIR__ . '/../includes/bootstrap_api.php';
 
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/sf_helpers.php';
 
 header('Content-Type: application/json');

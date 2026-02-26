@@ -3,9 +3,7 @@
  * API: Reject Battle Reports from Inbox
  * Marks reports as rejected (won't be imported)
  */
-
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/bootstrap_api.php';
 
 header('Content-Type: application/json');
 

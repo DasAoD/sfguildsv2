@@ -3,11 +3,9 @@
  * API: Preview Battle Report from Inbox
  * Returns file content for preview
  */
+require_once __DIR__ . '/../includes/bootstrap_api.php';
 
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/sf_helpers.php';
-require_once __DIR__ . '/../includes/logger.php';
 
 header('Content-Type: application/json');
 

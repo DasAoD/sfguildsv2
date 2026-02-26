@@ -3,9 +3,8 @@
  * API: Disconnect S&F Account
  * Removes S&F credentials and selected characters
  */
+require_once __DIR__ . '/../includes/bootstrap_api.php';
 ini_set('log_errors', 1);
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../includes/auth.php';
 
 header('Content-Type: application/json');
 

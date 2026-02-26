@@ -6,12 +6,11 @@
  * POST Body (optional):
  *   account_ids - Array of specific account IDs to fetch from (empty = all)
  */
+require_once __DIR__ . '/../includes/bootstrap_api.php';
 
 set_time_limit(300);
 ini_set('max_execution_time', '300');
 
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/sf_helpers.php';
 
 header('Content-Type: application/json');
@@ -96,14 +95,15 @@ try {
         foreach ($charactersToFetch as $char) {
             $charJson = json_encode($char);
             
-            // Passwort über env-Array übergeben, nicht über argv (sonst in ps aux sichtbar)
-            $cmd = sprintf(
-                'php %s/sf_fetch_single.php %s %s %s 2>&1',
-                escapeshellarg(__DIR__),
-                escapeshellarg($charJson),
-                escapeshellarg($userId),
-                escapeshellarg($account['sf_username'])
-            );
+            // Array-Command: keine Shell involviert, kein Escaping nötig
+            // Passwort über env-Array übergeben (nicht in argv – sonst in ps aux sichtbar)
+            $cmd = [
+                PHP_BINARY,
+                __DIR__ . '/sf_fetch_single.php',
+                $charJson,
+                $userId,
+                $account['sf_username'],
+            ];
 
             $procEnv = array_merge($_ENV, ['SF_PASSWORD' => $sfPassword]);
 

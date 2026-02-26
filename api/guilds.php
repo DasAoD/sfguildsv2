@@ -3,11 +3,8 @@
  * Guilds API Endpoint
  * Returns all guilds with statistics
  */
+require_once __DIR__ . '/../includes/bootstrap_api.php';
 
-require_once __DIR__ . '/../includes/auth.php';
-require_once __DIR__ . '/../includes/functions.php';
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../includes/logger.php';
 require_once __DIR__ . '/../includes/raid_names.php';
 
 // Guilds API is publicly accessible (no login required)

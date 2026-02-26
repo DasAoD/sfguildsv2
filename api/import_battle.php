@@ -1,9 +1,7 @@
 <?php
+require_once __DIR__ . '/../includes/bootstrap_api.php';
 // Force JSON response for all errors
 header('Content-Type: application/json');
-
-require_once '../config/database.php';
-require_once '../includes/auth.php';
 
 // Check authentication
 requireAdminAPI();

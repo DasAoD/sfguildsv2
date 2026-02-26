@@ -3,11 +3,7 @@
  * Player Details API
  * Returns detailed battle history for a specific player
  */
-
-require_once __DIR__ . '/../includes/auth.php';
-require_once __DIR__ . '/../includes/functions.php';
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../includes/logger.php';
+require_once __DIR__ . '/../includes/bootstrap_api.php';
 
 // Check authentication (API style - returns JSON on failure)
 checkAuthAPI();

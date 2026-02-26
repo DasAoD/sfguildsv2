@@ -3,11 +3,8 @@
  * Members API Endpoint
  * Returns members of a specific guild
  */
+require_once __DIR__ . '/../includes/bootstrap_api.php';
 
-require_once __DIR__ . '/../includes/auth.php';
-require_once __DIR__ . '/../includes/functions.php';
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../includes/logger.php';
 require_once __DIR__ . '/../includes/raid_names.php';
 
 // Get guild ID

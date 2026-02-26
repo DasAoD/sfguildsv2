@@ -1,7 +1,5 @@
 <?php
-require_once '../config/database.php';
-require_once '../includes/auth.php';
-require_once '../includes/logger.php';
+require_once __DIR__ . '/../includes/bootstrap_api.php';
 
 checkAuthAPI();
 

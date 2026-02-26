@@ -7,9 +7,7 @@
  *   account_id - SF account to save characters for
  *   characters - Array of selected characters
  */
-
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/bootstrap_api.php';
 
 header('Content-Type: application/json');
 

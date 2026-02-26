@@ -7,6 +7,7 @@
  * POST   - Create or update an account
  * DELETE - Delete an account
  */
+require_once __DIR__ . '/../includes/bootstrap_api.php';
 
 header('Content-Type: application/json');
 
@@ -17,8 +18,6 @@ set_error_handler(function($errno, $errstr, $errfile, $errline) {
     exit;
 });
 
-require_once __DIR__ . '/../includes/auth.php';
-require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/encryption.php';
 
 checkAuth();

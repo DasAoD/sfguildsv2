@@ -11,11 +11,8 @@
  *   username, password - Fresh credentials to test
  *   account_id - (optional) Existing account to refresh characters for
  */
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/bootstrap_api.php';
 require_once __DIR__ . '/../includes/encryption.php';
-require_once __DIR__ . '/../includes/functions.php';
-require_once __DIR__ . '/../includes/logger.php';
 
 header('Content-Type: application/json');
 

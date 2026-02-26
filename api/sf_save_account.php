@@ -3,9 +3,8 @@
  * API: Save S&F Account Credentials
  * Encrypts and stores SF username/password for user
  */
+require_once __DIR__ . '/../includes/bootstrap_api.php';
 
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/sf_helpers.php';
 
 header('Content-Type: application/json');
