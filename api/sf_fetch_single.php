@@ -6,8 +6,15 @@
  * Usage: SF_PASSWORD=secret php sf_fetch_single.php '{"name":"Beedle","server":"f25.sfgame.net","guild":"Blutzirkel"}' USER_ID USERNAME
  */
 
+// Nur als CLI-Subprocess erlaubt – direkter HTTP-Zugriff wird geblockt
+if (PHP_SAPI !== 'cli') {
+    http_response_code(404);
+    exit;
+}
+
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/sf_helpers.php';
+require_once __DIR__ . '/../includes/logger.php';
 
 // Get command line arguments
 if ($argc < 4) {
@@ -187,13 +194,18 @@ try {
     ]);
     
 } catch (Exception $e) {
-    echo json_encode([
-        'success' => false,
+    logError('sf_fetch_single failed', [
         'character' => $character,
-        'server' => $server,
-        'guild' => $guild,
-        'count' => 0,
-        'error' => $e->getMessage()
+        'server'    => $server,
+        'error'     => $e->getMessage(),
+    ]);
+    echo json_encode([
+        'success'   => false,
+        'character' => $character,
+        'server'    => $server,
+        'guild'     => $guild,
+        'count'     => 0,
+        'error'     => 'Fetch fehlgeschlagen',
     ]);
     exit(1);
 }
