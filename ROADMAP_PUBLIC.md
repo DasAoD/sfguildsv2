@@ -115,6 +115,11 @@
 
 ## 📅 **CHANGELOG**
 
+### **2026-02-26 (14. Audit)**
+- `sf_fetch_reports.php`: proc_open String-Command durch Array-Command ersetzt
+- `includes/bootstrap_api.php` eingeführt – alle api/*.php nutzen zentralen Bootstrap
+- `includes/logger.php`: getLogInfo() Streaming-Zeilenzähler statt count(file())
+
 ### **2026-02-26**
 - 13. Security-Audit abgeschlossen
 - Legacy SF-Credentials aus `users`-Tabelle entfernt (single source of truth: `sf_accounts`)
@@ -142,6 +147,6 @@
 
 ---
 
-**Stand:** 26. Februar 2026 (aktuell)  
+**Stand:** 26. Februar 2026 (aktuell) – 14. Audit  
 **Version:** 2.0-dev  
 **Lizenz:** Privates Projekt

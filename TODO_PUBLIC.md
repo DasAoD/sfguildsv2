@@ -53,6 +53,11 @@
 - [x] HMAC-Integritätsprüfung für Zugangsdaten
 - [x] Upload-Größenlimit (2MB) mit Modal-Fehlermeldung
 
+### **Security & Cleanup (14. Audit)**
+- [x] `sf_fetch_reports.php`: proc_open String-Command durch Array-Command ersetzt (PHP_BINARY)
+- [x] `includes/bootstrap_api.php` eingeführt – zentraler Bootstrap für alle API-Endpunkte
+- [x] `includes/logger.php`: getLogInfo() – count(file()) durch Streaming-Zeilenzähler ersetzt
+
 ### **Security & Cleanup (13. Audit)**
 - [x] Legacy SF-Credentials aus `users`-Tabelle entfernt (konsolidiert in `sf_accounts`)
 - [x] `sf_save_credentials.php` gelöscht (toter Code)
