@@ -1,7 +1,7 @@
 # 📋 TODO - S&F Guilds v2
 
 **Projekt-Status:** Feature-Complete (Kern-Funktionalität)
-**Stand:** 22. Februar 2026
+**Stand:** 26. Februar 2026
 
 ---
 
@@ -52,6 +52,15 @@
 ### **Encryption & Validation (Phase 4)**
 - [x] HMAC-Integritätsprüfung für Zugangsdaten
 - [x] Upload-Größenlimit (2MB) mit Modal-Fehlermeldung
+
+### **Security & Cleanup (13. Audit)**
+- [x] Legacy SF-Credentials aus `users`-Tabelle entfernt (konsolidiert in `sf_accounts`)
+- [x] `sf_save_credentials.php` gelöscht (toter Code)
+- [x] `sf_get_characters.php`: list_chars via SSH auf Heimserver (Residential-IP)
+- [x] Hard-Timeout (30s + SIGKILL) in `runListChars()`
+- [x] `sf_save_characters.php`: Legacy-Fallback auf `users`-Tabelle entfernt
+- [x] `runWithEnv()` entfernt (toter Code)
+- [x] README: Bootstrap-Pattern und SSH-Tunnel-Architektur dokumentiert
 
 ### **UI/UX**
 - [x] Einheitliche Custom-Modals statt Browser-`confirm()`/`alert()`

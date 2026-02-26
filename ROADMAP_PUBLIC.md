@@ -115,6 +115,14 @@
 
 ## 📅 **CHANGELOG**
 
+### **2026-02-26**
+- 13. Security-Audit abgeschlossen
+- Legacy SF-Credentials aus `users`-Tabelle entfernt (single source of truth: `sf_accounts`)
+- `sf_get_characters.php` komplett überarbeitet: SSH-Tunnel zu Heimserver, Hard-Timeout
+- `sf_save_characters.php`: Legacy-Fallback auf nicht mehr existierende `users`-Spalte gefixt
+- `runWithEnv()` entfernt (toter Code)
+- README: Bootstrap-Pattern und SSH-Tunnel-Architektur dokumentiert
+
 ### **2026-02-22**
 - Phase 2 abgeschlossen (Rollen-System, API-Absicherung, Passwort-Selbstverwaltung)
 - Phase 3 abgeschlossen (WAL-Mode, N+1 Fix, Open Redirect, SELECT *)
@@ -134,6 +142,6 @@
 
 ---
 
-**Stand:** 22. Februar 2026 (aktuell)  
+**Stand:** 26. Februar 2026 (aktuell)  
 **Version:** 2.0-dev  
 **Lizenz:** Privates Projekt
