@@ -104,11 +104,12 @@ try {
     }
 
     // SSH stdout direkt in tar stdin verdrahten – kein $tarData-Buffer
-    $tarCmd = 'cd ' . escapeshellarg($remoteTempDir) . ' && tar cf - .';
+    // Wrapper auf Heimserver: nur Verzeichnis als Parameter, kein Shell-String
     $transferCmd = [
         'sudo', '-u', 'sfetch',
         '/opt/sfetch/run_fetch.sh',
-        $tarCmd,
+        '/root/sf-api/run_tar_wrapper.sh',
+        $remoteTempDir,
     ];
     $transferProcess = proc_open(
         $transferCmd,
@@ -143,10 +144,12 @@ try {
     }
 
     // Remote temp-Verzeichnis aufräumen
+    // Wrapper auf Heimserver: nur Verzeichnis als Parameter, kein Shell-String
     $cleanCmd = [
         'sudo', '-u', 'sfetch',
         '/opt/sfetch/run_fetch.sh',
-        'rm -rf ' . escapeshellarg($remoteTempDir),
+        '/root/sf-api/run_cleanup_wrapper.sh',
+        $remoteTempDir,
     ];
     $cleanProcess = proc_open($cleanCmd, [0 => ['pipe','r'], 1 => ['pipe','w'], 2 => ['pipe','w']], $cleanPipes, null, $_ENV);
     if (is_resource($cleanProcess)) {
