@@ -1,122 +1,165 @@
-# sfguildsv2
+# S&F Guilds v2
 
-**EN (short):** Web-based guild management & reporting for *Shakes & Fidget*.  
-Built with PHP + SQLite, German UI. This repository is currently private and primarily intended for internal use and tooling/AI-assisted development.
-
----
-
-## Überblick (DE)
-
-`sfguildsv2` ist eine schlanke Web-App zur Verwaltung von Shakes & Fidget Gilden (Mitglieder, Kämpfe, Auswertungen),
-als Ersatz für Excel-Listen. Ziel ist eine übersichtliche Oberfläche, eine einfache Import-Pipeline und aussagekräftige Reports.
+Privates Guild-Management-System für das Browsergame **Shakes & Fidget**.  
+Verwaltet mehrere Gilden, Mitglieder, Kampfberichte und Statistiken.
 
 ---
 
-## Tech-Stack
+## Features
 
-- PHP (empfohlen: 8.3+)
-- SQLite (PDO / pdo_sqlite)
-- Nginx oder Apache (Webroot zeigt auf `public/`)
-- Vanilla JS + CSS (kein Build-System nötig)
+### Öffentlich (kein Login erforderlich)
+- Dashboard mit Gilden-Übersicht
+- Gilden-Detailseiten mit Mitgliederlisten
 
----
+### Nach Login
+- Kampf-Kalender mit Detailansicht
+- Battle-Reports und Statistiken
+- Posteingang für Kampfberichte
+- Automatisierter Abruf von Kampfberichten über S&F-Accounts
+- Spieler-Umbenennen nach Serverfusionen
 
-## Projektstruktur
-
-- `public/` – Webroot (Pages, Assets, Errorpages)
-- `api/` – HTTP-Endpunkte für UI/Admin/Import/Fetch
-- `includes/` – Auth, Helper, Logger, Encryption, Templates
-- `config/` – Konfiguration (`.env.example`, `database.php`)
-- `data/` *(runtime, nicht versioniert)* – Uploads/Logs
-- `storage/` *(runtime, weitgehend nicht versioniert)* – Import-Pipeline, Report-Ablage (`sf_reports/temp` bleibt als Struktur sichtbar)
-
-Runtime-Daten (SQLite, Logs, Uploads, Roh-Reports) sind absichtlich per `.gitignore` ausgeschlossen.
-
----
-
-## Quickstart (minimal)
-
-### 1) Deploy / Webserver
-- Projekt nach z. B. `/var/www/sfguildsv2` deployen
-- Webserver-Docroot auf `public/` setzen
-
-### 2) Konfiguration
-- Example kopieren:
-  - `cp config/.env.example config/.env`
-- In `.env` mindestens setzen:
-  - `ENCRYPTION_KEY` (zufälliger, langer Key)
-
-> Die `.env` gehört nicht ins Repo.
-
-### 3) Schreibrechte (runtime)
-Diese Ordner müssen vom Webserver beschreibbar sein (z. B. `www-data`):
-
-- `data/uploads/`
-- `data/logs/`
-- `storage/import/`
-- `storage/sf_reports/temp/`
+### Admin-Bereich
+- User-Verwaltung (anlegen, bearbeiten, löschen)
+- Gilden-Verwaltung (erstellen, bearbeiten, löschen)
+- System-Backup
+- Log-Einsicht
+- Spieler zusammenführen
 
 ---
 
-## Import-Formate (in Arbeit)
+## Rollen-System
 
-Die endgültigen CSV-Formate und Import-Regeln sind noch nicht final.
-Sobald die Felder/Layouts feststehen, folgt eine eigene Doku.
-
----
-
-## Bootstrap / Wie die App startet
-
-Es gibt **kein zentrales Bootstrap-File** und kein `auto_prepend_file`.  
-Jeder API-Endpunkt in `api/` lädt seine Abhängigkeiten explizit per `require_once`:
-
-| Include | Zweck |
-|---|---|
-| `config/database.php` | PDO-Verbindung, `getDB()` |
-| `includes/auth.php` | Session, `checkAuth()`, `requireAdminAPI()` etc. |
-| `includes/functions.php` | Shared Helpers (`jsonResponse()`, etc.) |
-| `includes/logger.php` | `logError()`, `logActivity()` |
-| `includes/encryption.php` | AES-256-CBC + HMAC |
-| `includes/sf_helpers.php` | Rust-Output-Parser, Battle-Report-Parser |
-
-**Reihenfolge:** `database.php` → `auth.php` → weitere Includes → eigene Logik.  
-Neue Endpunkte sollten diesem Muster folgen.
+| Funktion                  | Admin | Moderator | User |
+|---------------------------|-------|-----------|------|
+| Dashboard & Gilden        | ✅    | ✅        | ✅   |
+| Reports & Kämpfe ansehen  | ✅    | ✅        | ✅   |
+| Datum & Notizen eintragen | ✅    | ✅        | ❌   |
+| Post abholen              | ✅    | ✅        | ❌   |
+| Kämpfe löschen/verschieben| ✅    | ❌        | ❌   |
+| Spieler umbenennen        | ✅    | ❌        | ❌   |
+| Admin-Panel               | ✅    | ❌        | ❌   |
+| User & Gilden verwalten   | ✅    | ❌        | ❌   |
 
 ---
 
-## Optional: sf-api (Rust) Integration (Fetch/Characters)
+## Systemanforderungen
 
-Einige Endpunkte nutzen externe Rust-Tools aus dem Projekt **sf-api**.  
-Da der VPS von Playa Games geblockt wird, laufen die Binaries auf einem **Heimserver mit Residential-IP**  
-und werden via SSH über einen WireGuard-Tunnel aufgerufen.
-
-**Infrastruktur:**
-- `/opt/sfetch/run_fetch.sh` – SSH-Wrapper (ruft `sudo -u sfetch` auf den Heimserver)
-- `/root/sf-api/run_fetch_wrapper.sh` – Wrapper auf Heimserver für `fetch_guild_reports`
-- `/root/sf-api/run_list_chars_wrapper.sh` – Wrapper auf Heimserver für `list_chars`
-- Credentials werden **via stdin** übergeben (nie in argv / Prozessliste sichtbar)
-
-**Betroffene PHP-Dateien:**
-- `api/sf_get_characters.php` – Characters via `runListChars()` → SSH → `list_chars`
-- `api/sf_fetch_single.php` – Reports via SSH → `fetch_guild_reports`
-- `includes/sf_helpers.php` – `parseRustBattleReport()`
-
-Wenn sf-api oder der SSH-Tunnel nicht verfügbar sind, funktionieren diese Endpunkte nicht.  
-Der Kern der Web-App (UI, Admin, lokale Daten) läuft unabhängig davon.
+- PHP 8.3+
+- SQLite3-Extension
+- nginx
+- systemd (für automatisierten Import)
 
 ---
 
-## Credits / Acknowledgements
+## Installation
 
-- **sf-api** (Rust CLI/API) by **the-marenga**: https://github.com/the-marenga/sf-api
-  - Wird in diesem Projekt für Report-Fetching genutzt.
+### 1. Dateien bereitstellen
+
+```bash
+cp -r /path/to/sfguildsv2 /var/www/sfguildsv2
+```
+
+### 2. Berechtigungen setzen
+
+```bash
+chown -R www-data:www-data /var/www/sfguildsv2
+chmod 755 /var/www/sfguildsv2
+chmod 755 /var/www/sfguildsv2/data
+chmod 755 /var/www/sfguildsv2/data/uploads
+chmod 755 /var/www/sfguildsv2/storage
+```
+
+### 3. Encryption Key generieren
+
+```bash
+php -r "echo base64_encode(random_bytes(32)) . PHP_EOL;"
+```
+
+Den generierten Key in `/var/www/sfguildsv2/config/.env` eintragen:
+
+```
+ENCRYPTION_KEY=dein_generierter_key
+```
+
+### 4. Nginx Virtual Host einrichten
+
+```nginx
+server {
+    listen 80;
+    listen [::]:80;
+    server_name deine-domain.de;
+
+    root /var/www/sfguildsv2/public;
+    index index.php;
+
+    access_log /var/log/nginx/sfguilds_access.log;
+    error_log  /var/log/nginx/sfguilds_error.log;
+
+    location / {
+        try_files $uri $uri/ $uri.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
+    }
+
+    # Sensitive Verzeichnisse sperren
+    location ~* ^/(cli|includes|config|data|storage)/ {
+        return 404;
+    }
+
+    location ~ \.(db|sqlite|log|sh|env|ini)$ {
+        return 404;
+    }
+
+    location ~ /\. {
+        deny all;
+    }
+}
+```
+
+Site aktivieren:
+
+```bash
+ln -s /etc/nginx/sites-available/deine-domain.de /etc/nginx/sites-enabled/
+nginx -t && systemctl reload nginx
+```
+
+### 5. SSL einrichten
+
+```bash
+certbot --nginx -d deine-domain.de
+```
+
+### 6. Datenbank und ersten Admin-User anlegen
+
+```bash
+php /var/www/sfguildsv2/install/setup.php
+```
+
+Das Setup-Script legt die Datenbank an und führt durch die Erstellung des ersten Admin-Accounts.
 
 ---
 
-## Entwicklungsstand & Roadmap
+## Automatisierter CSV-Import
 
-Aktuelle Roadmap und offene Punkte:
-- [`ROADMAP_PUBLIC.md`](ROADMAP_PUBLIC.md) – Phasen-Übersicht (Phase 1-4, alle abgeschlossen)
-- [`TODO_PUBLIC.md`](TODO_PUBLIC.md) – Detaillierte Aufgabenliste
+Der CSV-Import läuft über systemd-Services, die regelmäßig Daten aus dem Spiel abholen.  
+Details zur Einrichtung: `install/SYSTEMD_SETUP.md`
 
-**Aktuell offen:** Mobile-Optimierung und optionaler Theme-Toggle (Low Priority)
+---
+
+## Technischer Stack
+
+- **Backend:** PHP 8.3
+- **Datenbank:** SQLite3 (WAL-Mode)
+- **Frontend:** Vanilla JavaScript, Custom Dark Theme
+- **Webserver:** nginx
+- **Credential-Verschlüsselung:** AES-256-CBC + HMAC-SHA256
+- **Automatisierung:** systemd
+
+---
+
+## Hinweise
+
+Dieses Projekt ist für den privaten Einsatz gedacht und nicht für öffentliche Produktivumgebungen ausgelegt.

@@ -1,106 +1,40 @@
-# 📋 TODO - S&F Guilds v2
-
-**Projekt-Status:** Feature-Complete (Kern-Funktionalität)
-**Stand:** 26. Februar 2026
+# TODO – S&F Guilds v2
 
 ---
 
-## ✅ **ERLEDIGT**
+## Offen
 
-### **Core Features**
-- [x] Dashboard mit Gilden-Statistiken
-- [x] Mitglieder-Verwaltung mit Inline-Editing
-- [x] Kampf-Kalender mit Tab-Navigation
-- [x] Posteingang für Battle-Reports
-- [x] CSV-Import-System
-- [x] Mail-Integration (Gmail API)
-- [x] Reports & Statistiken
-- [x] Spieler-Detail Modal
-- [x] Kampf-Details Modal
-- [x] CSV-Export für Reports
-- [x] Spieler-Umbenennen Tool (nach Serverfusionen/Namensänderungen)
+### Nice-to-have
 
-### **Admin & System**
-- [x] Admin-Panel (User, Gilden, System, Logs, Wartung)
-- [x] Activity & Error Logging
-- [x] System-Backup Funktion
-- [x] Automatischer CSV-Import (systemd)
+- [ ] **Concurrency-Limit beim Report-Fetch**  
+  Beim parallelen Abruf von Kampfberichten starten aktuell alle Charaktere gleichzeitig als Subprozesse.  
+  Bei sehr vielen Accounts wäre ein Pool mit max. N parallelen Prozessen sinnvoll.
 
-### **Security & Quality (Phase 1)**
-- [x] Session-Management
-- [x] Input-Validierung & XSS-Schutz
-- [x] Debug-Code entfernt
-- [x] Passwort-Logging maskiert
-- [x] Stacktrace-Leaks entfernt
-
-### **Access Control (Phase 2)**
-- [x] Drei-Rollen-System: Admin / Moderator / User
-- [x] Alle Admin-APIs abgesichert (`requireAdminAPI`)
-- [x] Schreibende Endpunkte auf Moderator+ eingeschränkt
-- [x] Destruktive Endpunkte (löschen/verschieben) Admin-only
-- [x] Admin-Link in Nav für User ausgeblendet
-- [x] Rollen-Vergabe im Admin-Panel (Badge + Bearbeiten-Modal)
-- [x] Passwort-Selbstverwaltung in den Einstellungen
-- [x] 403-Fehlerseite via nginx korrekt zugestellt
-
-### **Performance (Phase 3)**
-- [x] SQLite WAL-Mode
-- [x] N+1 Query behoben (guilds.php)
-- [x] Open Redirect geschlossen (login.php)
-- [x] SELECT * bereinigt
-
-### **Encryption & Validation (Phase 4)**
-- [x] HMAC-Integritätsprüfung für Zugangsdaten
-- [x] Upload-Größenlimit (2,5MB) mit Modal-Fehlermeldung
-
-### **Security & Cleanup (14. Audit)**
-- [x] `sf_fetch_reports.php`: proc_open String-Command durch Array-Command ersetzt (PHP_BINARY)
-- [x] `includes/bootstrap_api.php` eingeführt – zentraler Bootstrap für alle API-Endpunkte
-- [x] `includes/logger.php`: getLogInfo() – count(file()) durch Streaming-Zeilenzähler ersetzt
-
-### **Security & Cleanup (13. Audit)**
-- [x] Legacy SF-Credentials aus `users`-Tabelle entfernt (konsolidiert in `sf_accounts`)
-- [x] `sf_save_credentials.php` gelöscht (toter Code)
-- [x] `sf_get_characters.php`: list_chars via SSH auf Heimserver (Residential-IP)
-- [x] Hard-Timeout (30s + SIGKILL) in `runListChars()`
-- [x] `sf_save_characters.php`: Legacy-Fallback auf `users`-Tabelle entfernt
-- [x] `runWithEnv()` entfernt (toter Code)
-- [x] README: Bootstrap-Pattern und SSH-Tunnel-Architektur dokumentiert
-
-### **UI/UX**
-- [x] Einheitliche Custom-Modals statt Browser-`confirm()`/`alert()`
-- [x] Fehlerseiten-Navigation vereinheitlicht (Logo, Links)
+- [ ] **Passwort-Reset für User**  
+  Aktuell kann ein User sein Passwort nur selbst in den Einstellungen ändern (solange er eingeloggt ist).  
+  Ein Reset-Flow für gesperrte oder vergessene Zugänge wäre eine Ergänzung.
 
 ---
 
-## 🎨 **OFFEN: PRIORITÄT NIEDRIG**
+## Erledigt
 
-### **UI/UX**
-- [ ] Mobile Optimierung (Touch-friendly Controls)
-
-### **Nice-to-have**
-- [ ] Dark/Light Theme Toggle
-
----
-
-## 🚫 **NICHT GEPLANT**
-
-- ~~Dashboard Charts~~ (Reports reichen aus)
-- ~~Email-Benachrichtigungen~~ (Nicht benötigt)
-- ~~Externe API~~ (Privates Projekt)
-- ~~Keyboard Shortcuts~~
-- ~~Bulk-Aktionen~~
-
----
-
-## 📈 **FINALER STAND**
-
-| Kategorie | Status |
-|-----------|--------|
-| **Kern-Features** | 95% ✅ |
-| **Sicherheit** | 97% ✅ |
-| **Performance** | 92% ✅ |
-| **Code-Qualität** | 95% ✅ |
-| **UI/UX** | 95% ✅ |
-
-**Gesamt: ~95/100** 🎯
+- [x] Login, Session, Logout
+- [x] Datenbank-Setup und Migrations-System
+- [x] Dashboard, Gilden, Mitglieder
+- [x] Kampf-Kalender und Battle-Reports
+- [x] Posteingang und automatisierter Report-Fetch
+- [x] Admin-Panel (User, Gilden, Logs, Backup)
+- [x] Drei-Rollen-System (Admin / Moderator / User)
+- [x] API-Absicherung nach Rollen
+- [x] AES-256-CBC + HMAC Verschlüsselung für S&F-Credentials
+- [x] SQLite WAL-Mode + Performance-PRAGMAs
+- [x] N+1 Query-Problem behoben
+- [x] Open Redirect geschlossen
+- [x] Upload-Validierung (Größe + Mime-Type)
+- [x] Lock-Mechanismus für parallele Fetch-Prozesse
+- [x] Prozess-Timeouts beim Report-Fetch
+- [x] Error Pages (400, 403, 404, 500)
+- [x] Custom-Modals statt nativer Browser-Dialoge
+- [x] Systemd-Services für automatisierten CSV-Import
+- [x] Spieler-Umbenennen nach Serverfusionen
+- [x] Wappen-Upload mit Validierung
