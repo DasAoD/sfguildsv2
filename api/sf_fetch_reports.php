@@ -1,295 +1,216 @@
 <?php
 /**
- * API: Fetch Reports for Single Character
- * Called by sf_fetch_reports.php in parallel
+ * API: Fetch Battle Reports (Multi-Account, Parallel)
+ * Fetches reports from selected characters across all SF accounts
  * 
- * Usage: SF_PASSWORD=secret php sf_fetch_single.php '{"name":"Beedle","server":"f25.sfgame.net","guild":"Blutzirkel"}' USER_ID USERNAME
+ * POST Body (optional):
+ *   account_ids - Array of specific account IDs to fetch from (empty = all)
  */
+require_once __DIR__ . '/../includes/bootstrap_api.php';
 
-// Nur als CLI-Subprocess erlaubt – direkter HTTP-Zugriff wird geblockt
-if (PHP_SAPI !== 'cli') {
-    http_response_code(404);
+set_time_limit(300);
+ini_set('max_execution_time', '300');
+
+require_once __DIR__ . '/../includes/sf_helpers.php';
+
+header('Content-Type: application/json');
+
+requireModeratorAPI();
+
+$db = getDB();
+$userId = $_SESSION['user_id'];
+
+// Lock: verhindert parallele Fetches desselben Users
+$lockDir  = __DIR__ . '/../storage/locks';
+$lockFile = $lockDir . '/fetch_user_' . $userId . '.lock';
+if (!is_dir($lockDir)) {
+    mkdir($lockDir, 0775, true);
+}
+if (file_exists($lockFile) && (time() - filemtime($lockFile)) < 180) {
+    http_response_code(429);
+    echo json_encode(['error' => 'Fetch läuft bereits – bitte warten']);
     exit;
 }
+touch($lockFile);
+register_shutdown_function(function() use ($lockFile) {
+    if (file_exists($lockFile)) { unlink($lockFile); }
+});
 
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../includes/sf_helpers.php';
-require_once __DIR__ . '/../includes/logger.php';
-
-// Get command line arguments
-if ($argc < 4) {
-    echo json_encode(['success' => false, 'error' => 'Missing arguments']);
-    exit(1);
-}
-
-$charData = json_decode($argv[1], true);
-$userId = $argv[2];
-$username = $argv[3];
-// Passwort über Umgebungsvariable – nicht in argv (sonst in ps aux sichtbar)
-$password = getenv('SF_PASSWORD');
-if (empty($password)) {
-    echo json_encode(['success' => false, 'error' => 'SF_PASSWORD not set']);
-    exit(1);
-}
-
-$character = $charData['name'];
-$server = $charData['server'];
-$guild = '';
+$input = json_decode(file_get_contents('php://input'), true);
+$requestedAccountIds = $input['account_ids'] ?? [];
+$singleServer = $input['server'] ?? null;
+$singleCharacter = $input['character'] ?? null;
 
 try {
-    $db = getDB();
-    
-    // Create temp directory for this fetch
-    $tempDir = __DIR__ . '/../storage/sf_reports/temp/' . $userId . '_' . time() . '_' . sanitizeGuildName($character);
-    $oldUmask = umask(0002);
-    if (!mkdir($tempDir, 0775, true)) {
-        umask($oldUmask);
-        throw new Exception('Konnte temp-Verzeichnis nicht erstellen');
-    }
-    umask($oldUmask);
-    
-    // Binary läuft auf Heimserver (Residential-IP) via SSH über WireGuard-Tunnel
-    // Credentials via stdin – nie im Command-String oder Prozessliste sichtbar
-    $remoteTempDir = '/tmp/sfetch_' . $userId . '_' . time() . '_' . sanitizeGuildName($character);
-    $remoteWrapper = '/root/sf-api/run_fetch_wrapper.sh';
-
-    $procCmd = [
-        'sudo', '-u', 'sfetch',
-        '/opt/sfetch/run_fetch.sh',
-        $remoteWrapper,
-    ];
-
-    $descriptorspec = [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
-    $process = proc_open($procCmd, $descriptorspec, $procPipes, null, $_ENV);
-
-    if (!is_resource($process)) {
-        throw new Exception('Prozess konnte nicht gestartet werden');
-    }
-
-    // Credentials zeilenweise via stdin übergeben – Wrapper liest sie remote
-    fwrite($procPipes[0], $username . "\n");
-    fwrite($procPipes[0], $password . "\n");
-    fwrite($procPipes[0], $server . "\n");
-    fwrite($procPipes[0], $character . "\n");
-    fwrite($procPipes[0], $remoteTempDir . "\n");
-    fclose($procPipes[0]);
-
-    $stdout = stream_get_contents($procPipes[1]);
-    $stderr = stream_get_contents($procPipes[2]);
-    fclose($procPipes[1]);
-    fclose($procPipes[2]);
-    $returnCode = proc_close($process);
-
-    $output = $stdout ? explode("\n", trim($stdout)) : [];
-
-    // Log output for debugging (ohne Passwort)
-    $logFile = __DIR__ . '/../storage/sf_reports/fetch_' . sanitizeGuildName($character) . '_' . date('Y-m-d_H-i-s') . '.log';
-    $cmdSafe = 'fetch_guild_reports SSO_USERNAME=*** PASSWORD=*** SERVER_HOST=' . $server . ' CHARACTER=' . $character;
-    file_put_contents($logFile, "Command: $cmdSafe\n\n" . implode("\n", $output));
-
-    if ($returnCode !== 0) {
-        logError('Rust-Script fehlgeschlagen', ['log' => $logFile, 'char' => $character]);
-        throw new Exception('Fetch fehlgeschlagen');
-    }
-
-    // Dateien vom Heimserver holen: tar-Stream direkt pipen – kein Memory-Buffer
-    // tar läuft als www-data → Dateien bekommen automatisch www-data Ownership, kein chown nötig
-    $extractProcess = proc_open(
-        ['tar', 'xf', '-', '-C', $tempDir],
-        [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
-        $extractPipes, null, $_ENV
-    );
-    if (!is_resource($extractProcess)) {
-        throw new Exception('Entpacken konnte nicht gestartet werden');
-    }
-
-    // SSH stdout direkt in tar stdin verdrahten – kein $tarData-Buffer
-    $tarCmd = 'cd ' . escapeshellarg($remoteTempDir) . ' && tar cf - .';
-    $transferCmd = [
-        'sudo', '-u', 'sfetch',
-        '/opt/sfetch/run_fetch.sh',
-        $tarCmd,
-    ];
-    $transferProcess = proc_open(
-        $transferCmd,
-        [0 => ['pipe', 'r'], 1 => $extractPipes[0], 2 => ['pipe', 'w']],
-        $transferPipes, null, $_ENV
-    );
-    if (!is_resource($transferProcess)) {
-        fclose($extractPipes[0]);
-        throw new Exception('Dateiübertragung konnte nicht gestartet werden');
-    }
-
-    fclose($transferPipes[0]); // kein stdin für SSH+tar nötig
-    $transferErr = stream_get_contents($transferPipes[2]);
-    fclose($transferPipes[2]);
-    $transferReturn = proc_close($transferProcess);
-
-    // tar stdin schließen (EOF) und auf Abschluss warten
-    fclose($extractPipes[0]);
-    stream_get_contents($extractPipes[1]);
-    $extractErr = stream_get_contents($extractPipes[2]);
-    fclose($extractPipes[1]);
-    fclose($extractPipes[2]);
-    $extractReturn = proc_close($extractProcess);
-
-    if ($transferReturn !== 0) {
-        logError('SSH+tar vom Heimserver fehlgeschlagen', ['error' => trim($transferErr), 'char' => $character]);
-        throw new Exception('Dateiübertragung fehlgeschlagen');
-    }
-    if ($extractReturn !== 0) {
-        logError('tar entpacken fehlgeschlagen', ['error' => trim($extractErr), 'char' => $character]);
-        throw new Exception('Entpacken fehlgeschlagen');
-    }
-
-    // Remote temp-Verzeichnis aufräumen
-    $cleanCmd = [
-        'sudo', '-u', 'sfetch',
-        '/opt/sfetch/run_fetch.sh',
-        'rm -rf ' . escapeshellarg($remoteTempDir),
-    ];
-    $cleanProcess = proc_open($cleanCmd, [0 => ['pipe','r'], 1 => ['pipe','w'], 2 => ['pipe','w']], $cleanPipes, null, $_ENV);
-    if (is_resource($cleanProcess)) {
-        fclose($cleanPipes[0]);
-        stream_get_contents($cleanPipes[1]);
-        stream_get_contents($cleanPipes[2]);
-        fclose($cleanPipes[1]);
-        fclose($cleanPipes[2]);
-        proc_close($cleanProcess);
+    // Get accounts to fetch from
+    if ($singleServer && $singleCharacter) {
+        // Legacy single-character mode - find the account
+        $accounts = getDefaultAccounts($db, $userId);
+    } elseif (!empty($requestedAccountIds)) {
+        // Specific accounts requested
+        $placeholders = implode(',', array_fill(0, count($requestedAccountIds), '?'));
+        $params = array_merge($requestedAccountIds, [$userId]);
+        $stmt = $db->prepare("
+            SELECT id, account_name, sf_username, sf_password_encrypted, sf_iv, sf_hmac, selected_characters
+            FROM sf_accounts 
+            WHERE id IN ($placeholders) AND user_id = ?
+        ");
+        $stmt->execute($params);
+        $accounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } else {
+        // All accounts with selected characters
+        $stmt = $db->prepare("
+            SELECT id, account_name, sf_username, sf_password_encrypted, sf_iv, sf_hmac, selected_characters
+            FROM sf_accounts 
+            WHERE user_id = ? AND selected_characters IS NOT NULL AND selected_characters != '[]'
+        ");
+        $stmt->execute([$userId]);
+        $accounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
-    // Import files to inbox
-    $count = importToInbox($tempDir, $userId, $db);
-    
-    // Hole Guild-Namen aus der DB (nach dem Import!)
-    $stmt = $db->prepare("
-        SELECT DISTINCT g.name 
-        FROM battle_inbox bi
-        JOIN guilds g ON bi.guild_id = g.id
-        WHERE bi.character_name = ? AND bi.user_id = ?
-        ORDER BY bi.created_at DESC
-        LIMIT 1
-    ");
-    $stmt->execute([$character, $userId]);
-    $guildRow = $stmt->fetch(PDO::FETCH_ASSOC);
-    $guild = $guildRow ? $guildRow['name'] : '';
-
-    // Cleanup temp directory
-    // PHP-eigene Löschfunktion statt exec('rm -rf') - kein Shell-Aufruf nötig
-    $files = new RecursiveIteratorIterator(
-        new RecursiveDirectoryIterator($tempDir, RecursiveDirectoryIterator::SKIP_DOTS),
-        RecursiveIteratorIterator::CHILD_FIRST
-    );
-    foreach ($files as $file) {
-        $file->isDir() ? rmdir($file->getPathname()) : unlink($file->getPathname());
+    if (empty($accounts)) {
+        throw new Exception('Keine Accounts mit ausgewählten Charakteren gefunden');
     }
-    rmdir($tempDir);
+    
+    // Collect all characters to fetch across all accounts
+    $allResults = [];
+    $totalCount = 0;
+    
+    foreach ($accounts as $account) {
+        $sfPassword = decryptData($account['sf_password_encrypted'], $account['sf_iv'], $account['sf_hmac'] ?? null);
+        
+        if ($singleServer && $singleCharacter) {
+            $charactersToFetch = [['name' => $singleCharacter, 'server' => $singleServer, 'guild' => 'Unbekannt']];
+        } else {
+            $charactersToFetch = json_decode($account['selected_characters'], true);
+            if (empty($charactersToFetch)) {
+                continue;
+            }
+        }
+        
+        // Start parallel processes for this account's characters
+        $processes = [];
+        $pipes = [];
+        
+        foreach ($charactersToFetch as $char) {
+            $charJson = json_encode($char);
+            
+            // Array-Command: keine Shell involviert, kein Escaping nötig
+            // Passwort über env-Array übergeben (nicht in argv – sonst in ps aux sichtbar)
+            // PHP_BINDIR statt PHP_BINARY: im FPM-Kontext zeigt PHP_BINARY auf php-fpm,
+            // der Subprocess braucht aber den CLI-Binary
+            $cmd = [
+                PHP_BINDIR . '/php',
+                __DIR__ . '/sf_fetch_single.php',
+                $charJson,
+                $userId,
+                $account['sf_username'],
+            ];
+
+            $procEnv = array_merge($_ENV, ['SF_PASSWORD' => $sfPassword]);
+
+            $descriptorspec = [
+                0 => ['pipe', 'r'],
+                1 => ['pipe', 'w'],
+                2 => ['pipe', 'w']
+            ];
+
+            $process = proc_open($cmd, $descriptorspec, $procPipes, null, $procEnv);
+            if (!is_resource($process)) {
+                logError('proc_open failed for character', ['char' => $char['name']]);
+                continue;
+            }
+            $processes[] = $process;
+            $pipes[] = $procPipes;
+            fclose($procPipes[0]);
+        }
+        
+        // Wait for all processes and collect results (Hard-Timeout: 90s pro Prozess)
+        $accountResults = [];
+        $fetchTimeout = 90;
+        
+        foreach ($processes as $i => $process) {
+            $startTime = time();
+            $output = '';
+            $stream = $pipes[$i][1];
+            stream_set_blocking($stream, false);
+
+            while (!feof($stream)) {
+                if ((time() - $startTime) > $fetchTimeout) {
+                    proc_terminate($process, 9);
+                    logError('Fetch-Timeout: Prozess abgebrochen', [
+                        'char' => $charactersToFetch[$i]['name'] ?? 'Unbekannt',
+                        'timeout' => $fetchTimeout
+                    ]);
+                    break;
+                }
+                $r = [$stream]; $w = []; $e = []; $ready = stream_select($r, $w, $e, 1);
+                if ($ready) {
+                    $chunk = fread($stream, 8192);
+                    if ($chunk !== false) { $output .= $chunk; }
+                }
+            }
+            fclose($pipes[$i][1]);
+
+            $errors = stream_get_contents($pipes[$i][2]);
+            fclose($pipes[$i][2]);
+            
+            proc_close($process);
+            
+            $result = json_decode($output, true);
+            
+            if ($result) {
+                $accountResults[] = $result;
+                if ($result['success']) {
+                    $totalCount += $result['count'];
+                }
+            } else {
+                $accountResults[] = [
+                    'success' => false,
+                    'character' => $charactersToFetch[$i]['name'] ?? 'Unbekannt',
+                    'server' => $charactersToFetch[$i]['server'] ?? '',
+                    'guild' => $charactersToFetch[$i]['guild'] ?? 'Unbekannt',
+                    'count' => 0,
+                    'error' => $errors ?: 'Unbekannter Fehler'
+                ];
+            }
+        }
+        
+        $allResults[] = [
+            'account_name' => $account['account_name'] ?? $account['sf_username'],
+            'account_id' => $account['id'],
+            'results' => $accountResults
+        ];
+    }
     
     echo json_encode([
         'success' => true,
-        'character' => $character,
-        'server' => $server,
-        'guild' => $guild,
-        'count' => $count
+        'total' => $totalCount,
+        'accounts' => $allResults,
+        // Flattened results for backward compatibility
+        'results' => array_merge(...array_column($allResults, 'results'))
     ]);
     
 } catch (Exception $e) {
-    logError('sf_fetch_single failed', [
-        'character' => $character,
-        'server'    => $server,
-        'error'     => $e->getMessage(),
-    ]);
-    echo json_encode([
-        'success'   => false,
-        'character' => $character,
-        'server'    => $server,
-        'guild'     => $guild,
-        'count'     => 0,
-        'error'     => 'Fetch fehlgeschlagen',
-    ]);
-    exit(1);
+    http_response_code(500);
+    logError('sf_fetch_reports failed', ['error' => $e->getMessage()]);
+    echo json_encode(['error' => 'Interner Fehler']);
 }
 
 /**
- * Import battle report files to inbox
+ * Get legacy account from users table (backward compatibility)
  */
-function importToInbox($dir, $userId, $db) {
-    $count = 0;
-    $storagePath = __DIR__ . '/../storage/sf_reports';
-    
-    // Scan all guild subdirectories
-    $files = glob("$dir/*/*.txt") ?: [];
-    foreach ($files as $file) {
-        $content = file_get_contents($file);
-        
-        // Parse Rust format
-        $parsed = parseRustBattleReport($content);
-        if (!$parsed) {
-            continue; // Skip invalid files
-        }
-        
-        // SERVER-OFFSET FIX: F9 ist 24h voraus
-        if (stripos($parsed['server'], 'f9.sfgame.net') !== false) {
-            // Datum um 1 Tag zurück
-            $date = new DateTime($parsed['date']);
-            $date->modify('-1 day');
-            $parsed['date'] = $date->format('Y-m-d');
-        }
-        
-        $guildName = $parsed['guild_name'];
-        $messageId = $parsed['message_id'];
-        
-        if (!$messageId) {
-            continue; // Skip if no message ID
-        }
-        
-        // Find guild ID
-        $guildId = findGuildIdByName($db, $guildName);
-        if (!$guildId) {
-            continue; // Guild not found in system
-        }
-        
-        // Move file to permanent storage
-        $guildDir = $storagePath . '/' . sanitizeGuildName($guildName);
-        if (!is_dir($guildDir)) {
-            mkdir($guildDir, 0775, true);
-        }
-        
-        $newPath = $guildDir . '/' . basename($file);
+function getDefaultAccounts($db, $userId) {
+    $stmt = $db->prepare("
+        SELECT id, account_name, sf_username, sf_password_encrypted, sf_iv, sf_hmac, selected_characters
+        FROM sf_accounts WHERE user_id = ? AND is_default = 1
+    ");
+    $stmt->execute([$userId]);
+    $account = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        // Insert into inbox BEFORE rename – so a duplicate skips without touching the file
-        try {
-            $stmt = $db->prepare("
-                INSERT INTO battle_inbox 
-                (user_id, guild_id, message_id, opponent_guild, battle_type,
-                 battle_date, battle_time, server, character_name, file_path)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ");
-            
-            $stmt->execute([
-                $userId,
-                $guildId,
-                $messageId,
-                $parsed['opponent'],
-                $parsed['type'],
-                $parsed['date'],
-                $parsed['time'],
-                $parsed['server'],
-                $parsed['character'],
-                $newPath
-            ]);
-            
-            // Only move file after successful insert
-            rename($file, $newPath);
-            $count++;
-        } catch (PDOException $e) {
-            // Duplicate message_id - skip (file stays in temp location)
-            if ($e->getCode() == 23000) {
-                continue;
-            }
-            throw $e;
-        }
+    if (!$account || !$account['sf_password_encrypted']) {
+        throw new Exception('Keine S&F Credentials gefunden');
     }
-    
-    return $count;
+
+    return [$account];
 }
