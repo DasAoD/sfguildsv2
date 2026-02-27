@@ -21,19 +21,43 @@ $db = getDB();
 $userId = $_SESSION['user_id'];
 
 // Lock: verhindert parallele Fetches desselben Users
+// flock() ist atomar – kein Race-Condition zwischen check und set
+// Lock-Datei enthält PID + Timestamp für Stale-Lock-Erkennung
 $lockDir  = __DIR__ . '/../storage/locks';
 $lockFile = $lockDir . '/fetch_user_' . $userId . '.lock';
 if (!is_dir($lockDir)) {
     mkdir($lockDir, 0775, true);
 }
-if (file_exists($lockFile) && (time() - filemtime($lockFile)) < 180) {
-    http_response_code(429);
-    echo json_encode(['error' => 'Fetch läuft bereits – bitte warten']);
+$lockFh = fopen($lockFile, 'c');
+if (!$lockFh) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Lock-Datei konnte nicht geöffnet werden']);
     exit;
 }
-touch($lockFile);
-register_shutdown_function(function() use ($lockFile) {
-    if (file_exists($lockFile)) { unlink($lockFile); }
+if (!flock($lockFh, LOCK_EX | LOCK_NB)) {
+    // Lock gehalten – prüfen ob Prozess noch lebt (Stale-Lock nach 180s)
+    $meta = json_decode(fread($lockFh, 256), true);
+    $stale = !isset($meta['pid']) || !isset($meta['ts'])
+        || (time() - $meta['ts']) > 180
+        || !file_exists('/proc/' . $meta['pid']);
+    if (!$stale) {
+        fclose($lockFh);
+        http_response_code(429);
+        echo json_encode(['error' => 'Fetch läuft bereits – bitte warten']);
+        exit;
+    }
+    // Stale Lock: überschreiben
+    flock($lockFh, LOCK_EX);
+}
+// Lock gehalten – PID + Timestamp reinschreiben
+ftruncate($lockFh, 0);
+rewind($lockFh);
+fwrite($lockFh, json_encode(['pid' => getmypid(), 'ts' => time()]));
+fflush($lockFh);
+register_shutdown_function(function() use ($lockFh, $lockFile) {
+    flock($lockFh, LOCK_UN);
+    fclose($lockFh);
+    @unlink($lockFile);
 });
 
 $input = json_decode(file_get_contents('php://input'), true);
