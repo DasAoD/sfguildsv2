@@ -19,7 +19,7 @@ $isLoggedIn = isLoggedIn();
 
 try {
     // Get guild info
-    $guild = queryOne('SELECT * FROM guilds WHERE id = ?', [$guildId]);
+    $guild = queryOne('SELECT id, name, server, notes, tag, crest_file, last_import_at, created_at, updated_at FROM guilds WHERE id = ?', [$guildId]);
     
     if (!$guild) {
         jsonResponse(['success' => false, 'message' => 'Gilde nicht gefunden'], 404);
@@ -33,7 +33,7 @@ try {
     }
     
     $members = query(
-        'SELECT *, 
+        'SELECT id, name, level, last_online, joined_at, gold, mentor, knight_hall, guild_pet, days_offline, notes, fired_at, left_at, rank, 
          CASE 
             WHEN (fired_at IS NOT NULL AND fired_at != "") OR (left_at IS NOT NULL AND left_at != "") THEN 1 
             ELSE 0 

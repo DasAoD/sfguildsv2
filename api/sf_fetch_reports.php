@@ -177,6 +177,9 @@ try {
             fclose($pipes[$i][1]);
 
             $errors = stream_get_contents($pipes[$i][2]);
+            if ($errors) {
+                logError('Subprocess stderr', ['char' => $charactersToFetch[$i]['name'] ?? 'Unbekannt', 'stderr' => $errors]);
+            }
             fclose($pipes[$i][2]);
             
             proc_close($process);
@@ -195,7 +198,7 @@ try {
                     'server' => $charactersToFetch[$i]['server'] ?? '',
                     'guild' => $charactersToFetch[$i]['guild'] ?? 'Unbekannt',
                     'count' => 0,
-                    'error' => $errors ?: 'Unbekannter Fehler'
+                    'error' => 'Fetch fehlgeschlagen'
                 ];
             }
         }
