@@ -86,9 +86,9 @@
 }
 
 .stat-card .stat-value .stat-max {
-    font-size: 1rem;
-    font-weight: 400;
-    color: var(--color-text-muted, #555);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text-muted, #888);
 }
 
 .stat-card .stat-bonus {
