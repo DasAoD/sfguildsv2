@@ -113,8 +113,7 @@ try {
         }
         
         // Start parallel processes for this account's characters
-        $processes = [];
-        $pipes = [];
+        $jobs = [];
         
         foreach ($charactersToFetch as $char) {
             $charJson = json_encode($char);
@@ -144,8 +143,7 @@ try {
                 logError('proc_open failed for character', ['char' => $char['name']]);
                 continue;
             }
-            $processes[] = $process;
-            $pipes[] = $procPipes;
+            $jobs[] = ['proc' => $process, 'pipes' => $procPipes, 'char' => $char];
             fclose($procPipes[0]);
         }
         
@@ -153,17 +151,19 @@ try {
         $accountResults = [];
         $fetchTimeout = 90;
         
-        foreach ($processes as $i => $process) {
+        foreach ($jobs as $job) {
+            $process = $job['proc'];
+            $char    = $job['char'];
             $startTime = time();
             $output = '';
-            $stream = $pipes[$i][1];
+            $stream = $job['pipes'][1];
             stream_set_blocking($stream, false);
 
             while (!feof($stream)) {
                 if ((time() - $startTime) > $fetchTimeout) {
                     proc_terminate($process, 9);
                     logError('Fetch-Timeout: Prozess abgebrochen', [
-                        'char' => $charactersToFetch[$i]['name'] ?? 'Unbekannt',
+                        'char' => $char['name'] ?? 'Unbekannt',
                         'timeout' => $fetchTimeout
                     ]);
                     break;
@@ -174,13 +174,13 @@ try {
                     if ($chunk !== false) { $output .= $chunk; }
                 }
             }
-            fclose($pipes[$i][1]);
+            fclose($job['pipes'][1]);
 
-            $errors = stream_get_contents($pipes[$i][2]);
+            $errors = stream_get_contents($job['pipes'][2]);
             if ($errors) {
-                logError('Subprocess stderr', ['char' => $charactersToFetch[$i]['name'] ?? 'Unbekannt', 'stderr' => $errors]);
+                logError('Subprocess stderr', ['char' => $char['name'] ?? 'Unbekannt', 'stderr' => $errors]);
             }
-            fclose($pipes[$i][2]);
+            fclose($job['pipes'][2]);
             
             proc_close($process);
             
@@ -194,9 +194,9 @@ try {
             } else {
                 $accountResults[] = [
                     'success' => false,
-                    'character' => $charactersToFetch[$i]['name'] ?? 'Unbekannt',
-                    'server' => $charactersToFetch[$i]['server'] ?? '',
-                    'guild' => $charactersToFetch[$i]['guild'] ?? 'Unbekannt',
+                    'character' => $char['name'] ?? 'Unbekannt',
+                    'server' => $char['server'] ?? '',
+                    'guild' => $char['guild'] ?? 'Unbekannt',
                     'count' => 0,
                     'error' => 'Fetch fehlgeschlagen'
                 ];
