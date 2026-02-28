@@ -115,8 +115,8 @@ try {
         $guild['active_members']     = $activeMembersCount;
         $guild['avg_level']          = (int)($members['avg_level']       ?? 0);
         $guild['knight_hall_total']  = (int)($members['knight_hall_total'] ?? 0);
-        $guild['goldschatz_total']   = $gsGruppenskill;
-        $guild['lehrmeister_total']  = $lmGruppenskill;
+        $guild['goldschatz_total']   = $goldschatzTotal + $raidPoints;
+        $guild['lehrmeister_total']  = $lehrmeisterTotal + $raidPoints;
         $guild['goldschatz_pct']     = $goldschatzPct;
         $guild['lehrmeister_pct']    = $lehrmeisterPct;
         $guild['last_update']        = $members['last_update']            ?? null;
