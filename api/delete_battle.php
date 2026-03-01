@@ -36,9 +36,11 @@ try {
         $stmt = $db->prepare("DELETE FROM battle_inbox WHERE id = ?");
         $stmt->execute([$inboxEntry['id']]);
 
-        // Delete .txt file from disk
-        if (!empty($inboxEntry['file_path']) && file_exists($inboxEntry['file_path'])) {
-            unlink($inboxEntry['file_path']);
+    // Delete .txt file from disk (path validation against arbitrary unlink)
+        $realPath = realpath($inboxEntry['file_path']);
+        $allowedBase = realpath(__DIR__ . '/../storage/sf_reports');
+        if ($realPath && $allowedBase && str_starts_with($realPath, $allowedBase . '/')) {
+            unlink($realPath);
         }
     }
 
