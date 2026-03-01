@@ -30,8 +30,16 @@ function redirect($url) {
 function jsonResponse($data, $statusCode = 200) {
     http_response_code($statusCode);
     header('Content-Type: application/json');
-    echo json_encode($data);
+    header('Cache-Control: no-store');
+    echo json_encode($data, JSON_UNESCAPED_UNICODE);
     exit;
+}
+
+/**
+ * Send a JSON error response
+ */
+function jsonError(string $message, int $statusCode = 400): never {
+    jsonResponse(['success' => false, 'error' => $message], $statusCode);
 }
 
 /**

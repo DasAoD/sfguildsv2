@@ -8,9 +8,7 @@ $db = getDB();
 $guildId = isset($_GET['guild_id']) ? (int)$_GET['guild_id'] : 0;
 
 if ($guildId <= 0) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Guild ID required']);
-    exit;
+    jsonError('Guild ID required', 400);
 }
 
 try {
@@ -20,9 +18,7 @@ try {
     $guild = $stmt->fetch();
     
     if (!$guild) {
-        http_response_code(404);
-        echo json_encode(['error' => 'Guild not found']);
-        exit;
+        jsonError('Guild not found', 404);
     }
     
     // Get battle counts
@@ -132,7 +128,7 @@ try {
     $stmt->execute([$guildId]);
     $inactive = $stmt->fetchAll();
     
-    echo json_encode([
+    jsonResponse([
         'success' => true,
         'guild' => $guild,
         'stats' => [
@@ -158,8 +154,5 @@ try {
     
 } catch (Exception $e) {
     logError('Battle stats failed', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-    http_response_code(500);
-    echo json_encode([
-        'error' => 'Fehler beim Laden der Statistiken'
-    ]);
+    jsonError('Fehler beim Laden der Statistiken', 500);
 }

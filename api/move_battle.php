@@ -17,9 +17,7 @@ $battleId = $input['battle_id'] ?? null;
 $targetGuildId = $input['target_guild_id'] ?? null;
 
 if (!$battleId || !$targetGuildId) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Battle ID and target guild ID required']);
-    exit;
+    jsonError('Battle ID and target guild ID required', 400);
 }
 
 try {
@@ -27,9 +25,9 @@ try {
     $stmt = $db->prepare("UPDATE sf_eval_battles SET guild_id = ? WHERE id = ?");
     $stmt->execute([$targetGuildId, $battleId]);
     
-    echo json_encode(['success' => true]);
+    jsonResponse(['success' => true]);
     
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Database error']);
+    logError('move_battle failed', ['error' => $e->getMessage()]);
+    jsonError('Database error', 500);
 }

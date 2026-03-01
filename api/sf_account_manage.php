@@ -11,13 +11,6 @@ require_once __DIR__ . '/../includes/bootstrap_api.php';
 
 header('Content-Type: application/json');
 
-// Catch PHP errors as JSON
-set_error_handler(function($errno, $errstr, $errfile, $errline) {
-    http_response_code(500);
-    echo json_encode(['error' => "PHP Error: $errstr in $errfile:$errline"]);
-    exit;
-});
-
 require_once __DIR__ . '/../includes/encryption.php';
 
 checkAuth();
@@ -37,13 +30,11 @@ try {
             handleDelete($db, $userId);
             break;
         default:
-            http_response_code(405);
-            echo json_encode(['error' => 'Method not allowed']);
+            jsonError('Method not allowed', 405);
     }
 } catch (Exception $e) {
-    http_response_code(500);
     logError('sf_account_manage failed', ['error' => $e->getMessage()]);
-    echo json_encode(['error' => 'Interner Fehler']);
+    jsonError('Interner Fehler', 500);
 }
 
 /**
@@ -70,10 +61,7 @@ function handleGet($db, $userId) {
         $account['guild_count'] = count($guilds);
     }
     
-    echo json_encode([
-        'success' => true,
-        'accounts' => $accounts
-    ]);
+    jsonResponse(['success' => true, 'accounts' => $accounts]);
 }
 
 /**
@@ -94,9 +82,7 @@ function handlePost($db, $userId) {
     }
     
     if (empty($sfUsername)) {
-        http_response_code(400);
-        echo json_encode(['error' => 'S&F Benutzername ist erforderlich']);
-        return;
+        jsonError('S&F Benutzername ist erforderlich', 400);
     }
     
     $db->beginTransaction();
@@ -107,10 +93,8 @@ function handlePost($db, $userId) {
             $stmt = $db->prepare("SELECT id FROM sf_accounts WHERE id = ? AND user_id = ?");
             $stmt->execute([$accountId, $userId]);
             if (!$stmt->fetch()) {
-                http_response_code(404);
-                echo json_encode(['error' => 'Account nicht gefunden']);
                 $db->rollBack();
-                return;
+                jsonError('Account nicht gefunden', 404);
             }
             
             if (!empty($sfPassword)) {
@@ -134,20 +118,16 @@ function handlePost($db, $userId) {
         } else {
             // CREATE new account
             if (empty($sfPassword)) {
-                http_response_code(400);
-                echo json_encode(['error' => 'Passwort ist beim Erstellen erforderlich']);
                 $db->rollBack();
-                return;
+                jsonError('Passwort ist beim Erstellen erforderlich', 400);
             }
             
             // Check for duplicate
             $stmt = $db->prepare("SELECT id FROM sf_accounts WHERE user_id = ? AND sf_username = ?");
             $stmt->execute([$userId, $sfUsername]);
             if ($stmt->fetch()) {
-                http_response_code(409);
-                echo json_encode(['error' => 'Ein Account mit diesem Benutzernamen existiert bereits']);
                 $db->rollBack();
-                return;
+                jsonError('Ein Account mit diesem Benutzernamen existiert bereits', 409);
             }
             
             $encrypted = encryptData($sfPassword);
@@ -182,11 +162,7 @@ function handlePost($db, $userId) {
         
         $db->commit();
         
-        echo json_encode([
-            'success' => true,
-            'account_id' => (int)$accountId,
-            'message' => $accountId && isset($input['id']) ? 'Account aktualisiert' : 'Account erstellt'
-        ]);
+        jsonResponse(['success' => true, 'account_id' => (int)$accountId, 'message' => $accountId && isset($input['id']) ? 'Account aktualisiert' : 'Account erstellt']);
         
     } catch (Exception $e) {
         $db->rollBack();
@@ -202,9 +178,7 @@ function handleDelete($db, $userId) {
     $accountId = $input['id'] ?? null;
     
     if (!$accountId) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Account-ID erforderlich']);
-        return;
+        jsonError('Account-ID erforderlich', 400);
     }
     
     $db->beginTransaction();
@@ -216,10 +190,8 @@ function handleDelete($db, $userId) {
         $account = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if (!$account) {
-            http_response_code(404);
-            echo json_encode(['error' => 'Account nicht gefunden']);
             $db->rollBack();
-            return;
+            jsonError('Account nicht gefunden', 404);
         }
         
         // Delete the account
@@ -239,10 +211,7 @@ function handleDelete($db, $userId) {
         
         $db->commit();
         
-        echo json_encode([
-            'success' => true,
-            'message' => 'Account gelöscht'
-        ]);
+        jsonResponse(['success' => true, 'message' => 'Account gelöscht']);
         
     } catch (Exception $e) {
         $db->rollBack();

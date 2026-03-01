@@ -16,9 +16,7 @@ try {
 $battleId = $input['battle_id'] ?? null;
 
 if (!$battleId) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Battle ID required']);
-    exit;
+    jsonError('Battle ID required', 400);
 }
 
 try {
@@ -26,9 +24,9 @@ try {
     $stmt = $db->prepare("DELETE FROM sf_eval_battles WHERE id = ?");
     $stmt->execute([$battleId]);
     
-    echo json_encode(['success' => true]);
+    jsonResponse(['success' => true]);
     
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Database error']);
+    logError('delete_battle failed', ['error' => $e->getMessage()]);
+    jsonError('Database error', 500);
 }

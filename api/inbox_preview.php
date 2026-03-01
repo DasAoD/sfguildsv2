@@ -18,9 +18,7 @@ $userId = $_SESSION['user_id'];
 $reportId = $_GET['id'] ?? null;
 
 if (!$reportId) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Report ID erforderlich']);
-    exit;
+    jsonError('Report ID erforderlich', 400);
 }
 
 try {
@@ -35,9 +33,7 @@ try {
     $report = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if (!$report) {
-        http_response_code(404);
-        echo json_encode(['error' => 'Report nicht gefunden']);
-        exit;
+        jsonError('Report nicht gefunden', 404);
     }
     
     // Read file content
@@ -47,13 +43,9 @@ try {
     
     $content = file_get_contents($report['file_path']);
     
-    echo json_encode([
-        'success' => true,
-        'content' => $content
-    ]);
+    jsonResponse(['success' => true, 'content' => $content]);
     
 } catch (Exception $e) {
-    http_response_code(500);
     logError('inbox_preview failed', ['error' => $e->getMessage()]);
-    echo json_encode(['error' => 'Interner Fehler']);
+    jsonError('Interner Fehler', 500);
 }

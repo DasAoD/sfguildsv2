@@ -50,14 +50,9 @@ try {
     $stmt->execute([$userId, $status]);
     $reports = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    echo json_encode([
-        'success' => true,
-        'reports' => $reports,
-        'count' => count($reports)
-    ]);
+    jsonResponse(['success' => true, 'reports' => $reports, 'count' => count($reports)]);
     
 } catch (Exception $e) {
-    http_response_code(500);
     logError('inbox_list failed', ['error' => $e->getMessage()]);
-    echo json_encode(['error' => 'Interner Fehler']);
+    jsonError('Interner Fehler', 500);
 }

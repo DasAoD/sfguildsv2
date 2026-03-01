@@ -11,15 +11,11 @@ $db = getDB();
 $guildId = isset($_POST['guild_id']) ? (int)$_POST['guild_id'] : 0;
 
 if ($guildId <= 0) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Guild ID required']);
-    exit;
+    jsonError('Guild ID required', 400);
 }
 
 if (!isset($_FILES['file']) || $_FILES['file']['error'] !== UPLOAD_ERR_OK) {
-    http_response_code(400);
-    echo json_encode(['error' => 'File upload failed']);
-    exit;
+    jsonError('File upload failed', 400);
 }
 
 $tmpFile = $_FILES['file']['tmp_name'];
@@ -44,17 +40,11 @@ try {
         'Übersprungen' => $result['skipped']
     ]);
     
-    echo json_encode([
-        'success' => true,
-        'inserted' => $result['inserted'],
-        'updated' => $result['updated'],
-        'skipped' => $result['skipped']
-    ]);
+    jsonResponse(['success' => true, 'inserted' => $result['inserted'], 'updated' => $result['updated'], 'skipped' => $result['skipped']]);
     
 } catch (Exception $e) {
-    http_response_code(500);
     logError('import_guild_members failed', ['error' => $e->getMessage()]);
-    echo json_encode(['error' => 'Interner Fehler']);
+    jsonError('Interner Fehler', 500);
 }
 
 /**

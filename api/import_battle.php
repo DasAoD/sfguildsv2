@@ -17,9 +17,7 @@ $time = $input['time'] ?? null;
 $text = $input['text'] ?? null;
 
 if (!$guildId || !$date || !$time || !$text) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Alle Felder sind erforderlich']);
-    exit;
+    jsonError('Alle Felder sind erforderlich', 400);
 }
 
 try {
@@ -40,9 +38,7 @@ try {
     $stmt = $db->prepare("SELECT id FROM sf_eval_battles WHERE raw_hash = ?");
     $stmt->execute([$rawHash]);
     if ($stmt->fetch()) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Dieser Kampfbericht wurde bereits importiert (Duplikat erkannt)']);
-        exit;
+        jsonError('Dieser Kampfbericht wurde bereits importiert (Duplikat erkannt)', 400);
     }
     
     // Additional check: same guild, date, time, type, and opponent
@@ -52,9 +48,7 @@ try {
     ");
     $stmt->execute([$guildId, $date, $time, $parsed['type'], $parsed['opponent']]);
     if ($stmt->fetch()) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Ein Kampf mit diesem Datum, Uhrzeit, Typ und Gegner existiert bereits']);
-        exit;
+        jsonError('Ein Kampf mit diesem Datum, Uhrzeit, Typ und Gegner existiert bereits', 400);
     }
     
     // Insert battle
@@ -91,17 +85,11 @@ try {
         ]);
     }
     
-    echo json_encode([
-        'success' => true,
-        'message' => 'Kampfbericht erfolgreich importiert',
-        'battle_id' => $battleId,
-        'participants_count' => count($parsed['participants'])
-    ]);
+    jsonResponse(['success' => true, 'message' => 'Kampfbericht erfolgreich importiert', 'battle_id' => $battleId, 'participants_count' => count($parsed['participants'])]);
     
 } catch (Exception $e) {
-    http_response_code(500);
     logError('import_battle failed', ['error' => $e->getMessage()]);
-    echo json_encode(['error' => 'Interner Fehler']);
+    jsonError('Interner Fehler', 500);
 }
 
 /**

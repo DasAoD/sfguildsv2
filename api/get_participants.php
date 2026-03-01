@@ -11,9 +11,7 @@ $db = getDB();
 $battleId = $_GET['battle_id'] ?? null;
 
 if (!$battleId) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Battle ID required']);
-    exit;
+    jsonError('Battle ID required', 400);
 }
 
 try {
@@ -43,12 +41,9 @@ try {
         }
     }
     
-    echo json_encode([
-        'participated' => $participated,
-        'not_participated' => $notParticipated
-    ]);
+    jsonResponse(['participated' => $participated, 'not_participated' => $notParticipated]);
     
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Database error']);
+    logError('get_participants failed', ['error' => $e->getMessage()]);
+    jsonError('Database error', 500);
 }

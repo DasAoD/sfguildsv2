@@ -28,9 +28,8 @@ try {
         handleGet($db, $userId);
     }
 } catch (Exception $e) {
-    http_response_code(500);
     logError('sf_get_characters failed', ['error' => $e->getMessage()]);
-    echo json_encode(['error' => 'Interner Fehler']);
+    jsonError('Interner Fehler', 500);
 }
 
 /**
@@ -124,9 +123,7 @@ function handlePost($db, $userId) {
         $account = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$account) {
-            http_response_code(404);
-            echo json_encode(['error' => 'Account nicht gefunden']);
-            return;
+            jsonError('Account nicht gefunden', 404);
         }
 
         $username = $account['sf_username'];
@@ -134,16 +131,14 @@ function handlePost($db, $userId) {
     }
 
     if (empty($username) || empty($password)) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Benutzername und Passwort erforderlich']);
-        return;
+        jsonError('Benutzername und Passwort erforderlich', 400);
     }
 
     $output     = runListChars($username, $password);
     $characters = parseCharacterList($output);
     enrichWithGuildNames($characters, $db, $userId);
 
-    echo json_encode(['success' => true, 'characters' => $characters]);
+    jsonResponse(['success' => true, 'characters' => $characters]);
 }
 
 /**
@@ -158,9 +153,7 @@ function handleGet($db, $userId) {
         $account = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$account) {
-            http_response_code(404);
-            echo json_encode(['error' => 'Account nicht gefunden']);
-            return;
+            jsonError('Account nicht gefunden', 404);
         }
     } else {
         $stmt = $db->prepare("SELECT sf_username, sf_password_encrypted, sf_iv, sf_hmac, selected_characters FROM sf_accounts WHERE user_id = ? AND is_default = 1");
@@ -168,9 +161,7 @@ function handleGet($db, $userId) {
         $account = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$account || !$account['sf_password_encrypted']) {
-            http_response_code(400);
-            echo json_encode(['error' => 'Kein S&F Account verknüpft']);
-            return;
+            jsonError('Kein S&F Account verknüpft', 400);
         }
     }
 
@@ -179,7 +170,7 @@ function handleGet($db, $userId) {
     $characters = parseCharacterList($output);
     enrichWithGuildNames($characters, $db, $userId);
 
-    echo json_encode(['success' => true, 'characters' => $characters, 'from_selection' => false]);
+    jsonResponse(['success' => true, 'characters' => $characters, 'from_selection' => false]);
 }
 
 /**

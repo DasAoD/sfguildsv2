@@ -25,18 +25,17 @@ $accountId = $input['account_id'] ?? null;
 $selectedCharacters = $input['characters'] ?? [];
 
 if (!is_array($selectedCharacters)) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Ungültige Daten']);
-    exit;
+    jsonError('Ungültige Daten', 400);
+
+
+
 }
 
 try {
     // Validate character data
     foreach ($selectedCharacters as $char) {
         if (!isset($char['name']) || !isset($char['server'])) {
-            http_response_code(400);
-            echo json_encode(['error' => 'Ungültige Charakter-Daten']);
-            exit;
+            jsonError('Ungültige Charakter-Daten', 400);
         }
     }
     
@@ -48,9 +47,7 @@ try {
         $stmt->execute([$json, $accountId, $userId]);
 
         if ($stmt->rowCount() === 0) {
-            http_response_code(404);
-            echo json_encode(['error' => 'Account nicht gefunden']);
-            exit;
+            jsonError('Account nicht gefunden', 404);
         }
     } else {
         // Kein account_id → Standard-Account verwenden
@@ -58,19 +55,13 @@ try {
         $stmt->execute([$json, $userId]);
 
         if ($stmt->rowCount() === 0) {
-            http_response_code(404);
-            echo json_encode(['error' => 'Kein Standard-Account gefunden']);
-            exit;
+            jsonError('Kein Standard-Account gefunden', 404);
         }
     }
     
-    echo json_encode([
-        'success' => true,
-        'count' => count($selectedCharacters)
-    ]);
+    jsonResponse(['success' => true, 'count' => count($selectedCharacters)]);
     
 } catch (Exception $e) {
-    http_response_code(500);
     logError('sf_save_characters failed', ['error' => $e->getMessage()]);
-    echo json_encode(['error' => 'Interner Fehler']);
+    jsonError('Interner Fehler', 500);
 }

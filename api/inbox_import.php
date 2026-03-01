@@ -19,9 +19,7 @@ $input = json_decode(file_get_contents('php://input'), true);
 $reportIds = $input['report_ids'] ?? [];
 
 if (empty($reportIds) || !is_array($reportIds)) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Keine Reports ausgewählt']);
-    exit;
+    jsonError('Keine Reports ausgewählt', 400);
 }
 
 try {
@@ -155,19 +153,12 @@ try {
         }
     }
     
-    echo json_encode([
-        'success' => true,
-        'count' => $imported,
-        'imported' => $imported,
-        'skipped' => count($errors),
-        'message' => implode("\n", $message)
-    ]);
+    jsonResponse(['success' => true, 'count' => $imported, 'imported' => $imported, 'skipped' => count($errors), 'message' => implode("\n", $message)]);
     
 } catch (Exception $e) {
     $db->rollBack();
-    http_response_code(500);
     logError('inbox_import failed', ['error' => $e->getMessage()]);
-    echo json_encode(['error' => 'Interner Fehler']);
+    jsonError('Interner Fehler', 500);
 }
 
 /**

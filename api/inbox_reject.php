@@ -21,9 +21,7 @@ try {
 $reportIds = $input['report_ids'] ?? [];
 
 if (empty($reportIds) || !is_array($reportIds)) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Keine Reports ausgewählt']);
-    exit;
+    jsonError('Keine Reports ausgewählt', 400);
 }
 
 try {
@@ -43,14 +41,9 @@ try {
     
     $affected = $stmt->rowCount();
     
-    echo json_encode([
-        'success' => true,
-        'rejected' => $affected,
-        'message' => "$affected Berichte abgelehnt"
-    ]);
+    jsonResponse(['success' => true, 'rejected' => $affected, 'message' => "$affected Berichte abgelehnt"]);
     
 } catch (Exception $e) {
-    http_response_code(500);
     logError('inbox_reject failed', ['error' => $e->getMessage()]);
-    echo json_encode(['error' => 'Interner Fehler']);
+    jsonError('Interner Fehler', 500);
 }

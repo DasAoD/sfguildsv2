@@ -24,13 +24,13 @@ try {
     ");
     $stmt->execute([$userId]);
     
-    echo json_encode([
-        'success' => true,
-        'message' => 'Verbindung getrennt'
-    ]);
+    jsonResponse(['success' => true, 'message' => 'Verbindung getrennt']);
+
+
+
+
     
 } catch (Exception $e) {
-    http_response_code(500);
     logError('sf_disconnect failed', ['error' => $e->getMessage()]);
-    echo json_encode(['error' => 'Interner Fehler']);
+    jsonError('Interner Fehler', 500);
 }
