@@ -61,7 +61,7 @@ function renderNavbar($activePage = '') {
 ");
             $stmt->execute([$_SESSION['user_id']]);
             $inboxCount = $stmt->fetchColumn();
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             // Ignore errors (table might not exist yet)
         }
     }

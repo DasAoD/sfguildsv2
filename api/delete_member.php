@@ -57,7 +57,7 @@ try {
         'message' => 'Mitglied "' . $member['name'] . '" wurde gelöscht'
     ]);
     
-} catch (Exception $e) {
+} catch (Throwable $e) {
     logError('Delete member failed', ['id' => $memberId, 'error' => $e->getMessage()]);
     jsonResponse([
         'success' => false,

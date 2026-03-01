@@ -193,7 +193,7 @@ try {
         ]);
     }
     
-} catch (Exception $e) {
+} catch (Throwable $e) {
     logError('admin_player_merge failed', ['error' => $e->getMessage()]);
     jsonResponse(['success' => false, 'message' => 'Interner Fehler'], 500);
 }

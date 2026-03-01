@@ -104,7 +104,7 @@ try {
         'monthly' => $monthlyData
     ]);
     
-} catch (Exception $e) {
+} catch (Throwable $e) {
     logError('Player details failed', ['error' => $e->getMessage()]);
     jsonResponse(['success' => false, 'message' => 'Fehler beim Laden der Spieler-Details'], 500);
 }

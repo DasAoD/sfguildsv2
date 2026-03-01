@@ -91,7 +91,7 @@ try {
     
     jsonResponse(['success' => true, 'message' => 'Kampfbericht erfolgreich importiert', 'battle_id' => $battleId, 'participants_count' => count($parsed['participants'])]);
     
-} catch (Exception $e) {
+} catch (Throwable $e) {
     logError('import_battle failed', ['error' => $e->getMessage()]);
     jsonError('Interner Fehler', 500);
 }

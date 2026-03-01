@@ -52,7 +52,7 @@ try {
     
     jsonResponse(['success' => true, 'reports' => $reports, 'count' => count($reports)]);
     
-} catch (Exception $e) {
+} catch (Throwable $e) {
     logError('inbox_list failed', ['error' => $e->getMessage()]);
     jsonError('Interner Fehler', 500);
 }

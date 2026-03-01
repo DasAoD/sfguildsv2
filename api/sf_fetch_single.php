@@ -196,7 +196,7 @@ try {
         'count' => $count
     ]);
     
-} catch (Exception $e) {
+} catch (Throwable $e) {
     logError('sf_fetch_single failed', [
         'character' => $character,
         'server'    => $server,

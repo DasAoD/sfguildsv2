@@ -32,7 +32,7 @@ try {
         default:
             jsonError('Method not allowed', 405);
     }
-} catch (Exception $e) {
+} catch (Throwable $e) {
     logError('sf_account_manage failed', ['error' => $e->getMessage()]);
     jsonError('Interner Fehler', 500);
 }
@@ -168,7 +168,7 @@ function handlePost($db, $userId) {
         
         jsonResponse(['success' => true, 'account_id' => (int)$accountId, 'message' => $accountId && isset($input['id']) ? 'Account aktualisiert' : 'Account erstellt']);
         
-    } catch (Exception $e) {
+    } catch (Throwable $e) {
         $db->rollBack();
         throw $e;
     }
@@ -221,7 +221,7 @@ function handleDelete($db, $userId) {
         
         jsonResponse(['success' => true, 'message' => 'Account gelöscht']);
         
-    } catch (Exception $e) {
+    } catch (Throwable $e) {
         $db->rollBack();
         throw $e;
     }

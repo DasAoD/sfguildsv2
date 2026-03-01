@@ -27,7 +27,7 @@ try {
     } else {
         handleGet($db, $userId);
     }
-} catch (Exception $e) {
+} catch (Throwable $e) {
     logError('sf_get_characters failed', ['error' => $e->getMessage()]);
     jsonError('Interner Fehler', 500);
 }

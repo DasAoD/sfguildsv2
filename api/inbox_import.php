@@ -137,7 +137,7 @@ try {
             
             $imported++;
             
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             logError("inbox_import report failed", ["report_id" => $reportId, "error" => $e->getMessage()]);
                 $errors[] = "Report ID $reportId: Verarbeitungsfehler";
         }
@@ -159,7 +159,7 @@ try {
     
     jsonResponse(['success' => true, 'count' => $imported, 'imported' => $imported, 'skipped' => count($errors), 'message' => implode("\n", $message)]);
     
-} catch (Exception $e) {
+} catch (Throwable $e) {
     $db->rollBack();
     logError('inbox_import failed', ['error' => $e->getMessage()]);
     jsonError('Interner Fehler', 500);

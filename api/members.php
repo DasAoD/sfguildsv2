@@ -190,7 +190,7 @@ try {
         'is_logged_in' => $isLoggedIn
     ]);
     
-} catch (Exception $e) {
+} catch (Throwable $e) {
     logError('Members API failed', ['guild_id' => $guildId, 'error' => $e->getMessage()]);
     jsonResponse([
         'success' => false,

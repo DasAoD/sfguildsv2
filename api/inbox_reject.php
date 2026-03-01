@@ -43,7 +43,7 @@ try {
     
     jsonResponse(['success' => true, 'rejected' => $affected, 'message' => "$affected Berichte abgelehnt"]);
     
-} catch (Exception $e) {
+} catch (Throwable $e) {
     logError('inbox_reject failed', ['error' => $e->getMessage()]);
     jsonError('Interner Fehler', 500);
 }

@@ -45,7 +45,7 @@ try {
     
     jsonResponse(['success' => true, 'content' => $content]);
     
-} catch (Exception $e) {
+} catch (Throwable $e) {
     logError('inbox_preview failed', ['error' => $e->getMessage()]);
     jsonError('Interner Fehler', 500);
 }

@@ -81,7 +81,7 @@ try {
         ], 400);
     }
     
-} catch (Exception $e) {
+} catch (Throwable $e) {
     logError('Update member failed', ['id' => $memberId, 'field' => $field, 'error' => $e->getMessage()]);
     jsonResponse([
         'success' => false,

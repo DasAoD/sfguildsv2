@@ -65,7 +65,7 @@ try {
             jsonResponse(['success' => false, 'message' => 'Ungültige Aktion'], 400);
     }
     
-} catch (Exception $e) {
+} catch (Throwable $e) {
     logError('Logs API failed', ['error' => $e->getMessage()]);
     jsonResponse([
         'success' => false,

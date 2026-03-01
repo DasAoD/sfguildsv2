@@ -42,7 +42,7 @@ try {
     
     jsonResponse(['success' => true, 'inserted' => $result['inserted'], 'updated' => $result['updated'], 'skipped' => $result['skipped']]);
     
-} catch (Exception $e) {
+} catch (Throwable $e) {
     logError('import_guild_members failed', ['error' => $e->getMessage()]);
     jsonError('Interner Fehler', 500);
 }

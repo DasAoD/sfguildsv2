@@ -61,7 +61,7 @@ try {
     
     jsonResponse(['success' => true, 'count' => count($selectedCharacters)]);
     
-} catch (Exception $e) {
+} catch (Throwable $e) {
     logError('sf_save_characters failed', ['error' => $e->getMessage()]);
     jsonError('Interner Fehler', 500);
 }

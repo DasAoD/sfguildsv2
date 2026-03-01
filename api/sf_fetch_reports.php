@@ -218,7 +218,7 @@ try {
         'results' => array_merge(...array_column($allResults, 'results'))
     ]);
     
-} catch (Exception $e) {
+} catch (Throwable $e) {
     logError('sf_fetch_reports failed', ['error' => $e->getMessage()]);
     jsonError('Interner Fehler', 500);
 }

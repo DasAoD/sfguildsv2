@@ -153,7 +153,7 @@ try {
             jsonResponse(['success' => false, 'message' => 'Methode nicht erlaubt'], 405);
     }
     
-} catch (Exception $e) {
+} catch (Throwable $e) {
     logError('User management failed', ['error' => $e->getMessage()]);
     jsonResponse([
         'success' => false,

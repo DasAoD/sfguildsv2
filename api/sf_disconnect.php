@@ -30,7 +30,7 @@ try {
 
 
     
-} catch (Exception $e) {
+} catch (Throwable $e) {
     logError('sf_disconnect failed', ['error' => $e->getMessage()]);
     jsonError('Interner Fehler', 500);
 }

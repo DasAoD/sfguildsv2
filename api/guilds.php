@@ -129,7 +129,7 @@ try {
         'guilds' => $guilds
     ]);
     
-} catch (Exception $e) {
+} catch (Throwable $e) {
     logError('Guilds API failed', ['error' => $e->getMessage()]);
     jsonResponse([
         'success' => false,

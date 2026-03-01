@@ -66,7 +66,7 @@ try {
                 // da aktuelle Änderungen noch in der -wal Datei stecken können.
                 $db = getDB();
                 $db->exec("VACUUM INTO " . $db->quote($tmpPath));
-            } catch (Exception $e) {
+            } catch (Throwable $e) {
                 logError('Backup VACUUM INTO failed', ['error' => $e->getMessage()]);
                 jsonResponse(['success' => false, 'message' => 'Backup fehlgeschlagen'], 500);
             }
@@ -85,7 +85,7 @@ try {
             jsonResponse(['success' => false, 'message' => 'Ungültige Aktion'], 400);
     }
     
-} catch (Exception $e) {
+} catch (Throwable $e) {
     logError('System API failed', ['error' => $e->getMessage()]);
     jsonResponse([
         'success' => false,

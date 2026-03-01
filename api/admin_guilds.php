@@ -101,7 +101,7 @@ try {
                                     $crestError = 'Bildformat nicht unterstützt oder Datei beschädigt';
                                     logError("Image load failed (create guild)", ["mime" => $mimeType, "guild_id" => $guildId]);
                                 }
-                            } catch (Exception $e) {
+                            } catch (Throwable $e) {
                                 logError('Bildverarbeitung fehlgeschlagen (create)', ['error' => $e->getMessage()]);
                                 $crestError = 'Fehler bei der Bildverarbeitung';
                             }
@@ -206,7 +206,7 @@ try {
                                     $crestFile = null;
                                     logError("Image load failed (update guild)", ["mime" => $mimeType, "guild_id" => $guildId]);
                                 }
-                            } catch (Exception $e) {
+                            } catch (Throwable $e) {
                                 logError("Image conversion failed (update guild)", ["error" => $e->getMessage()]);
                                 $crestFile = null;
                             }
@@ -333,7 +333,7 @@ try {
             jsonResponse(['success' => false, 'message' => 'Methode nicht erlaubt'], 405);
     }
     
-} catch (Exception $e) {
+} catch (Throwable $e) {
     logError("Guild management failed", ["error" => $e->getMessage()]);
     jsonResponse([
         'success' => false,

@@ -152,7 +152,7 @@ try {
         ]
     ]);
     
-} catch (Exception $e) {
+} catch (Throwable $e) {
     logError('Battle stats failed', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
     jsonError('Fehler beim Laden der Statistiken', 500);
 }
