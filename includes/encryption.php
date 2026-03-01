@@ -52,7 +52,7 @@ function decryptData($encrypted, $iv, $hmac = null) {
     
     $key = getEncryptionKey();
     
-$encryptedRaw = base64_decode($encrypted, true);
+    $encryptedRaw = base64_decode($encrypted, true);
     $ivRaw        = base64_decode($iv, true);
 
     if ($encryptedRaw === false || $ivRaw === false || strlen($ivRaw) !== 16) {
