@@ -20,13 +20,34 @@ if (!$battleId) {
 }
 
 try {
-    // Delete battle (participants will be deleted automatically due to CASCADE)
+    $db->beginTransaction();
+
+    // Find related inbox entry (to get file_path before deleting)
+    $stmt = $db->prepare("SELECT id, file_path FROM battle_inbox WHERE imported_to_battle_id = ?");
+    $stmt->execute([$battleId]);
+    $inboxEntry = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    // Delete battle (participants deleted automatically via CASCADE)
     $stmt = $db->prepare("DELETE FROM sf_eval_battles WHERE id = ?");
     $stmt->execute([$battleId]);
-    
+
+    // Delete inbox entry
+    if ($inboxEntry) {
+        $stmt = $db->prepare("DELETE FROM battle_inbox WHERE id = ?");
+        $stmt->execute([$inboxEntry['id']]);
+
+        // Delete .txt file from disk
+        if (!empty($inboxEntry['file_path']) && file_exists($inboxEntry['file_path'])) {
+            unlink($inboxEntry['file_path']);
+        }
+    }
+
+    $db->commit();
+
     jsonResponse(['success' => true]);
-    
+
 } catch (PDOException $e) {
+    $db->rollBack();
     logError('delete_battle failed', ['error' => $e->getMessage()]);
     jsonError('Database error', 500);
 }
