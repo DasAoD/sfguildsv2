@@ -80,12 +80,31 @@ try {
             }
 
             // Passwort-Reset
-            if (!empty($input['new_password'])) {
-                $newPassword = trim($input['new_password']);
+            if (!empty($input['new_password']) || !empty($input['reset_password'])) {
+                if (!empty($input['reset_password'])) {
+                    // Admin-initiierter Reset: zufälliges Einmal-Passwort
+                    $newPassword = bin2hex(random_bytes(8));
+                    $mustChange = 1;
+                } else {
+                    // Manuelles neues Passwort
+                    $newPassword = trim($input['new_password']);
+                    $mustChange = 0;
+                }
+                if (strlen($newPassword) < 8) {
+                    jsonError('Passwort muss mindestens 8 Zeichen lang sein', 400);
+                }
                 $passwordHash = password_hash($newPassword, PASSWORD_DEFAULT);
-                execute('UPDATE users SET password_hash = ? WHERE id = ?', [$passwordHash, $userId]);
-                logActivity('Passwort zurückgesetzt', ['Ziel-User-ID' => $userId]);
-                jsonResponse(['success' => true, 'message' => 'Passwort erfolgreich geändert']);
+                execute(
+                    'UPDATE users SET password_hash = ?, must_change_password = ?, updated_at = datetime(\'now\') WHERE id = ?',
+                    [$passwordHash, $mustChange, $userId]
+                );
+                $targetUser = queryOne('SELECT username FROM users WHERE id = ?', [$userId]);
+                logActivity('Passwort zurückgesetzt', ['Ziel-User' => $targetUser['username'] ?? '?', 'Einmal-Reset' => $mustChange]);
+                $response = ['success' => true, 'message' => 'Passwort erfolgreich zurückgesetzt'];
+                if ($mustChange) {
+                    $response['temp_password'] = $newPassword;
+                }
+                jsonResponse($response);
             }
 
             // Rollen-Änderung

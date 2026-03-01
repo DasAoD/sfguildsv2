@@ -35,7 +35,7 @@ if (!$user || !password_verify($currentPassword, $user['password_hash'])) {
 }
 
 execute(
-    'UPDATE users SET password_hash = ? WHERE id = ?',
+    'UPDATE users SET password_hash = ?, must_change_password = 0, updated_at = datetime(\'now\') WHERE id = ?',
     [password_hash($newPassword, PASSWORD_DEFAULT), $userId]
 );
 

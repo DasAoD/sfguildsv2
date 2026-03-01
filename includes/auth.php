@@ -200,7 +200,7 @@ function verifyUser($username, $password) {
     require_once __DIR__ . '/../config/database.php';
     
     $user = queryOne(
-        'SELECT id, username, password_hash FROM users WHERE username = ?',
+        'SELECT id, username, password_hash, must_change_password FROM users WHERE username = ?',
         [$username]
     );
     

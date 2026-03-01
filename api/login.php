@@ -42,6 +42,16 @@ if ($user) {
     // Login successful
     login($user['id'], $user['username']);
     logActivity('Login erfolgreich', ['User' => $user['username']]);
+
+    // Prüfen ob Passwort-Reset erforderlich
+    if (!empty($user['must_change_password'])) {
+        jsonResponse([
+            'success' => true,
+            'must_change_password' => true,
+            'redirect' => '/change_password.php'
+        ]);
+    }
+
     jsonResponse([
         'success' => true,
         'message' => 'Login erfolgreich',
