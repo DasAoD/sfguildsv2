@@ -238,7 +238,11 @@ try {
             
         case 'DELETE':
             // Delete guild
-            $input = json_decode(file_get_contents('php://input'), true);
+            try {
+                $input = json_decode(file_get_contents('php://input'), true, 512, JSON_THROW_ON_ERROR);
+            } catch (JsonException $e) {
+                jsonError('Ungültige JSON-Daten', 400);
+            }
             $guildId = isset($input['guild_id']) ? (int)$input['guild_id'] : 0;
             $force = $input['force'] ?? false; // Optional: Force delete with members
 

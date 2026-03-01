@@ -11,7 +11,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     jsonResponse(['success' => false, 'message' => 'Methode nicht erlaubt'], 405);
 }
 
-$input = json_decode(file_get_contents('php://input'), true);
+try {
+    $input = json_decode(file_get_contents('php://input'), true, 512, JSON_THROW_ON_ERROR);
+} catch (JsonException $e) {
+    jsonError('Ungültige JSON-Daten', 400);
+}
 $currentPassword = $input['current_password'] ?? '';
 $newPassword     = $input['new_password'] ?? '';
 

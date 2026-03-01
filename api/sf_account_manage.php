@@ -68,7 +68,11 @@ function handleGet($db, $userId) {
  * POST: Create or update an SF account
  */
 function handlePost($db, $userId) {
-    $input = json_decode(file_get_contents('php://input'), true);
+    try {
+        $input = json_decode(file_get_contents('php://input'), true, 512, JSON_THROW_ON_ERROR);
+    } catch (JsonException $e) {
+        jsonError('Ungültige JSON-Daten', 400);
+    }
     
     $accountId = $input['id'] ?? null;
     $accountName = trim($input['account_name'] ?? '');
@@ -174,7 +178,11 @@ function handlePost($db, $userId) {
  * DELETE: Remove an SF account
  */
 function handleDelete($db, $userId) {
-    $input = json_decode(file_get_contents('php://input'), true);
+    try {
+        $input = json_decode(file_get_contents('php://input'), true, 512, JSON_THROW_ON_ERROR);
+    } catch (JsonException $e) {
+        jsonError('Ungültige JSON-Daten', 400);
+    }
     $accountId = $input['id'] ?? null;
     
     if (!$accountId) {

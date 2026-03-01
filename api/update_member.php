@@ -14,7 +14,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 // Get input
-$input = json_decode(file_get_contents('php://input'), true);
+try {
+    $input = json_decode(file_get_contents('php://input'), true, 512, JSON_THROW_ON_ERROR);
+} catch (JsonException $e) {
+    jsonError('Ungültige JSON-Daten', 400);
+}
 $memberId = $input['member_id'] ?? null;
 $field = $input['field'] ?? null;
 $value = $input['value'] ?? null;

@@ -10,7 +10,11 @@ requireAdminAPI();
 $db = getDB();
 
 // Get POST data
-$input = json_decode(file_get_contents('php://input'), true);
+try {
+    $input = json_decode(file_get_contents('php://input'), true, 512, JSON_THROW_ON_ERROR);
+} catch (JsonException $e) {
+    jsonError('Ungültige JSON-Daten', 400);
+}
 $guildId = $input['guild_id'] ?? null;
 $date = $input['date'] ?? null;
 $time = $input['time'] ?? null;

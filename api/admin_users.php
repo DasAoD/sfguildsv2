@@ -27,7 +27,11 @@ try {
             
         case 'POST':
             // Create new user
-            $input = json_decode(file_get_contents('php://input'), true);
+            try {
+                $input = json_decode(file_get_contents('php://input'), true, 512, JSON_THROW_ON_ERROR);
+            } catch (JsonException $e) {
+                jsonError('Ungültige JSON-Daten', 400);
+            }
             $username = trim($input['username'] ?? '');
             $password = trim($input['password'] ?? '');
             $role = $input['role'] ?? 'user';
@@ -64,7 +68,11 @@ try {
             break;
             
         case 'PUT':
-            $input = json_decode(file_get_contents('php://input'), true);
+            try {
+                $input = json_decode(file_get_contents('php://input'), true, 512, JSON_THROW_ON_ERROR);
+            } catch (JsonException $e) {
+                jsonError('Ungültige JSON-Daten', 400);
+            }
             $userId = $input['user_id'] ?? null;
 
             if (!$userId) {
@@ -105,7 +113,11 @@ try {
             
         case 'DELETE':
             // Delete user
-            $input = json_decode(file_get_contents('php://input'), true);
+            try {
+                $input = json_decode(file_get_contents('php://input'), true, 512, JSON_THROW_ON_ERROR);
+            } catch (JsonException $e) {
+                jsonError('Ungültige JSON-Daten', 400);
+            }
             $userId = $input['user_id'] ?? null;
             
             if (!$userId) {
