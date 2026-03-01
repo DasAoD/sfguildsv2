@@ -52,13 +52,21 @@ function decryptData($encrypted, $iv, $hmac = null) {
     
     $key = getEncryptionKey();
     
-    $encryptedRaw = base64_decode($encrypted);
-    $ivRaw        = base64_decode($iv);
+$encryptedRaw = base64_decode($encrypted, true);
+    $ivRaw        = base64_decode($iv, true);
+
+    if ($encryptedRaw === false || $ivRaw === false || strlen($ivRaw) !== 16) {
+        throw new Exception('Decryption failed – invalid input data');
+    }
 
     // HMAC-Prüfung wenn vorhanden (abwärtskompatibel für alte Einträge ohne HMAC)
     if ($hmac !== null) {
+        $hmacRaw = base64_decode($hmac, true);
+        if ($hmacRaw === false) {
+            throw new Exception('Decryption failed – invalid HMAC');
+        }
         $expectedHmac = hash_hmac('sha256', $encryptedRaw . $ivRaw, $key, true);
-        if (!hash_equals($expectedHmac, base64_decode($hmac))) {
+        if (!hash_equals($expectedHmac, $hmacRaw)) {
             throw new Exception('HMAC verification failed – data may have been tampered with');
         }
     }
