@@ -42,10 +42,7 @@ function checkAuth() {
  */
 function checkAuthAPI() {
     if (!isLoggedIn()) {
-        http_response_code(401);
-        header('Content-Type: application/json');
-        echo json_encode(['success' => false, 'message' => 'Nicht angemeldet', 'error' => 'unauthorized']);
-        exit;
+        jsonError('Nicht angemeldet', 401);
     }
 }
 
@@ -136,10 +133,7 @@ function requireAdmin() {
 function requireAdminAPI() {
     checkAuthAPI();
     if (!isAdmin()) {
-        http_response_code(403);
-        header('Content-Type: application/json');
-        echo json_encode(['success' => false, 'message' => 'Keine Berechtigung', 'error' => 'forbidden']);
-        exit;
+        jsonError('Keine Berechtigung', 403);
     }
 }
 
@@ -149,10 +143,7 @@ function requireAdminAPI() {
 function requireModeratorAPI() {
     checkAuthAPI();
     if (!isModerator()) {
-        http_response_code(403);
-        header('Content-Type: application/json');
-        echo json_encode(['success' => false, 'message' => 'Keine Berechtigung', 'error' => 'forbidden']);
-        exit;
+        jsonError('Keine Berechtigung', 403);
     }
 }
 
