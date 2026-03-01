@@ -62,6 +62,9 @@ try {
     jsonError('Ungültige JSON-Daten', 400);
 }
 $requestedAccountIds = $input['account_ids'] ?? [];
+if (count($requestedAccountIds) > 10) {
+    jsonError('Zu viele Account-IDs (max. 10)', 400);
+}
 $singleServer = $input['server'] ?? null;
 $singleCharacter = $input['character'] ?? null;
 
