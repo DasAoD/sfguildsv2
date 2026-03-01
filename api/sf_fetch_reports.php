@@ -30,9 +30,7 @@ if (!is_dir($lockDir)) {
 }
 $lockFh = fopen($lockFile, 'c');
 if (!$lockFh) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Lock-Datei konnte nicht geöffnet werden']);
-    exit;
+    jsonError('Lock-Datei konnte nicht geöffnet werden', 500);
 }
 if (!flock($lockFh, LOCK_EX | LOCK_NB)) {
     // Lock gehalten – prüfen ob Prozess noch lebt (Stale-Lock nach 180s)
@@ -42,9 +40,7 @@ if (!flock($lockFh, LOCK_EX | LOCK_NB)) {
         || !file_exists('/proc/' . $meta['pid']);
     if (!$stale) {
         fclose($lockFh);
-        http_response_code(429);
-        echo json_encode(['error' => 'Fetch läuft bereits – bitte warten']);
-        exit;
+        jsonError('Fetch läuft bereits – bitte warten', 429);
     }
     // Stale Lock: überschreiben
     flock($lockFh, LOCK_EX);
@@ -210,7 +206,7 @@ try {
         ];
     }
     
-    echo json_encode([
+    jsonResponse([
         'success' => true,
         'total' => $totalCount,
         'accounts' => $allResults,
@@ -219,9 +215,8 @@ try {
     ]);
     
 } catch (Exception $e) {
-    http_response_code(500);
     logError('sf_fetch_reports failed', ['error' => $e->getMessage()]);
-    echo json_encode(['error' => 'Interner Fehler']);
+    jsonError('Interner Fehler', 500);
 }
 
 /**
