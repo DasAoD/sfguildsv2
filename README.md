@@ -132,9 +132,9 @@ certbot --nginx -d sfguildsv2.example.com
 
 ## Daten-Import
 
-Mitgliederdaten werden via [SFTools](https://sftools.mar21.eu) als CSV exportiert und über den automatisierten Import-Prozess eingelesen.
+Kampfberichte werden automatisch über die [sf-api von The Marenga](https://github.com/the-marenga/sf-api) abgeholt – eine Rust-basierte API, die direkt mit den S&F-Game-Servern kommuniziert. Die zugehörigen CLI-Tools sind in Rust geschrieben und nutzen diese Bibliothek.
 
-Der systemd-Service überwacht das `storage/import/`-Verzeichnis und verarbeitet neue CSV-Dateien automatisch.
+Mitgliederdaten werden via [SFTools](https://sftools.mar21.eu) als CSV exportiert und über den automatisierten Import-Prozess eingelesen. Ein systemd-Service überwacht das `storage/import/`-Verzeichnis und verarbeitet neue Dateien automatisch.
 
 ## Sicherheit
 
