@@ -28,10 +28,10 @@ try {
             
         case 'POST':
             // Create new guild
-            $name = trim($_POST['name'] ?? '');
-            $server = trim($_POST['server'] ?? '');
-            $tag = trim($_POST['tag'] ?? '');
-            $notes = trim($_POST['notes'] ?? '');
+            $name   = mb_substr(trim($_POST['name']   ?? ''), 0, 30);
+            $server = mb_substr(trim($_POST['server'] ?? ''), 0, 20);
+            $tag    = mb_substr(trim($_POST['tag']    ?? ''), 0, 10);
+            $notes  = mb_substr(trim($_POST['notes']  ?? ''), 0, 1000);
             $crestFile = null;
             $crestUploaded = false;
             $crestError = null;
@@ -129,10 +129,10 @@ try {
         case 'PUT':
             // Update guild (via POST with _method=PUT)
             $guildId = isset($_POST['guild_id']) ? (int)$_POST['guild_id'] : 0;
-            $name = trim($_POST['name'] ?? '');
-            $server = trim($_POST['server'] ?? '');
-            $tag = trim($_POST['tag'] ?? '');
-            $notes = trim($_POST['notes'] ?? '');
+            $name   = mb_substr(trim($_POST['name']   ?? ''), 0, 30);
+            $server = mb_substr(trim($_POST['server'] ?? ''), 0, 20);
+            $tag    = mb_substr(trim($_POST['tag']    ?? ''), 0, 10);
+            $notes  = mb_substr(trim($_POST['notes']  ?? ''), 0, 1000);
 
             if (!$guildId || empty($name) || empty($server)) {
                 jsonResponse(['success' => false, 'message' => 'Guild ID, Name und Server erforderlich'], 400);
