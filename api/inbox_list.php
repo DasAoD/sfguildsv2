@@ -13,8 +13,11 @@ $db = getDB();
 $userId = $_SESSION['user_id'];
 
 try {
-    // Get status filter (default: pending)
-    $status = $_GET['status'] ?? 'pending';
+    // Get status filter – whitelist validation (default: pending)
+    $allowedStatuses = ['pending', 'imported', 'rejected'];
+    $status = in_array($_GET['status'] ?? '', $allowedStatuses, true)
+        ? $_GET['status']
+        : 'pending';
     
     $stmt = $db->prepare("
         SELECT 
