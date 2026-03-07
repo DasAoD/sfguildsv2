@@ -103,8 +103,8 @@ try {
         $input = json_decode(file_get_contents('php://input'), true, 512, JSON_THROW_ON_ERROR);
         
         $guildId = $input['guild_id'] ?? null;
-        $oldName = trim($input['old_name'] ?? '');
-        $newName = trim($input['new_name'] ?? '');
+        $oldName = mb_substr(trim($input['old_name'] ?? ''), 0, 50);
+        $newName = mb_substr(trim($input['new_name'] ?? ''), 0, 50);
         
         if (!$guildId || !$oldName || !$newName) {
             jsonResponse(['success' => false, 'message' => 'guild_id, old_name und new_name erforderlich'], 400);
