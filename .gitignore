@@ -9,7 +9,6 @@
 /.env.local
 /.env.*.local
 !/.env.example
-.claude/
 
 # --- Database ---
 /data/*.sqlite
@@ -57,4 +56,8 @@ Thumbs.db
 
 # Migration scripts (run once, then delete)
 migrate_*.php
+
+# --- Claude Code ---
+CLAUDE.md
 .claude/
+.claude/worktrees/
