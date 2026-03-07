@@ -63,7 +63,7 @@ $pageTitle = 'Dashboard';
 
             grid.innerHTML = guilds.map(guild => {
                 const crestImg = guild.crest_file 
-                    ? `<img src="/assets/images/${guild.crest_file}" alt="${escapeHtml(guild.name)} Wappen" style="width:100%;height:100%;object-fit:contain">`
+                    ? `<img src="/assets/images/${escapeHtml(guild.crest_file)}" alt="${escapeHtml(guild.name)} Wappen" style="width:100%;height:100%;object-fit:contain">`
                     : '<img src="/assets/images/helmet.png" alt="Wappen" style="width:3rem;height:3rem;object-fit:contain">';
                 return `
                 <div class="guild-card" onclick="location.href='/guild.php?id=${guild.id}'">
