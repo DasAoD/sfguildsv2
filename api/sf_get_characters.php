@@ -33,12 +33,12 @@ try {
 }
 
 /**
- * list_chars via SSH auf Heimserver ausführen (Residential-IP).
+ * list_chars lokal ausführen – PHP und Rust laufen auf demselben Host.
  * Credentials werden via stdin übergeben – nie in argv/Prozessliste sichtbar.
  * Hard-Timeout: 30 Sekunden, danach SIGKILL.
  */
 function runListChars(string $username, string $password): array {
-    $sshCmd = ['sudo', '-u', 'sfetch', '/opt/sfetch/run_fetch.sh', '/root/sf-api/run_list_chars_wrapper.sh'];
+    $sshCmd = ['/opt/sf-api/run_list_chars_wrapper.sh'];
 
     $descriptorspec = [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
     $process = proc_open($sshCmd, $descriptorspec, $pipes, null, $_ENV);
