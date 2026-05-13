@@ -15,9 +15,7 @@ fn opt_env(key: &str) -> Option<String> {
 }
 
 fn sanitize_filename(s: &str) -> String {
-    // Transliteriere zuerst: Пох Нах → Pokh Nakh
     let transliterated = unidecode(s);
-    
     let mut out = String::new();
     for ch in transliterated.chars() {
         match ch {
@@ -26,12 +24,7 @@ fn sanitize_filename(s: &str) -> String {
             _ => {}
         }
     }
-    
-    if out.is_empty() {
-        "unknown".to_string()
-    } else {
-        out
-    }
+    if out.is_empty() { "unknown".to_string() } else { out }
 }
 
 #[derive(Debug, Clone)]
@@ -47,9 +40,7 @@ fn parse_systemmessagelist(raw: &str) -> Vec<SysMsg> {
         .filter(|s| !s.trim().is_empty())
         .filter_map(|entry| {
             let parts: Vec<&str> = entry.split(',').collect();
-            if parts.len() < 7 {
-                return None;
-            }
+            if parts.len() < 7 { return None; }
             Some(SysMsg {
                 id: parts[0].parse().ok()?,
                 received: parts[4].parse().ok()?,
@@ -84,9 +75,7 @@ fn parse_report_messagetext(
     msg_text: &str,
 ) -> Option<(String, String, Vec<PlayerLine>, Vec<PlayerLine>)> {
     let tokens: Vec<&str> = msg_text.split('/').collect();
-    if tokens.len() < 2 {
-        return None;
-    }
+    if tokens.len() < 2 { return None; }
 
     let report_code = tokens[0].to_string();
     let opponent = tokens[1].to_string();
@@ -100,17 +89,10 @@ fn parse_report_messagetext(
             Ok(v) => v,
             Err(_) => break,
         };
-
         let name = tokens[i + 2].to_string();
         let level: u32 = tokens[i + 3].parse().unwrap_or(0);
-
         let line = PlayerLine { name, level };
-        if side == 1 {
-            participated.push(line);
-        } else {
-            not_participated.push(line);
-        }
-
+        if side == 1 { participated.push(line); } else { not_participated.push(line); }
         i += 5;
     }
 
@@ -121,17 +103,9 @@ fn typ_label(code: &str) -> &'static str {
     match code {
         "2a" => "Angriff",
         "2d" => "Verteidigung",
-        "3" => "Gildenraid",
-        _ => "Unbekannt",
+        "3"  => "Gildenraid",
+        _    => "Unbekannt",
     }
-}
-
-#[derive(Debug, Clone)]
-struct CharacterInfo {
-    index: usize,
-    name: String,
-    server: String,
-    guild: String,
 }
 
 #[tokio::main]
@@ -146,13 +120,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let out_dir = PathBuf::from(opt_env("OUT_DIR").unwrap_or_else(|| "./guildreports".to_string()));
     let since_epoch: Option<i64> = opt_env("SINCE_EPOCH").and_then(|v| v.parse().ok());
-    let max_n: Option<usize> = opt_env("MAX").and_then(|v| v.parse().ok());
+    let max_n: Option<usize>     = opt_env("MAX").and_then(|v| v.parse().ok());
+    let target_server            = opt_env("SERVER_HOST");
+    let target_char              = opt_env("CHARACTER");
 
     fs::create_dir_all(&out_dir)?;
 
     println!("Logging in...");
     let account = SFAccount::login(sso_user, sso_pass).await?;
-    
+
     let mut sessions: Vec<_> = account
         .characters()
         .await?
@@ -165,137 +141,151 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         return Ok(());
     }
 
-    // Charaktere auflisten mit Gildennamen
-    println!("\n╔═══════════════════════════════════════════════════════════════════╗");
-    println!("║  Verfügbare Charaktere:                                          ║");
-    println!("╠═══════════════════════════════════════════════════════════════════╣");
+    // ── Charakterauswahl ────────────────────────────────────────────────────
+    //
+    // WICHTIG: Im automatischen Modus (SERVER_HOST + CHARACTER gesetzt) wird
+    // NUR der gewünschte Charakter eingeloggt. Alle anderen Sessions bleiben
+    // unberührt – server_url() und username() sind ohne login() verfügbar
+    // (kommen direkt aus der SSO-Response).
+    //
+    // Im interaktiven Modus (kein SERVER_HOST/CHARACTER) werden alle Charaktere
+    // eingeloggt, um die Auswahltabelle mit Gildennamen anzuzeigen.
 
-    let mut char_infos = Vec::new();
+    let (mut session, char_name, char_server, guild_name) =
+        if let (Some(ref srv), Some(ref chr)) = (target_server.clone(), target_char.clone()) {
+            // ── Automatischer Modus: nur Ziel-Charakter einloggen ──────────
+            let pos = sessions
+                .iter()
+                .position(|s| {
+                    s.server_url().host_str().unwrap_or("").contains(srv.as_str())
+                        && s.username() == chr.as_str()
+                })
+                .ok_or_else(|| {
+                    format!("Charakter '{}' auf Server '{}' nicht gefunden!", chr, srv)
+                })?;
 
-    for (i, session) in sessions.iter_mut().enumerate() {
-        match session.login().await {
-            Ok(login_res) => {
-                match GameState::new(login_res) {
-                    Ok(gs) => {
-                        let guild_name = gs.guild.as_ref()
-                            .map(|g| g.name.clone())
-                            .unwrap_or_else(|| "Keine Gilde".to_string());
-                        
-                        let server = session.server_url().host_str().unwrap_or("?").to_string();
-                        let name = session.username().to_string();
-                        
-                        println!("║  [{}] {:<20} @ {:<20} │ Gilde: {:<15} ║",
-                            i + 1,
-                            name,
-                            server,
-                            guild_name
-                        );
-                        
-                        char_infos.push(CharacterInfo {
-                            index: i,
-                            name,
-                            server,
-                            guild: guild_name,
-                        });
-                    }
-                    Err(e) => {
-                        eprintln!("  [{}] Fehler beim Laden: {:?}", i + 1, e);
-                    }
+            let mut session = sessions.remove(pos);
+            println!("✓ Automatisch gewählt: {} @ {}", chr, srv);
+
+            let login_res = session.login().await?;
+            let gs = GameState::new(login_res)?;
+            let guild = gs.guild.as_ref()
+                .map(|g| g.name.clone())
+                .unwrap_or_else(|| "Keine Gilde".to_string());
+            let name   = session.username().to_string();
+            let server = session.server_url().host_str().unwrap_or("?").to_string();
+
+            println!("✓ Gilde: {}", guild);
+            (session, name, server, guild)
+
+        } else {
+            // ── Interaktiver Modus: alle einloggen für Auswahltabelle ──────
+            println!("\n╔═══════════════════════════════════════════════════════════════════╗");
+            println!("║  Verfügbare Charaktere:                                          ║");
+            println!("╠═══════════════════════════════════════════════════════════════════╣");
+
+            struct CharInfo { index: usize, name: String, server: String, guild: String }
+            let mut char_infos: Vec<CharInfo> = Vec::new();
+
+            for (i, session) in sessions.iter_mut().enumerate() {
+                match session.login().await {
+                    Ok(login_res) => match GameState::new(login_res) {
+                        Ok(gs) => {
+                            let guild = gs.guild.as_ref()
+                                .map(|g| g.name.clone())
+                                .unwrap_or_else(|| "Keine Gilde".to_string());
+                            let server = session.server_url().host_str().unwrap_or("?").to_string();
+                            let name   = session.username().to_string();
+                            println!("║  [{}] {:<20} @ {:<20} │ Gilde: {:<15} ║",
+                                i + 1, name, server, guild);
+                            char_infos.push(CharInfo { index: i, name, server, guild });
+                        }
+                        Err(e) => eprintln!("  [{}] Fehler beim Laden: {:?}", i + 1, e),
+                    },
+                    Err(e) => eprintln!("  [{}] Login fehlgeschlagen: {:?}", i + 1, e),
                 }
             }
-            Err(e) => {
-                eprintln!("  [{}] Login fehlgeschlagen: {:?}", i + 1, e);
-            }
-        }
-    }
 
-    println!("╚═══════════════════════════════════════════════════════════════════╝");
+            println!("╚═══════════════════════════════════════════════════════════════════╝");
 
-    if char_infos.is_empty() {
-        eprintln!("\nKeine Charaktere mit Gilden gefunden!");
-        return Ok(());
-    }
-
-    // Automatische Auswahl wenn ENV vars gesetzt
-    let selected_char = if let (Some(target_server), Some(target_char)) = 
-        (opt_env("SERVER_HOST"), opt_env("CHARACTER")) 
-    {
-        let mut found = None;
-        for info in &char_infos {
-            if info.server.contains(&target_server) && info.name == target_char {
-                found = Some(info.clone());
-                println!("\n✓ Automatisch gewählt: {} @ {} (Gilde: {})", 
-                    info.name, info.server, info.guild);
-                break;
-            }
-        }
-        
-        match found {
-            Some(c) => c,
-            None => {
-                eprintln!("Charakter '{}' auf Server '{}' nicht gefunden!", target_char, target_server);
+            if char_infos.is_empty() {
+                eprintln!("\nKeine Charaktere mit Gilden gefunden!");
                 return Ok(());
             }
-        }
-    } else {
-        // Interaktive Character-Auswahl
-        print!("\nWelchen Charakter verwenden? [1-{}]: ", char_infos.len());
-        io::stdout().flush()?;
 
-        let mut input = String::new();
-        io::stdin().read_line(&mut input)?;
+            print!("\nWelchen Charakter verwenden? [1-{}]: ", char_infos.len());
+            io::stdout().flush()?;
+            let mut input = String::new();
+            io::stdin().read_line(&mut input)?;
+            let choice: usize = input.trim().parse().unwrap_or(0);
 
-        let choice: usize = input.trim().parse().unwrap_or(0);
+            if choice < 1 || choice > char_infos.len() {
+                eprintln!("Ungültige Auswahl!");
+                return Ok(());
+            }
 
-        if choice < 1 || choice > char_infos.len() {
-            eprintln!("Ungültige Auswahl!");
-            return Ok(());
-        }
+            let info = char_infos.remove(choice - 1);
+            let mut session = sessions.remove(info.index);
 
-        char_infos[choice - 1].clone()
-    };
+            println!("\n✓ Gewählt: {} @ {} (Gilde: {})\n", info.name, info.server, info.guild);
 
-    let mut session = sessions.remove(selected_char.index);
+            // Im interaktiven Modus ist der Charakter schon eingeloggt
+            // (durch die Tabellen-Schleife oben) – nochmal einloggen für
+            // aktuelle Inbox/systemmessagelist.
+            let login_res = session.login().await?;
+            let gs = GameState::new(login_res)?;
+            let guild = gs.guild.as_ref()
+                .map(|g| g.name.clone())
+                .unwrap_or_else(|| "Keine Gilde".to_string());
+            let name   = session.username().to_string();
+            let server = session.server_url().host_str().unwrap_or("?").to_string();
 
-    println!("\n✓ Gewählt: {} @ {} (Gilde: {})\n",
-        selected_char.name, selected_char.server, selected_char.guild);
+            (session, name, server, guild)
+        };
 
-    // Jetzt Berichte holen
-    let login_res = session.login().await?;
+    println!("\n✓ Starte Berichtabruf für {} @ {} (Gilde: {})\n",
+        char_name, char_server, guild_name);
 
-    // systemmessagelist VORAB aus Login-Response extrahieren (Medea-Workaround:
-    // Bei manchen Servern/Charakteren ist die Inbox leer, aber die
-    // systemmessagelist ist trotzdem in der Login-Response enthalten)
-    let login_syslist: Option<String> = login_res
+    // ── systemmessagelist holen ──────────────────────────────────────────────
+    //
+    // Wir brauchen eine frische Login-Response für die systemmessagelist.
+    // Im automatischen Modus haben wir das Login oben schon gemacht und
+    // den GameState verworfen – wir müssen nochmal einloggen.
+    // Im interaktiven Modus ebenfalls (zweites Login oben).
+    //
+    // Einfachster Weg: nochmal einloggen und systemmessagelist direkt lesen.
+
+    let login_res2 = session.login().await?;
+
+    let login_syslist: Option<String> = login_res2
         .values()
         .iter()
         .find(|(k, _)| k.starts_with("systemmessagelist"))
         .map(|(_, v)| v.as_str().to_string())
         .filter(|s| !s.trim().is_empty() && s.trim() != ";");
 
-    let gs = GameState::new(login_res).expect("Failed to create gamestate");
+    let gs2 = GameState::new(login_res2)?;
 
     let raw_list = if let Some(ref list) = login_syslist {
-        // systemmessagelist war schon in der Login-Response (funktioniert immer)
         println!("✓ systemmessagelist direkt aus Login-Response ({} bytes)", list.len());
         list.clone()
     } else {
         // Fallback: Seed-ID holen und PlayerMessageView senden
-        let seed_id = if let Some(first_msg) = gs.mail.inbox.get(0) {
+        let seed_id = if let Some(first_msg) = gs2.mail.inbox.get(0) {
             first_msg.msg_id
-        } else if let Some(first_claimable) = gs.mail.claimables.get(0) {
+        } else if let Some(first_claimable) = gs2.mail.claimables.get(0) {
             eprintln!("⚠️  Inbox leer, verwende claimable msg_id {} als Seed", first_claimable.msg_id);
             first_claimable.msg_id as i32
-        } else if let Some(guild_fight) = gs.mail.combat_log.iter()
+        } else if let Some(guild_fight) = gs2.mail.combat_log.iter()
             .find(|e| matches!(e.battle_type, sf_api::gamestate::social::CombatMessageType::GuildFight))
         {
-            eprintln!("⚠️  Inbox und claimables leer, verwende GuildFight combat_log msg_id {} als Seed", guild_fight.msg_id);
+            eprintln!("⚠️  Verwende GuildFight combat_log msg_id {} als Seed", guild_fight.msg_id);
             guild_fight.msg_id as i32
-        } else if let Some(first_combat) = gs.mail.combat_log.get(0) {
+        } else if let Some(first_combat) = gs2.mail.combat_log.get(0) {
             eprintln!("⚠️  Verwende ersten combat_log Eintrag als Seed (msg_id {})", first_combat.msg_id);
             first_combat.msg_id as i32
         } else {
-            eprintln!("⚠️  Keine Nachrichten verfügbar für {} - überspringe Charakter", selected_char.name);
+            eprintln!("⚠️  Keine Nachrichten verfügbar – überspringe Charakter");
             return Ok(());
         };
 
@@ -340,8 +330,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("Gefunden: {} Gildenkampfberichte (2a/2d/3)\n", msgs.len());
 
-    // Guild-Verzeichnis erstellen (nur einmal)
-    let guild_dir = out_dir.join(sanitize_filename(&selected_char.guild));
+    let guild_dir = out_dir.join(sanitize_filename(&guild_name));
     fs::create_dir_all(&guild_dir)?;
 
     for m in msgs {
@@ -369,19 +358,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             parse_report_messagetext(&msg_text)
                 .unwrap_or((m.code.clone(), "Unbekannt".to_string(), vec![], vec![]));
 
-        // Timestamp formatieren: YYYY-MM-DD_HH-MM
         let timestamp = Utc.timestamp_opt(m.received, 0)
             .single()
             .map(|dt| dt.format("%Y-%m-%d_%H-%M").to_string())
             .unwrap_or_else(|| format!("unknown_{}", m.received));
 
-        // Gegner sanitizen
         let opponent_safe = sanitize_filename(&opponent);
-
-        // Typ-Label
         let typ = typ_label(&rc);
 
-        // Dateiname: YYYY-MM-DD_HH-MM_Typ_Gegner_msgID.txt
         let filename = if opponent_safe.is_empty() || opponent_safe == "unknown" {
             format!("{}_{}_unknown_msg{}.txt", timestamp, typ, m.id)
         } else {
@@ -395,24 +379,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             continue;
         }
 
-        // Header + Content
         let mut out = String::new();
         out.push_str("=== S&F KAMPFBERICHT ===\n");
-        out.push_str(&format!("Gildenname: {}\n", selected_char.guild));
-        out.push_str(&format!("Server: {}\n", selected_char.server));
-        out.push_str(&format!("Charakter: {}\n", selected_char.name));
+        out.push_str(&format!("Gildenname: {}\n", guild_name));
+        out.push_str(&format!("Server: {}\n", char_server));
+        out.push_str(&format!("Charakter: {}\n", char_name));
         out.push_str(&format!("Gegner: {}\n", opponent));
         out.push_str(&format!("Typ: {}\n", typ_label(&rc)));
         out.push_str(&format!("Datum: {}\n", date_de_utc(m.received)));
         out.push_str(&format!("Uhrzeit: {}\n", time_utc(m.received)));
         out.push_str(&format!("Message-ID: msg{}\n", m.id));
         out.push_str("=== ENDE HEADER ===\n\n");
-
         out.push_str("Mitglieder, die nicht teilgenommen haben:\n");
         for p in &not_participated {
             out.push_str(&format!("{} (Stufe {})\n", p.name, p.level));
         }
-
         out.push_str("\n");
         out.push_str("Mitglieder, die teilgenommen haben:\n");
         for p in &participated {
@@ -426,6 +407,5 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     println!("\n✓ Fertig!");
-
     Ok(())
 }
