@@ -12,9 +12,6 @@ Konkrete anstehende Aufgaben. Sicherheitsrelevante Details sind in der privaten 
 
 ## 🟡 Mittlere Priorität
 
-### Import-Log
-- [x] Import-Protokoll in der UI einsehbar machen (letzte Imports pro Gilde + gefilterte Activity-Einträge)
-
 ### Containerisierung
 - [ ] Dockerfile erstellen (Base: php:8.4-fpm-bookworm, supervisord für nginx + php-fpm)
 - [ ] docker/nginx.conf, docker/supervisord.conf, docker/entrypoint.sh
@@ -48,6 +45,7 @@ Konkrete anstehende Aufgaben. Sicherheitsrelevante Details sind in der privaten 
 - [x] **Member-Sync via sf-api** implementiert (Rust-Binary + PHP-Endpoint + WebUI-Button)
   - "first seen"-Ansatz für joined_at (guild_joined seit v29.500 nicht mehr verfügbar)
   - Wiederbeitritte werden automatisch erkannt
+- [x] **Import-Log** im Admin-Bereich (Logs → Import-Tab): letzter Import pro Gilde + gefilterte Activity-Einträge
 - [x] **Cron-System** implementiert
   - cli/cron_runner.php (jede Minute via crontab)
   - Admin-UI: Cronjobs-Tab + Cron-Status im Logs-Tab

@@ -12,6 +12,7 @@ Ein privates Guild-Management-System für das Browsergame [Shakes & Fidget](http
 - 🔱 **Hellevator-Übersicht** – Etagen-Anforderungen und Spieler-Empfehlungen
 - 🔄 **sf-api Member-Sync** – Mitgliederdaten direkt via sf-api abrufen (CSV als Fallback)
 - ⏱️ **Cron-System** – Automatischer Fetch von Kampfberichten und Mitglieder-Sync
+- 📋 **Import-Log** – Letzter Import pro Gilde und Import-Aktivitäten im Admin-Bereich
 - 🛡️ **Wappen-Upload** – Gilden-Wappen hochladen und verwalten
 - 🔐 **Benutzerverwaltung** – Login, Sessions, Passwort-Reset (inkl. CLI-Admin-Tool)
 

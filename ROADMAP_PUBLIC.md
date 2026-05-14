@@ -41,6 +41,9 @@
 - [x] Kämpfe verschieben (zwischen Gilden) und löschen
 - [x] Teilnehmerliste pro Kampf
 
+### Import-Log
+- [x] Import-Protokoll in Admin-Bereich (Logs → Import-Tab): letzter Import pro Gilde + gefilterte Activity-Einträge
+
 ### Cron-System
 - [x] Master-Runner (cli/cron_runner.php) via crontab (jede Minute)
 - [x] Automatischer Kampfbericht-Fetch (07:25 + 19:10 Uhr)
@@ -69,9 +72,6 @@
 ---
 
 ## 🚧 Geplant
-
-### Import-Transparenz
-- [ ] Import-Log in der UI (letzte Imports, Fehler, Zeilenanzahl)
 
 ### Containerisierung
 - [ ] Docker-Image (nginx + php-fpm via supervisord)
