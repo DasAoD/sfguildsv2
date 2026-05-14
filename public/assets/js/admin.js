@@ -529,10 +529,12 @@ function renderCronJobs(jobs) {
             <div style="margin-bottom:0.75rem">
                 <strong>Uhrzeiten:</strong><br>
                 <div id="cron-times-${job.job_key}" style="margin-top:0.5rem">${timesHtml}</div>
-                <button class="btn btn-secondary btn-sm" style="margin-top:0.4rem"
-                    onclick="addCronTime('${job.job_key}')">+ Zeit hinzufügen</button>
-                <button class="btn btn-primary btn-sm" style="margin-top:0.4rem;margin-left:0.5rem"
-                    onclick="saveCronTimes('${job.job_key}')">Speichern</button>
+                <div style="display:flex;gap:0.5rem;margin-top:0.4rem;flex-wrap:wrap">
+                    <button class="btn btn-secondary btn-sm" onclick="addCronTime('${job.job_key}')">+ Zeit hinzufügen</button>
+                    <button class="btn btn-primary btn-sm" onclick="saveCronTimes('${job.job_key}')">Speichern</button>
+                    <button class="btn btn-success btn-sm" id="cron-run-${job.job_key}"
+                        onclick="runCronJobNow('${job.job_key}', '${job.label}')">▶ Jetzt ausführen</button>
+                </div>
             </div>
             <div style="color:var(--color-text-secondary);font-size:0.85rem">
                 Letzter Lauf: ${lastRun}
@@ -583,3 +585,29 @@ async function saveCronTimes(jobKey) {
 }
 
 // Cron-Tab wird in switchTab() geladen
+
+async function runCronJobNow(jobKey, label) {
+    const btn = document.getElementById(`cron-run-${jobKey}`);
+    btn.disabled = true;
+    btn.textContent = '⏳ Läuft...';
+
+    try {
+        const r = await fetch('/api/admin_cron_run.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ job_key: jobKey })
+        });
+        const d = await r.json();
+        if (d.success) {
+            showAlert(`${label} abgeschlossen:\n${d.message}`);
+            loadCronJobs();
+        } else {
+            showAlert('Fehler: ' + (d.message || 'Unbekannt'));
+        }
+    } catch(e) {
+        showAlert('Verbindungsfehler');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '▶ Jetzt ausführen';
+    }
+}
