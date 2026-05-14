@@ -35,8 +35,10 @@ $guildId = isset($_GET['id']) ? (int)$_GET['id'] : 1;
                             <div class="guild-notes" id="guildNotes" style="display:none;color:var(--color-text-secondary);font-size:0.875rem;margin-top:0.25rem"></div>
                         </div>
                     </div>
-                    <button onclick="openImportModal()" class="btn btn-primary" id="importBtn" style="display:none">+ Mitglieder importieren</button>
-                    <button onclick="syncMembers()" class="btn btn-secondary" id="syncBtn" style="display:none">↻ Mitglieder synchronisieren</button>
+                    <div style="display:flex;gap:0.75rem">
+                        <button onclick="syncMembers()" class="btn btn-secondary" id="syncBtn" style="display:none">↻ Mitglieder synchronisieren</button>
+                        <button onclick="openImportModal()" class="btn btn-primary" id="importBtn" style="display:none">+ Mitglieder importieren</button>
+                    </div>
                 </div>
             </div>
 
