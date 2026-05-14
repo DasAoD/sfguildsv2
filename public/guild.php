@@ -36,6 +36,7 @@ $guildId = isset($_GET['id']) ? (int)$_GET['id'] : 1;
                         </div>
                     </div>
                     <button onclick="openImportModal()" class="btn btn-primary" id="importBtn" style="display:none">+ Mitglieder importieren</button>
+                    <button onclick="syncMembers()" class="btn btn-secondary" id="syncBtn" style="display:none">↻ Mitglieder synchronisieren</button>
                 </div>
             </div>
 

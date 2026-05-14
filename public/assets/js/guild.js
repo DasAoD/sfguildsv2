@@ -419,8 +419,46 @@ function showAlert(message, title = 'Hinweis') {
 // Show import button only if logged in
 if (isLoggedIn) {
     document.getElementById('importBtn').style.display = 'block';
+    document.getElementById('syncBtn').style.display = 'block';
 }
 
 // Initialize
 loadGuilds();
 loadGuild();
+// Member Sync via sf-api
+async function syncMembers() {
+    const guildId = new URLSearchParams(window.location.search).get('id');
+    if (!guildId) { showAlert('Keine Gilde ausgewählt.'); return; }
+
+    const btn = document.getElementById('syncBtn');
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '↻ Synchronisiere...';
+
+    try {
+        const r = await fetch('/api/sf_member_sync.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ guild_id: parseInt(guildId) })
+        });
+        const d = await r.json();
+
+        if (d.success) {
+            const parts = [];
+            if (d.inserted  > 0) parts.push(`${d.inserted} neu`);
+            if (d.updated   > 0) parts.push(`${d.updated} aktualisiert`);
+            if (d.rejoined  > 0) parts.push(`${d.rejoined} wiedereingetreten`);
+            const summary = parts.length > 0 ? parts.join(', ') : 'Keine Änderungen';
+            showAlert(`Sync abgeschlossen: ${summary} (${d.total} Mitglieder gesamt).`);
+            loadGuild();
+        } else {
+            showAlert('Fehler beim Sync: ' + (d.message || 'Unbekannt'));
+        }
+    } catch (e) {
+        console.error(e);
+        showAlert('Fehler beim Sync: Verbindungsfehler');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
+    }
+}
