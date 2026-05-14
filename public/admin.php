@@ -179,6 +179,18 @@ $currentUserRole = getCurrentUserRole();
                 <button class="btn btn-success" onclick="downloadBackup()">📥 Backup herunterladen</button>
             </div>
         </div>
+
+        <!-- Cron Tab -->
+        <div id="tab-cron" class="tab-content">
+            <div class="section">
+                <h2 class="section-title">Automatische Jobs</h2>
+                <p style="color:var(--color-text-secondary);margin-bottom:var(--spacing-lg)">
+                    Konfiguriert die Zeiten für automatische Hintergrund-Jobs.
+                    Uhrzeiten im Format HH:MM (Berliner Zeit).
+                </p>
+                <div id="cronJobsList">Lädt...</div>
+            </div>
+        </div>
     </div>
 
     <!-- User Modal -->
