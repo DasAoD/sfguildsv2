@@ -599,14 +599,15 @@ async function runCronJobNow(jobKey, label) {
         });
         const d = await r.json();
         if (d.success) {
-            showAlert(`${label} abgeschlossen:\n${d.message}`);
-            loadCronJobs();
+            btn.textContent = '⏳ Läuft im Hintergrund...';
+            // Status nach ~15s nachladen
+            setTimeout(() => { loadCronJobs(); btn.disabled = false; btn.textContent = '▶ Jetzt ausführen'; }, 15000);
+            showAlert(d.message);
         } else {
             showAlert('Fehler: ' + (d.message || 'Unbekannt'));
         }
     } catch(e) {
         showAlert('Verbindungsfehler');
-    } finally {
         btn.disabled = false;
         btn.textContent = '▶ Jetzt ausführen';
     }

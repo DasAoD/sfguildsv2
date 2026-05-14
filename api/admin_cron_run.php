@@ -1,14 +1,12 @@
 <?php
 /**
- * Admin API: Cron-Job sofort ausführen
+ * Admin API: Cron-Job sofort ausführen (asynchron)
  * POST { job_key: "fetch_reports" | "member_sync" }
+ * Startet den Job als Hintergrundprozess und antwortet sofort.
  */
 require_once __DIR__ . '/../includes/bootstrap_api.php';
 require_once __DIR__ . '/../includes/logger.php';
 requireAdminAPI();
-
-set_time_limit(120);
-ini_set('max_execution_time', '120');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') jsonError('Nur POST erlaubt', 405);
 
@@ -17,30 +15,22 @@ try {
 } catch (JsonException $e) { jsonError('Ungültige JSON-Daten', 400); }
 
 $jobKey = $input['job_key'] ?? null;
-$scriptMap = [
-    'fetch_reports' => __DIR__ . '/../cli/cron_fetch_reports.php',
-    'member_sync'   => __DIR__ . '/../cli/cron_member_sync.php',
-];
+$allowed = ['fetch_reports', 'member_sync'];
+if (!$jobKey || !in_array($jobKey, $allowed)) jsonError('Unbekannter Job', 400);
 
-if (!$jobKey || !isset($scriptMap[$jobKey])) jsonError('Unbekannter Job', 400);
-
-$script = $scriptMap[$jobKey];
-ob_start();
-$result = require $script;
-ob_end_clean();
-
-$db = getDB();
-if (is_array($result)) {
-    $status  = $result['errors'] === 0 ? 'success' : ($result['success'] > 0 ? 'partial' : 'error');
-    $message = "{$result['success']}/{$result['total']} erfolgreich";
-    if ($result['errors'] > 0) $message .= ", {$result['errors']} Fehler";
-} else {
-    $status = 'success'; $message = 'Abgeschlossen';
+// Lock prüfen — läuft bereits?
+$lockFile = sys_get_temp_dir() . '/sfguilds_cron_' . $jobKey . '.lock';
+$lockFh = fopen($lockFile, 'c');
+if (!flock($lockFh, LOCK_EX | LOCK_NB)) {
+    fclose($lockFh);
+    jsonError('Job läuft bereits — bitte warten', 409);
 }
+flock($lockFh, LOCK_UN);
+fclose($lockFh);
 
-$db->prepare("UPDATE cron_jobs SET last_run_at=:ts, last_run_status=:status, last_run_message=:msg, updated_at=datetime('now') WHERE job_key=:key")
-   ->execute([':ts'=>gmdate('c'), ':status'=>$status, ':msg'=>$message, ':key'=>$jobKey]);
+// Hintergrundprozess starten
+$cmd = PHP_BINDIR . '/php ' . escapeshellarg(__DIR__ . '/../cli/cron_runner_single.php') . ' ' . escapeshellarg($jobKey) . ' > /dev/null 2>&1 &';
+exec($cmd);
 
-logActivity('Cron manuell gestartet', ['Job' => $jobKey, 'Status' => $status, 'Ergebnis' => $message]);
-
-jsonResponse(['success' => true, 'message' => $message]);
+logActivity('Cron manuell gestartet', ['Job' => $jobKey]);
+jsonResponse(['success' => true, 'message' => 'Job gestartet — Ergebnis in wenigen Minuten im Status sichtbar.']);
