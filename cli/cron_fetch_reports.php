@@ -15,7 +15,9 @@ $db = getDB();
 $stmt = $db->query("
     SELECT a.id, a.user_id, a.sf_username, a.sf_password_encrypted, a.sf_iv, a.sf_hmac, a.selected_characters
     FROM sf_accounts a
-    WHERE a.selected_characters IS NOT NULL AND a.selected_characters != '[]'
+    JOIN users u ON u.id = a.user_id
+    WHERE u.role = 'admin'
+      AND a.selected_characters IS NOT NULL AND a.selected_characters != '[]'
 ");
 $accounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

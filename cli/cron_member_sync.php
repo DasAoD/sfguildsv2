@@ -22,9 +22,11 @@ $guilds = $db->query("SELECT id, name, server FROM guilds")->fetchAll(PDO::FETCH
 
 // Alle Accounts holen
 $stmt = $db->query("
-    SELECT id, user_id, sf_username, sf_password_encrypted, sf_iv, sf_hmac, selected_characters
-    FROM sf_accounts
-    WHERE selected_characters IS NOT NULL AND selected_characters != '[]'
+    SELECT a.id, a.user_id, a.sf_username, a.sf_password_encrypted, a.sf_iv, a.sf_hmac, a.selected_characters
+    FROM sf_accounts a
+    JOIN users u ON u.id = a.user_id
+    WHERE u.role = 'admin'
+      AND a.selected_characters IS NOT NULL AND a.selected_characters != '[]'
 ");
 $accounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
