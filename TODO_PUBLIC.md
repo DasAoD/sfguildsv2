@@ -12,13 +12,15 @@ Konkrete anstehende Aufgaben. Sicherheitsrelevante Details sind in der privaten 
 
 ## 🟡 Mittlere Priorität
 
-### sf-api Integration (Mitgliederdaten)
-- [ ] Direkte Mitgliederdaten via [sf-api (The Marenga)](https://github.com/the-marenga/sf-api) abrufen
-- [ ] Rust-CLI-Tool für Mitglieder-Import erweitern (analog zur bestehenden Kampfbericht-Abholung)
-- [ ] CSV-Import als Fallback beibehalten
-
 ### Import-Log
 - [ ] Import-Protokoll in der UI einsehbar machen (letzte Imports, Fehler, verarbeitete Zeilen)
+
+### Containerisierung
+- [ ] Dockerfile erstellen (Base: php:8.4-fpm-bookworm, supervisord für nginx + php-fpm)
+- [ ] docker/nginx.conf, docker/supervisord.conf, docker/entrypoint.sh
+- [ ] docker-compose.yml für lokales Testen
+- [ ] README.md um Docker-Abschnitt erweitern
+- [ ] Docker Hub Secrets (DOCKERHUB_USERNAME, DOCKERHUB_TOKEN) im GitHub-Repo hinterlegen
 
 ---
 
@@ -29,7 +31,7 @@ Konkrete anstehende Aufgaben. Sicherheitsrelevante Details sind in der privaten 
 
 ### Dokumentation
 - [ ] API-Endpunkte intern dokumentieren
-- [ ] Deployment-Guide aktualisieren
+- [ ] Nginx-Konfiguration in install/ auf php8.4-fpm.sock aktualisieren
 
 ### UI-Verbesserungen
 - [ ] Mobile-Ansicht überarbeiten
@@ -37,30 +39,26 @@ Konkrete anstehende Aufgaben. Sicherheitsrelevante Details sind in der privaten 
 
 ---
 
-## ✅ Zuletzt erledigt
+## ✅ Zuletzt erledigt (Mai 2026)
 
-- [x] **Rollen-System** (Admin / Moderator / User) vollständig implementiert
-- [x] Admin-Bereich mit rollenbasierter Zugriffskontrolle
-- [x] **Multi-Account-Support** (mehrere SF-Accounts pro User, Account-Verwaltung im Settings)
-- [x] **Battle-Kalender** (Monatsansicht, Modals, Verschieben/Löschen, Import-Dialog)
-- [x] **Kampfbericht-Import** via sf-api (The Marenga) + Parser-Logik
-- [x] Rust-CLI-Tools für SF-API-Integration (Kampfberichte, Charaktere)
-- [x] Gilden-Notizen auf der öffentlichen Gildenseite anzeigen
-- [x] Hellevator-Seite (zweisprachig DE/EN, Etagen-Anforderungen, Hintergrundmusik)
-- [x] Passwort-Reset-System (Web + CLI-Notfalltool)
-- [x] Zentralisierte `jsonResponse()` / `jsonError()` in allen API-Endpunkten
-- [x] `catch (Throwable)` in allen kritischen Dateien
-- [x] `JSON_THROW_ON_ERROR` für alle User-Inputs
-- [x] Whitelist-Ansatz für öffentliche API-Endpunkte
-- [x] CLI-Only-Guards mit korrektem `PHP_BINDIR`-Pfad
-- [x] Atomares `flock()`-Locking
-- [x] SSH-Wrapper-Skripte mit Parameter-Validierung
-- [x] Bugfix: SF-API-Kompatibilität für s6.sfgame.eu
-- [x] 16 systematische Sicherheits-Audits abgeschlossen
-- [x] Custom Modals statt Browser-Popups
-- [x] Automatischer CSV-Import via systemd-Service
-- [x] Dark Theme durchgängig
+- [x] **sf-api nach S&F v30-Update repariert** (Binary-Rebuild auf v0.4.1)
+- [x] **Login-Verhalten optimiert** — nur Ziel-Charakter wird eingeloggt, alle anderen Sessions unberührt
+- [x] **Rust-Sources ins Repo** (rust_examples/: fetch_guild_reports.rs, list_chars.rs, member_sync.rs + README)
+- [x] **joined_at editierbar** — inline wie fired_at/left_at
+- [x] **Member-Sync via sf-api** implementiert (Rust-Binary + PHP-Endpoint + WebUI-Button)
+  - "first seen"-Ansatz für joined_at (guild_joined seit v29.500 nicht mehr verfügbar)
+  - Wiederbeitritte werden automatisch erkannt
+- [x] **Cron-System** implementiert
+  - cli/cron_runner.php (jede Minute via crontab)
+  - Admin-UI: Cronjobs-Tab + Cron-Status im Logs-Tab
+  - Nur Admin-Accounts (role='admin') werden verwendet
+- [x] Rollen-System (Admin / Moderator / User)
+- [x] Multi-Account-Support
+- [x] Battle-Kalender
+- [x] Kampfbericht-Import via sf-api
+- [x] Hellevator-Seite (zweisprachig DE/EN)
+- [x] Passwort-Reset-System (Web + CLI)
 
 ---
 
-*Letzte Aktualisierung: März 2026*
+*Letzte Aktualisierung: Mai 2026*

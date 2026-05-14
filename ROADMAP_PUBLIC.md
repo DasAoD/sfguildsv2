@@ -17,19 +17,21 @@
 ### Gilden-Verwaltung
 - [x] Multi-Gilden-Support (mehrere Gilden auf verschiedenen Servern)
 - [x] Gildenseite mit Mitgliederliste
-- [x] Mitglieder-Statistiken (Level, Klasse, Beitrittsdatum, Gold-Donationen)
+- [x] Mitglieder-Statistiken (Level, Rang, Beitrittsdatum, Gold-Donationen, Lehrmeister, Ritterhalle, Gildenpet)
+- [x] Inline-Editing für Beitrittsdatum, Entlassen, Verlassen, Notizen
 - [x] Gilden-Notizen (sichtbar auf der Gildenseite)
 - [x] Wappen-Upload und Darstellung
-- [x] Server-Informationen pro Gilde
 - [x] Tab-Navigation zwischen Gilden
 - [x] Öffentliche Gilden-Profilseiten (ohne Login einsehbar)
 
 ### Daten-Import
-- [x] CSV-Import via SFTools-Export
-- [x] Automatisierter Import per systemd-Service
-- [x] Rust-CLI-Tools auf Basis von [sf-api (The Marenga)](https://github.com/the-marenga/sf-api)
-- [x] Robuste Fehlerbehandlung bei API-Inkompatibilitäten (serverspezifisch)
-- [x] Fallback-Mechanismus für unterschiedliches API-Verhalten je Server/Charakter
+- [x] CSV-Import via SFTools-Export (Fallback)
+- [x] **sf-api Member-Sync** – Mitgliederdaten direkt via [sf-api](https://github.com/the-marenga/sf-api) abrufen
+  - Neues Mitglied: joined_at = heute ("first seen"-Ansatz, da guild_joined seit v29.500 nicht mehr vom Server geliefert wird)
+  - Wiederbeitritt: fired_at/left_at automatisch geleert, joined_at = heute
+  - Aktive Mitglieder: Stats aktualisiert, joined_at/Notizen/fired_at/left_at unberührt
+- [x] Rust-CLI-Tools auf Basis von sf-api (fetch_guild_reports, list_chars, member_sync)
+- [x] Robuste Fehlerbehandlung bei API-Inkompatibilitäten
 
 ### Kampfberichte & Kalender
 - [x] Kampfbericht-Import via sf-api (Postkasten-Integration)
@@ -39,6 +41,14 @@
 - [x] Kämpfe verschieben (zwischen Gilden) und löschen
 - [x] Teilnehmerliste pro Kampf
 
+### Cron-System
+- [x] Master-Runner (cli/cron_runner.php) via crontab (jede Minute)
+- [x] Automatischer Kampfbericht-Fetch (07:25 + 19:10 Uhr)
+- [x] Automatischer Member-Sync (07:30 + 19:15 Uhr)
+- [x] Admin-UI: Jobs aktivieren/deaktivieren, Uhrzeiten konfigurieren, manuell starten
+- [x] Cron-Status im Admin-Bereich (Logs → Cron-Tab)
+- [x] Sicherheit: nur Admin-Accounts werden verwendet
+
 ### Hellevator
 - [x] Informationsseite mit Etagen-Anforderungen
 - [x] Spieler-Empfehlungen basierend auf Charakterwerten
@@ -47,44 +57,26 @@
 
 ### Benutzerverwaltung & Rollen
 - [x] Login mit sicherer Passwort-Hashing (bcrypt)
-- [x] Session-Management
-- [x] **Rollen-System (Admin / Moderator / User)**
-  - Admin: Vollzugriff inkl. Benutzerverwaltung, Gilden, Import
-  - Moderator: Kämpfe & Mitglieder bearbeiten, kein Admin-Bereich
-  - User: Nur-Lese-Zugriff
-- [x] Admin-Bereich mit User-Verwaltung (anlegen, löschen, Rolle zuweisen)
-- [x] Passwort-Reset (Admin-initiiert via Web + CLI-Notfalltool)
+- [x] Rollen-System (Admin / Moderator / User)
+- [x] Admin-Bereich mit User-Verwaltung
+- [x] Passwort-Reset (Web + CLI)
 
-### Multi-Account
-- [x] Mehrere SF-Accounts pro User
-- [x] Account-Verwaltung im Settings-UI
-- [x] Separate Charakterauswahl pro Account
-- [x] Standard-Account Markierung
-- [x] Verschlüsselte Credential-Speicherung
-- [x] Automatischer Fetch von allen angelegten Accounts
-
-### Sicherheit
-- [x] Zentralisierte API-Antworten (`jsonResponse()` / `jsonError()`)
-- [x] Vollständige Exception-Behandlung mit `Throwable`
-- [x] Input-Validierung mit `JSON_THROW_ON_ERROR`
-- [x] Whitelist-Ansatz für öffentliche API-Endpunkte
-- [x] CLI-Only-Guards für interne Prozesse
-- [x] Atomares File-Locking (`flock()`)
-- [x] SSH-Wrapper-Skripte mit Eingabe-Validierung
-- [x] Strikte Verschlüsselungsvalidierung
-- [x] 16 systematische Sicherheits-Audits abgeschlossen
+### Multi-Account & Sicherheit
+- [x] Mehrere SF-Accounts pro User, verschlüsselte Credential-Speicherung
+- [x] Cron verwendet ausschließlich Admin-Accounts
+- [x] Zentralisierte API-Antworten, Whitelist-Ansatz, CLI-Guards, flock()-Locking
 
 ---
 
-## 🚧 In Arbeit / Geplant
-
-### sf-api Integration (Mitgliederdaten)
-- [ ] Mitgliederdaten direkt via sf-api abrufen (statt CSV-Umweg)
-- [ ] CSV-Import als Fallback beibehalten
-
+## 🚧 Geplant
 
 ### Import-Transparenz
 - [ ] Import-Log in der UI (letzte Imports, Fehler, Zeilenanzahl)
+
+### Containerisierung
+- [ ] Docker-Image (nginx + php-fpm via supervisord)
+- [ ] docker-compose für lokales Testen
+- [ ] GitHub Actions bereits vorbereitet (pusht nach Docker Hub)
 
 ---
 
@@ -92,8 +84,9 @@
 
 - Setup-Assistent für Erstinstallation
 - Mitglieder-Entwicklung über Zeit (Graphen)
+- Mobile-Ansicht überarbeiten
 - Export-Funktionen (CSV, PDF) für Gilden-Reports
 
 ---
 
-*Letzte Aktualisierung: März 2026*
+*Letzte Aktualisierung: Mai 2026*
