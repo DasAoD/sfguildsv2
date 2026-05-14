@@ -260,8 +260,60 @@ function switchLogType(type) {
     currentLogType = type;
     document.getElementById('btnLogActivity').classList.toggle('active', type === 'activity');
     document.getElementById('btnLogError').classList.toggle('active', type === 'error');
-    document.getElementById('logFilter').value = '';
-    loadLogs();
+    document.getElementById('btnLogCron').classList.toggle('active', type === 'cron');
+
+    const isCron = type === 'cron';
+    document.getElementById('logContainer').style.display = isCron ? 'none' : '';
+    document.getElementById('cronStatusContainer').style.display = isCron ? '' : 'none';
+    document.querySelector('.log-toolbar').style.display = isCron ? 'none' : '';
+
+    if (isCron) {
+        loadCronStatus();
+    } else {
+        document.getElementById('logFilter').value = '';
+        loadLogs();
+    }
+}
+
+async function loadCronStatus() {
+    const container = document.getElementById('cronStatusContainer');
+    container.innerHTML = '<div class="log-empty">Lade...</div>';
+    try {
+        const r = await fetch('/api/admin_cron.php');
+        const d = await r.json();
+        if (!d.success) { container.innerHTML = '<div class="log-empty">Fehler beim Laden.</div>'; return; }
+        renderCronStatus(d.jobs, container);
+    } catch(e) {
+        container.innerHTML = '<div class="log-empty">Verbindungsfehler.</div>';
+    }
+}
+
+function renderCronStatus(jobs, container) {
+    const statusLabel = { success: '✅ Erfolgreich', partial: '⚠️ Teilweise', error: '❌ Fehler' };
+    const rows = jobs.map(job => {
+        const lastRun = job.last_run_at
+            ? new Date(job.last_run_at).toLocaleString('de-DE')
+            : '—';
+        const status = job.last_run_status
+            ? (statusLabel[job.last_run_status] || job.last_run_status)
+            : '— Noch nie';
+        const message = job.last_run_message || '—';
+        const active = job.enabled ? '✓ Aktiv' : '✗ Inaktiv';
+        const times = (job.times || []).join(', ') || '—';
+        return `<div class="log-entry">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem">
+                <div>
+                    <span class="log-type" style="color:var(--color-accent)">${job.label}</span>
+                    <span style="color:var(--color-text-secondary);margin-left:0.75rem">${active} · Uhrzeiten: ${times}</span>
+                </div>
+                <span style="color:var(--color-text-secondary);white-space:nowrap">${lastRun}</span>
+            </div>
+            <div style="margin-top:0.35rem;color:var(--color-text-secondary)">
+                ${status}${message !== '—' ? ' · ' + message : ''}
+            </div>
+        </div>`;
+    }).join('');
+    container.innerHTML = rows || '<div class="log-empty">Keine Jobs konfiguriert.</div>';
 }
 
 function filterLogsDebounced() {

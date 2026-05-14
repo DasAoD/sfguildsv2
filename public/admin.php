@@ -97,6 +97,7 @@ $currentUserRole = getCurrentUserRole();
                         <div class="log-toggle">
                             <button class="btn btn-toggle active" id="btnLogActivity" onclick="switchLogType('activity')">📋 Aktivitäten</button>
                             <button class="btn btn-toggle" id="btnLogError" onclick="switchLogType('error')">⚠️ Fehler</button>
+                            <button class="btn btn-toggle" id="btnLogCron" onclick="switchLogType('cron')">🕐 Cron</button>
                         </div>
                     </div>
                 </div>
@@ -121,6 +122,7 @@ $currentUserRole = getCurrentUserRole();
                 <div class="log-container" id="logContainer">
                     <div class="log-empty">Log wird geladen...</div>
                 </div>
+                <div id="cronStatusContainer" style="display:none"></div>
             </div>
         </div>
 
