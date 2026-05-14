@@ -37,6 +37,7 @@ $currentUserRole = getCurrentUserRole();
             <button class="tab" onclick="switchTab('logs', event)">Logs</button>
             <button class="tab" onclick="switchTab('maintenance', event)">Wartung</button>
             <button class="tab" onclick="switchTab('system', event)">System</button>
+            <button class="tab" onclick="switchTab('cron', event)">Cronjobs</button>
         </div>
 
         <!-- Users Tab -->

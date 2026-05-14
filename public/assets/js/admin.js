@@ -486,3 +486,104 @@ function showAlert(message, type = 'success') {
 
 // Init maintenance guilds on load
 loadRenameGuilds();
+
+// ── Cron-Tab ────────────────────────────────────────────────────────────────
+
+async function loadCronJobs() {
+    try {
+        const r = await fetch('/api/admin_cron.php');
+        const d = await r.json();
+        if (!d.success) { document.getElementById('cronJobsList').innerHTML = '<p>Fehler beim Laden.</p>'; return; }
+        renderCronJobs(d.jobs);
+    } catch(e) {
+        document.getElementById('cronJobsList').innerHTML = '<p>Verbindungsfehler.</p>';
+    }
+}
+
+function renderCronJobs(jobs) {
+    const statusIcon = { success: '✅', partial: '⚠️', error: '❌' };
+    const html = jobs.map(job => {
+        const timesHtml = (job.times || []).map((t, i) => `
+            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.4rem">
+                <input type="time" value="${t}" class="cron-time-input"
+                    data-key="${job.job_key}" data-idx="${i}"
+                    style="background:var(--color-bg-primary);color:var(--color-text-primary);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:0.3rem 0.5rem">
+                <button class="btn btn-danger btn-sm" onclick="removeCronTime('${job.job_key}', ${i})">✕</button>
+            </div>`).join('');
+
+        const lastRun = job.last_run_at
+            ? `${statusIcon[job.last_run_status] || '⏳'} ${new Date(job.last_run_at).toLocaleString('de-DE')} — ${job.last_run_message || ''}`
+            : '— Noch nie ausgeführt';
+
+        return `
+        <div class="section" style="margin-bottom:1.5rem;padding:1.25rem;background:var(--color-bg-secondary);border-radius:var(--radius-md)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+                <h3 style="margin:0">${job.label}</h3>
+                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer">
+                    <input type="checkbox" ${job.enabled ? 'checked' : ''}
+                        onchange="toggleCronJob('${job.job_key}', this.checked)">
+                    ${job.enabled ? 'Aktiv' : 'Inaktiv'}
+                </label>
+            </div>
+            <div style="margin-bottom:0.75rem">
+                <strong>Uhrzeiten:</strong><br>
+                <div id="cron-times-${job.job_key}" style="margin-top:0.5rem">${timesHtml}</div>
+                <button class="btn btn-secondary btn-sm" style="margin-top:0.4rem"
+                    onclick="addCronTime('${job.job_key}')">+ Zeit hinzufügen</button>
+                <button class="btn btn-primary btn-sm" style="margin-top:0.4rem;margin-left:0.5rem"
+                    onclick="saveCronTimes('${job.job_key}')">Speichern</button>
+            </div>
+            <div style="color:var(--color-text-secondary);font-size:0.85rem">
+                Letzter Lauf: ${lastRun}
+            </div>
+        </div>`;
+    }).join('');
+    document.getElementById('cronJobsList').innerHTML = html || '<p>Keine Jobs konfiguriert.</p>';
+}
+
+async function toggleCronJob(jobKey, enabled) {
+    await fetch('/api/admin_cron.php', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ job_key: jobKey, enabled })
+    });
+}
+
+function addCronTime(jobKey) {
+    const container = document.getElementById(`cron-times-${jobKey}`);
+    const idx = container.querySelectorAll('.cron-time-input').length;
+    const div = document.createElement('div');
+    div.style.cssText = 'display:flex;align-items:center;gap:0.5rem;margin-bottom:0.4rem';
+    div.innerHTML = `
+        <input type="time" value="07:00" class="cron-time-input"
+            data-key="${jobKey}" data-idx="${idx}"
+            style="background:var(--color-bg-primary);color:var(--color-text-primary);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:0.3rem 0.5rem">
+        <button class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">✕</button>`;
+    container.appendChild(div);
+}
+
+function removeCronTime(jobKey, idx) {
+    const container = document.getElementById(`cron-times-${jobKey}`);
+    const inputs = container.querySelectorAll('.cron-time-input');
+    if (inputs[idx]) inputs[idx].closest('div').remove();
+}
+
+async function saveCronTimes(jobKey) {
+    const container = document.getElementById(`cron-times-${jobKey}`);
+    const times = [...container.querySelectorAll('.cron-time-input')].map(i => i.value).filter(Boolean);
+    const r = await fetch('/api/admin_cron.php', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ job_key: jobKey, times })
+    });
+    const d = await r.json();
+    if (d.success) { showAlert('Gespeichert.'); loadCronJobs(); }
+    else showAlert('Fehler: ' + (d.message || 'Unbekannt'));
+}
+
+// Cron-Tab beim Aktivieren laden
+const _origSwitchTab = window.switchTab;
+window.switchTab = function(tab, event) {
+    _origSwitchTab(tab, event);
+    if (tab === 'cron') loadCronJobs();
+};
