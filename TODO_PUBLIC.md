@@ -13,7 +13,7 @@ Konkrete anstehende Aufgaben. Sicherheitsrelevante Details sind in der privaten 
 ## 🟡 Mittlere Priorität
 
 ### Import-Log
-- [ ] Import-Protokoll in der UI einsehbar machen (letzte Imports, Fehler, verarbeitete Zeilen)
+- [x] Import-Protokoll in der UI einsehbar machen (letzte Imports pro Gilde + gefilterte Activity-Einträge)
 
 ### Containerisierung
 - [ ] Dockerfile erstellen (Base: php:8.4-fpm-bookworm, supervisord für nginx + php-fpm)

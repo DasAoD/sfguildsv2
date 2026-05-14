@@ -261,14 +261,21 @@ function switchLogType(type) {
     document.getElementById('btnLogActivity').classList.toggle('active', type === 'activity');
     document.getElementById('btnLogError').classList.toggle('active', type === 'error');
     document.getElementById('btnLogCron').classList.toggle('active', type === 'cron');
+    document.getElementById('btnLogImport').classList.toggle('active', type === 'import');
 
-    const isCron = type === 'cron';
-    document.getElementById('logContainer').style.display = isCron ? 'none' : '';
+    const isCron   = type === 'cron';
+    const isImport = type === 'import';
+    const isSpecial = isCron || isImport;
+
+    document.getElementById('logContainer').style.display = isSpecial ? 'none' : '';
     document.getElementById('cronStatusContainer').style.display = isCron ? '' : 'none';
-    document.querySelector('.log-toolbar').style.display = isCron ? 'none' : '';
+    document.getElementById('importLogContainer').style.display = isImport ? '' : 'none';
+    document.querySelector('.log-toolbar').style.display = isSpecial ? 'none' : '';
 
     if (isCron) {
         loadCronStatus();
+    } else if (isImport) {
+        loadImportLog();
     } else {
         document.getElementById('logFilter').value = '';
         loadLogs();
@@ -637,6 +644,47 @@ async function saveCronTimes(jobKey) {
 }
 
 // Cron-Tab wird in switchTab() geladen
+
+async function loadImportLog() {
+    const container = document.getElementById('importLogContainer');
+    container.innerHTML = '<div class="log-empty">Lade...</div>';
+    try {
+        const r = await fetch('/api/admin_import_log.php');
+        const d = await r.json();
+        if (!d.success) { container.innerHTML = '<div class="log-empty">Fehler beim Laden.</div>'; return; }
+        renderImportLog(d, container);
+    } catch(e) {
+        container.innerHTML = '<div class="log-empty">Verbindungsfehler.</div>';
+    }
+}
+
+function renderImportLog(data, container) {
+    // Gilde-Übersicht
+    const guildRows = data.guilds.map(g => {
+        const ts = g.last_import_at
+            ? new Date(g.last_import_at).toLocaleString('de-DE')
+            : '— Noch nie';
+        return `<div style="display:flex;justify-content:space-between;padding:0.4rem 0;border-bottom:1px solid var(--color-border)">
+            <span><strong>${escapeHtml(g.name)}</strong> <span style="color:var(--color-text-secondary)">(${g.server})</span></span>
+            <span style="color:var(--color-text-secondary)">${ts}</span>
+        </div>`;
+    }).join('');
+
+    // Activity-Einträge
+    const logRows = data.entries.length
+        ? data.entries.map(line => `<div class="log-entry">${escapeHtml(line)}</div>`).join('')
+        : '<div class="log-empty">Keine Import-Einträge gefunden.</div>';
+
+    container.innerHTML = `
+        <div class="section" style="margin-bottom:1.5rem;padding:1.25rem;background:var(--color-bg-secondary);border-radius:var(--radius-md)">
+            <h3 style="margin:0 0 1rem 0">Letzter Import pro Gilde</h3>
+            ${guildRows}
+        </div>
+        <div class="section" style="padding:1.25rem;background:var(--color-bg-secondary);border-radius:var(--radius-md)">
+            <h3 style="margin:0 0 1rem 0">Import-Aktivitäten (letzte 50)</h3>
+            <div class="log-container" style="max-height:400px;overflow-y:auto">${logRows}</div>
+        </div>`;
+}
 
 async function runCronJobNow(jobKey, label) {
     const btn = document.getElementById(`cron-run-${jobKey}`);
