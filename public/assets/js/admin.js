@@ -6,6 +6,7 @@ document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'
 document.getElementById('tab-'+tab).classList.add('active');
 if(tab==='system')loadSystemInfo();
 if(tab==='logs')loadLogs();
+if(tab==='cron')loadCronJobs();
 }
 
 
@@ -581,9 +582,4 @@ async function saveCronTimes(jobKey) {
     else showAlert('Fehler: ' + (d.message || 'Unbekannt'));
 }
 
-// Cron-Tab beim Aktivieren laden
-const _origSwitchTab = window.switchTab;
-window.switchTab = function(tab, event) {
-    _origSwitchTab(tab, event);
-    if (tab === 'cron') loadCronJobs();
-};
+// Cron-Tab wird in switchTab() geladen
