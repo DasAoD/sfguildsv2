@@ -80,7 +80,7 @@ if (!file_exists($binary) || !is_executable($binary)) {
 $cmd = [$binary];
 $env = array_merge($_ENV, [
     'SSO_USERNAME' => $foundAccount['sf_username'],
-    'SF_PASSWORD'  => $sfPassword,
+    'SSO_PASSWORD' => $sfPassword,
     'SERVER_HOST'  => $foundCharacter['server'],
     'CHARACTER'    => $foundCharacter['name'],
 ]);
