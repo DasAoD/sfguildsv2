@@ -134,7 +134,7 @@ function renderTable(members, logged) {
                 <td>${rank} ${escapeHtml(m.name)}</td>
                 <td class="center">${m.level}</td>
                 <td>${formatDate(m.last_online)}</td>
-                <td>${formatDate(m.joined_at)}</td>
+                <td class="editable" data-idx="${idx}" data-field="joined_at">${formatDate(m.joined_at)}</td>
                 <td class="center">${m.gold?.toLocaleString('de-DE') || 0}</td>
                 <td class="center">${m.mentor || 0}</td>
                 <td class="center">${m.knight_hall?.toLocaleString('de-DE') || 0}</td>
@@ -250,7 +250,7 @@ function cancelEdit(idx, field) {
 
 async function clearField(idx, field) {
     const member = currentMembers[idx];
-    const fieldLabels = { notes: 'Notizen', fired_at: 'Entlassen-Datum', left_at: 'Verlassen-Datum' };
+    const fieldLabels = { notes: 'Notizen', fired_at: 'Entlassen-Datum', left_at: 'Verlassen-Datum', joined_at: 'Gildenbeitritt' };
     const label = fieldLabels[field] || field;
     
     confirmDialog(`${label} von "${member.name}" wirklich löschen?`, async () => {

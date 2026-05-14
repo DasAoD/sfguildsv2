@@ -1,7 +1,7 @@
 <?php
 /**
  * Update Member API Endpoint
- * Updates member information (notes, fired_at, left_at)
+ * Updates member information (notes, fired_at, left_at, joined_at)
  */
 require_once __DIR__ . '/../includes/bootstrap_api.php';
 
@@ -28,14 +28,14 @@ if (!$memberId || !$field) {
 }
 
 // Allowed fields
-$allowedFields = ['notes', 'fired_at', 'left_at'];
+$allowedFields = ['notes', 'fired_at', 'left_at', 'joined_at'];
 if (!in_array($field, $allowedFields)) {
     jsonResponse(['success' => false, 'message' => 'Ungültiges Feld'], 400);
 }
 
 try {
     // Convert empty strings to NULL for date fields and notes
-    if (in_array($field, ['fired_at', 'left_at', 'notes']) && ($value === '' || $value === null)) {
+    if (in_array($field, ['fired_at', 'left_at', 'joined_at', 'notes']) && ($value === '' || $value === null)) {
         $value = null;
     }
     
@@ -50,11 +50,11 @@ try {
         $member = queryOne('SELECT name FROM members WHERE id = ?', [$memberId]);
         
         // German field labels
-        $fieldLabels = ['notes' => 'Notizen', 'fired_at' => 'Entlassen', 'left_at' => 'Verlassen'];
+        $fieldLabels = ['notes' => 'Notizen', 'fired_at' => 'Entlassen', 'left_at' => 'Verlassen', 'joined_at' => 'Gildenbeitritt'];
         
         // Format date values to DD.MM.YYYY
         $logValue = $value;
-        if (in_array($field, ['fired_at', 'left_at'])) {
+        if (in_array($field, ['fired_at', 'left_at', 'joined_at'])) {
             if ($value === null) {
                 $logValue = '(Datum entfernt)';
             } elseif (preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $value, $m)) {
