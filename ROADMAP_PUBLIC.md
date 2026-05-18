@@ -23,6 +23,7 @@
 - [x] Wappen-Upload und Darstellung
 - [x] Tab-Navigation zwischen Gilden
 - [x] Öffentliche Gilden-Profilseiten (ohne Login einsehbar)
+- [x] **Mitglieder-Sortierung** – Aktive <7 Tage offline nach Rang/Level, Aktive ≥7 Tage als Block nach Offline-Tagen, Entlassene/Verlassene am Ende
 
 ### Daten-Import
 - [x] CSV-Import via SFTools-Export (Fallback)

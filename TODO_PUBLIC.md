@@ -38,6 +38,7 @@ Konkrete anstehende Aufgaben. Sicherheitsrelevante Details sind in der privaten 
 
 ## ✅ Zuletzt erledigt (Mai 2026)
 
+- [x] **Mitglieder-Sortierung überarbeitet** — Aktive ≥7 Tage offline als Block ans Ende der Aktiven-Liste, sortiert nach Tagen offline; Offline-Tage datums-basiert berechnet (keine Uhrzeitkomponente)
 - [x] **sf-api nach S&F v30-Update repariert** (Binary-Rebuild auf v0.4.1)
 - [x] **Login-Verhalten optimiert** — nur Ziel-Charakter wird eingeloggt, alle anderen Sessions unberührt
 - [x] **Rust-Sources ins Repo** (rust_examples/: fetch_guild_reports.rs, list_chars.rs, member_sync.rs + README)

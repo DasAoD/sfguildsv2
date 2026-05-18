@@ -5,7 +5,7 @@ Ein privates Guild-Management-System für das Browsergame [Shakes & Fidget](http
 ## Features
 
 - 🏰 **Multi-Gilden-Verwaltung** – Verwaltung mehrerer Gilden auf verschiedenen S&F-Servern
-- 👥 **Mitglieder-Tracking** – Statistiken, Beitrittsdaten, Gold-Donationen, Tags und Notizen
+- 👥 **Mitglieder-Tracking** – Statistiken, Beitrittsdaten, Gold-Donationen, Tags und Notizen; intelligente Sortierung (aktive nach Rang/Level, lang-Offline als Block nach Offline-Tagen)
 - ⚔️ **Kampfberichte** – Import und Auswertung von Gildenkampf-Berichten
 - 📊 **Statistiken & Analysen** – Mitglieder-Entwicklung, Kampf-Performance
 - 📅 **Battle-Kalender** – Übersicht über vergangene und geplante Gildenkämpfe
@@ -156,6 +156,18 @@ Automatisch via sf-api aus dem S&F-Postkasten (Cron: 07:25 + 19:10 Uhr).
 - Dieses System ist für den privaten Gebrauch konzipiert
 - `guild_joined` wird seit S&F v29.500 nicht mehr vom Server geliefert — "first seen"-Ansatz implementiert
 - Die öffentliche API gibt nur nicht-sensitive Felder zurück
+- `last_online` wird als ISO 8601 Timestamp gespeichert — Offline-Tage werden datums-basiert berechnet (ohne Uhrzeit)
+- Mitglieder-Sortierung: Aktive <7 Tage offline nach Rang/Level, dann alle ≥7 Tage offline als Block nach Tagen offline, dann Entlassene/Verlassene
+
+## Mitwirkende
+
+Dieses Projekt wurde in Zusammenarbeit mit [Claude](https://claude.ai) (Sonnet 4.6) von [Anthropic](https://anthropic.com) entwickelt und iterativ ausgebaut.  
+Der überwiegende Teil des Codes, der Architektur und der Dokumentation wurde durch KI generiert und gemeinsam verfeinert.
+
+| Rolle | Person / Tool |
+|---|---|
+| Projektidee, Anforderungen & Tests | [DasAoD](https://github.com/DasAoD) |
+| Code, Architektur, Dokumentation | Claude (Anthropic) |
 
 ## Lizenz
 
