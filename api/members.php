@@ -40,7 +40,7 @@ try {
          END as is_departed,
          CASE 
             WHEN last_online IS NULL OR last_online = "" THEN 9999
-            ELSE julianday("now") - julianday(substr(last_online, 7, 4) || "-" || substr(last_online, 4, 2) || "-" || substr(last_online, 1, 2))
+            ELSE julianday("now") - julianday(last_online)
          END as days_offline_calc
          FROM members 
          WHERE ' . $whereClause . ' 
