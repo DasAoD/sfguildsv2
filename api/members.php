@@ -40,7 +40,7 @@ try {
          END as is_departed,
          CASE 
             WHEN last_online IS NULL OR last_online = "" THEN 9999
-            ELSE julianday("now") - julianday(last_online)
+            ELSE julianday(date("now")) - julianday(date(last_online))
          END as days_offline_calc
          FROM members 
          WHERE ' . $whereClause . ' 
@@ -63,9 +63,13 @@ try {
             WHEN rank = "Mitglied" THEN 3
             ELSE 4
          END ASC,
-         -- Tage offline aufsteigend (primär relevant für den >=7-Tage-Block)
-         days_offline_calc ASC,
-         level DESC',
+         -- Aktive/Entlassene: nach Level DESC (negiert); lang-Offline: nach Tagen offline ASC
+         CASE
+            WHEN (fired_at IS NULL OR fired_at = "") AND (left_at IS NULL OR left_at = "")
+                 AND (last_online IS NULL OR last_online = "" OR days_offline_calc >= 7)
+            THEN days_offline_calc
+            ELSE CAST(-level AS REAL)
+         END ASC',
         [$guildId]
     );
     
@@ -85,12 +89,11 @@ try {
             $member['left_at'] = $matches[3] . '-' . $matches[2] . '-' . $matches[1];
         }
         
-        // Calculate days offline
+        // Calculate days offline (date-only, no time component)
         if ($member['last_online']) {
-            $lastOnline = strtotime($member['last_online']);
-            $now = time();
-            $diff = $now - $lastOnline;
-            $member['days_offline'] = floor($diff / (60 * 60 * 24));
+            $lastOnlineDate = date('Y-m-d', strtotime($member['last_online']));
+            $todayDate = date('Y-m-d');
+            $member['days_offline'] = (int)((strtotime($todayDate) - strtotime($lastOnlineDate)) / 86400);
         } else {
             $member['days_offline'] = 0;
         }
