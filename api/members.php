@@ -46,17 +46,25 @@ try {
          WHERE ' . $whereClause . ' 
          ORDER BY 
          is_departed ASC,
-         CASE 
+         -- Aktive mit >=7 Tagen offline kommen als Block ans Ende der Aktiven-Liste
+         CASE
+            WHEN (fired_at IS NOT NULL AND fired_at != "") OR (left_at IS NOT NULL AND left_at != "") THEN 0
+            WHEN last_online IS NULL OR last_online = "" THEN 1
+            WHEN days_offline_calc >= 7 THEN 1
+            ELSE 0
+         END ASC,
+         -- Rang nur für kurzfristig Aktive (<7 Tage) und Entlassene; lang-Offline ranglos (99)
+         CASE
+            WHEN (fired_at IS NULL OR fired_at = "") AND (left_at IS NULL OR left_at = "")
+                 AND (last_online IS NULL OR last_online = "" OR days_offline_calc >= 7)
+            THEN 99
             WHEN rank = "Anführer" THEN 1
             WHEN rank = "Offizier" THEN 2
             WHEN rank = "Mitglied" THEN 3
             ELSE 4
-         END,
-         CASE
-            WHEN last_online IS NULL OR last_online = "" THEN 9999
-            WHEN julianday("now") - julianday(substr(last_online, 7, 4) || "-" || substr(last_online, 4, 2) || "-" || substr(last_online, 1, 2)) < 7 THEN 0
-            ELSE julianday("now") - julianday(substr(last_online, 7, 4) || "-" || substr(last_online, 4, 2) || "-" || substr(last_online, 1, 2))
          END ASC,
+         -- Tage offline aufsteigend (primär relevant für den >=7-Tage-Block)
+         days_offline_calc ASC,
          level DESC',
         [$guildId]
     );
