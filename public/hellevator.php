@@ -50,6 +50,11 @@ $embed = !empty($_GET['embed']);
                     <span>🚫 </span><span class="warning-label danger-text" id="dangerLabel">Ganz Wichtig:</span>
                     <span id="dangerText"> Nur wer im Kampf tatsächlich zum Einsatz kommt, erhält eine Belohnung – überzählige Anmeldungen gehen leer aus!</span>
                 </div>
+
+                <div class="warning-box info" id="warningMarket">
+                    <span>🛒 </span><span class="warning-label info-text" id="marketLabel">Schwarzmarkt:</span>
+                    <span id="marketText"> Während des Events könnt ihr im Schwarzmarkt je 3× Schlüsselkarten für Lucky Coins und 3× für Pilze kaufen.</span>
+                </div>
             </div>
 
             <!-- Center: Table -->
@@ -143,6 +148,8 @@ $embed = !empty($_GET['embed']);
                 cautionText: ' Melden sich 2 oder mehr Spieler in einer Etage an, bitte aufs Level achten – sonst werden unnötig Schlüsselkarten verplempert.',
                 dangerLabel: 'Ganz Wichtig:',
                 dangerText: ' Nur wer im Kampf tatsächlich zum Einsatz kommt, erhält eine Belohnung – überzählige Anmeldungen gehen leer aus!',
+                marketLabel: 'Schwarzmarkt:',
+                marketText: ' Während des Events könnt ihr im Schwarzmarkt je 3× Schlüsselkarten für Lucky Coins und 3× für Pilze kaufen.',
                 helpTitle: 'Offizielle Hellevator-Hilfe',
                 helpDesc: 'Playa Games Helpshift – Alles über den Hellevator',
                 noData: 'keine Daten'
@@ -158,6 +165,8 @@ $embed = !empty($_GET['embed']);
                 cautionText: ' If 2 or more players register on one floor, please pay attention to the level, otherwise key cards will be wasted unnecessarily.',
                 dangerLabel: 'Very Important:',
                 dangerText: ' Only players who are actually deployed in battle receive a reward – surplus registrations go empty-handed!',
+                marketLabel: 'Black Market:',
+                marketText: ' During the event you can buy key cards on the Black Market: 3× for Lucky Coins and 3× for Mushrooms.',
                 helpTitle: 'Official Hellevator Help',
                 helpDesc: 'Playa Games Helpshift – Everything about the Hellevator',
                 noData: 'no data'
@@ -182,6 +191,8 @@ $embed = !empty($_GET['embed']);
             document.getElementById('cautionText').textContent = t.cautionText;
             document.getElementById('dangerLabel').textContent = t.dangerLabel;
             document.getElementById('dangerText').textContent = t.dangerText;
+            document.getElementById('marketLabel').textContent = t.marketLabel;
+            document.getElementById('marketText').textContent = t.marketText;
             document.getElementById('helpTitle').textContent = t.helpTitle;
             document.getElementById('helpDesc').textContent = t.helpDesc;
 
