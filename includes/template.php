@@ -23,7 +23,7 @@ function renderHead($title, $additionalCSS = []) {
 /**
  * Render navigation bar
  */
-function renderNavbar($activePage = '') {
+function renderNavbar($activePage = '', $options = []) {
     // Auto-detect active page if not provided
     if (empty($activePage)) {
         $currentPage = basename($_SERVER['PHP_SELF'], '.php');
@@ -75,7 +75,9 @@ function renderNavbar($activePage = '') {
                 <span class="brand-text">S&F Guilds</span>
             </a>
             <div class="navbar-menu">
+                <?php if (empty($options['hide_dashboard'])): ?>
                 <a href="/" class="nav-item <?php echo $activePage === 'dashboard' ? 'active' : ''; ?>">Dashboard</a>
+                <?php endif; ?>
                 <a href="/hellevator.php" class="nav-item <?php echo $activePage === 'hellevator' ? 'active' : ''; ?>">Hellevator</a>
                 <?php if ($isLoggedIn): ?>
                 <a href="/fights.php" class="nav-item <?php echo $activePage === 'battles' ? 'active' : ''; ?>">Kämpfe</a>

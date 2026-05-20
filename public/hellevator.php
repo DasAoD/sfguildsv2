@@ -8,6 +8,8 @@ require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/template.php';
 
+$embed = !empty($_GET['embed']);
+
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -15,7 +17,7 @@ require_once __DIR__ . '/../includes/template.php';
     <?php renderHead('Hellevator - Höllen-Angriffe', ['/assets/css/hellevator.css']); ?>
 </head>
 <body>
-    <?php renderNavbar('hellevator'); ?>
+    <?php renderNavbar('hellevator', $embed ? ['hide_dashboard' => true] : []); ?>
 
     <!-- Background Music -->
     <audio id="bgMusic" loop preload="auto">
