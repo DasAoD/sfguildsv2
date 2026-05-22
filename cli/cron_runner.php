@@ -29,7 +29,12 @@ foreach ($jobs as $job) {
         continue;
     }
 
-    echo "[{$currentTime}] Starte Job: {$job['label']}\n";
+    // Werte vor require sichern — cron_fetch_reports.php überschreibt
+    // $job und $jobs im selben Scope (foreach ($jobs as $job))
+    $jobKey   = $job['job_key'];
+    $jobLabel = $job['label'];
+
+    echo "[{$currentTime}] Starte Job: {$jobLabel}\n";
     $start = microtime(true);
 
     $scriptMap = [
@@ -37,7 +42,7 @@ foreach ($jobs as $job) {
         'member_sync'   => __DIR__ . '/cron_member_sync.php',
     ];
 
-    $script = $scriptMap[$job['job_key']] ?? null;
+    $script = $scriptMap[$jobKey] ?? null;
     $status = 'error';
     $message = 'Unbekannter Job';
 
@@ -60,7 +65,7 @@ foreach ($jobs as $job) {
     }
 
     $duration = round(microtime(true) - $start, 1);
-    echo "[{$job['job_key']}] Fertig in {$duration}s — {$message}\n";
+    echo "[{$jobKey}] Fertig in {$duration}s — {$message}\n";
 
     // Status in DB schreiben
     $db->prepare("
@@ -71,10 +76,10 @@ foreach ($jobs as $job) {
         ':ts'     => gmdate('c'),
         ':status' => $status,
         ':msg'    => $message,
-        ':key'    => $job['job_key'],
+        ':key'    => $jobKey,
     ]);
 
-    logActivity('Cron-Job', ['Job' => $job['label'], 'Status' => $status, 'Ergebnis' => $message]);
+    logActivity('Cron-Job', ['Job' => $jobLabel, 'Status' => $status, 'Ergebnis' => $message]);
 
     flock($lockFh, LOCK_UN);
     fclose($lockFh);
