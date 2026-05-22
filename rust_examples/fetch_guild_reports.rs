@@ -257,12 +257,27 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let login_res2 = session.login().await?;
 
-    let login_syslist: Option<String> = login_res2
+    // systemmessagelist aus Login-Response extrahieren
+    // Drei Fälle:
+    //   (a) Key vorhanden, Wert nicht leer  → direkt verwenden
+    //   (b) Key vorhanden, Wert leer/";"   → keine Berichte, sofort Ok()
+    //   (c) Key fehlt komplett              → Fallback-Seed nötig
+    let syslist_raw = login_res2
         .values()
         .iter()
         .find(|(k, _)| k.starts_with("systemmessagelist"))
-        .map(|(_, v)| v.as_str().to_string())
+        .map(|(_, v)| v.as_str().to_string());
+
+    let syslist_key_present = syslist_raw.is_some();
+
+    let login_syslist: Option<String> = syslist_raw
         .filter(|s| !s.trim().is_empty() && s.trim() != ";");
+
+    // Fall (b): Key da, aber leer → nichts zu holen
+    if syslist_key_present && login_syslist.is_none() {
+        println!("✓ systemmessagelist leer – keine neuen Berichte");
+        return Ok(());
+    }
 
     let gs2 = GameState::new(login_res2)?;
 
@@ -271,42 +286,65 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         list.clone()
     } else {
         // Fallback: Seed-ID holen und PlayerMessageView senden
-        let seed_id = if let Some(first_msg) = gs2.mail.inbox.get(0) {
-            first_msg.msg_id
-        } else if let Some(first_claimable) = gs2.mail.claimables.get(0) {
-            eprintln!("⚠️  Inbox leer, verwende claimable msg_id {} als Seed", first_claimable.msg_id);
-            first_claimable.msg_id as i32
-        } else if let Some(guild_fight) = gs2.mail.combat_log.iter()
-            .find(|e| matches!(e.battle_type, sf_api::gamestate::social::CombatMessageType::GuildFight))
-        {
-            eprintln!("⚠️  Verwende GuildFight combat_log msg_id {} als Seed", guild_fight.msg_id);
-            guild_fight.msg_id as i32
-        } else if let Some(first_combat) = gs2.mail.combat_log.get(0) {
-            eprintln!("⚠️  Verwende ersten combat_log Eintrag als Seed (msg_id {})", first_combat.msg_id);
-            first_combat.msg_id as i32
-        } else {
-            eprintln!("⚠️  Keine Nachrichten verfügbar – überspringe Charakter");
-            return Ok(());
+        // Inbox/claimables/combat_log in GameState prüfen
+        eprintln!("⚠️  Fallback: inbox={} claimables={} combat_log={}",
+            gs2.mail.inbox.len(), gs2.mail.claimables.len(), gs2.mail.combat_log.len());
+
+        let seed_candidates: Vec<i32> = {
+            let mut v = Vec::new();
+            for msg in &gs2.mail.inbox {
+                v.push(msg.msg_id);
+            }
+            for c in &gs2.mail.claimables {
+                v.push(c.msg_id as i32);
+            }
+            for e in &gs2.mail.combat_log {
+                v.push(e.msg_id as i32);
+            }
+            v
         };
 
-        let seed_view = session
-            .send_command(Command::Custom {
-                cmd_name: "PlayerMessageView".to_string(),
-                arguments: vec![seed_id.to_string()],
-            })
-            .await?;
+        if seed_candidates.is_empty() {
+            eprintln!("⚠️  Keine Nachrichten verfügbar – überspringe Charakter");
+            return Ok(());
+        }
 
-        seed_view
-            .values()
-            .iter()
-            .find(|(k, _)| k.starts_with("systemmessagelist"))
-            .map(|(_, v)| v.as_str().to_string())
-            .unwrap_or_default()
+        let mut found_list: Option<String> = None;
+        for seed_id in &seed_candidates {
+            eprintln!("⚠️  Versuche Seed msg_id {} ...", seed_id);
+            let seed_result = session
+                .send_command(Command::Custom {
+                    cmd_name: "PlayerMessageView".to_string(),
+                    arguments: vec![seed_id.to_string()],
+                })
+                .await;
+
+            match seed_result {
+                Err(e) => {
+                    eprintln!("⚠️  Seed {} fehlgeschlagen: {} – versuche nächsten", seed_id, e);
+                    continue;
+                }
+                Ok(seed_view) => {
+                    let list = seed_view
+                        .values()
+                        .iter()
+                        .find(|(k, _)| k.starts_with("systemmessagelist"))
+                        .map(|(_, v)| v.as_str().to_string());
+                    if let Some(l) = list {
+                        if !l.trim().is_empty() && l.trim() != ";" {
+                            found_list = Some(l);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        found_list.unwrap_or_default()
     };
 
     if raw_list.trim().is_empty() {
-        eprintln!("systemmessagelist ist leer!");
-        eprintln!("Tipp: Öffne einmal im Browser den Posteingang Tab 2 und starte erneut.");
+        eprintln!("systemmessagelist ist leer (alle Seeds erschöpft) – überspringe Charakter");
         return Ok(());
     }
 
