@@ -32,7 +32,8 @@
   - Wiederbeitritt: fired_at/left_at automatisch geleert, joined_at = heute
   - Aktive Mitglieder: Stats aktualisiert, joined_at/Notizen/fired_at/left_at unberührt
 - [x] Rust-CLI-Tools auf Basis von sf-api (fetch_guild_reports, list_chars, member_sync)
-- [x] Robuste Fehlerbehandlung bei API-Inkompatibilitäten
+- [x] Robuste Fehlerbehandlung bei API-Inkompatibilitäten (leere/ungültige systemmessagelist, graceful Seed-Fallback)
+- [x] sf-api automatisch auf neue S&F-Serverversionen aktualisierbar (v30.500-kompatibel ab v0.4.3)
 
 ### Kampfberichte & Kalender
 - [x] Kampfbericht-Import via sf-api (Postkasten-Integration)

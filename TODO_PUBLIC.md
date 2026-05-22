@@ -38,8 +38,10 @@ Konkrete anstehende Aufgaben. Sicherheitsrelevante Details sind in der privaten 
 
 ## ✅ Zuletzt erledigt (Mai 2026)
 
+- [x] **sf-api auf v0.4.3 aktualisiert** — Kompatibilität mit S&F-Server v30.500 wiederhergestellt; Cargo.toml-Konflikt (tokio 1.51→1.52) gelöst, alle Binaries neu gebaut
+- [x] **fetch_guild_reports: robuste systemmessagelist-Behandlung** — leere systemmessagelist (Postfach geleert) wird sofort als "0 Berichte" behandelt; ungültige Seed-Message-IDs werden graceful übersprungen statt mit Fehler abzubrechen
+- [x] **cron_runner.php: PHP Warnings gefixt** — `$job`/`$jobs` wurden durch `require`'d Script im selben Scope überschrieben; `$jobKey`/`$jobLabel` werden jetzt vor dem `require` gesichert
 - [x] **Mitglieder-Sortierung überarbeitet** — Aktive ≥7 Tage offline als Block ans Ende der Aktiven-Liste, sortiert nach Tagen offline; Offline-Tage datums-basiert berechnet (keine Uhrzeitkomponente)
-- [x] **sf-api nach S&F v30-Update repariert** (Binary-Rebuild auf v0.4.1)
 - [x] **Login-Verhalten optimiert** — nur Ziel-Charakter wird eingeloggt, alle anderen Sessions unberührt
 - [x] **Rust-Sources ins Repo** (rust_examples/: fetch_guild_reports.rs, list_chars.rs, member_sync.rs + README)
 - [x] **joined_at editierbar** — inline wie fired_at/left_at
