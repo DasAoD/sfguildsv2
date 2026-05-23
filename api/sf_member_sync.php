@@ -72,7 +72,7 @@ $sfPassword = decryptData(
 );
 
 // Rust Binary aufrufen
-$binary = '/root/sf-api/target/release/examples/member_sync';
+$binary = '/opt/sf-api/member_sync';
 if (!file_exists($binary) || !is_executable($binary)) {
     jsonError('member_sync Binary nicht gefunden oder nicht ausführbar', 500);
 }

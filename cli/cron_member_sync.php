@@ -10,7 +10,7 @@ require_once __DIR__ . '/../includes/sf_helpers.php';
 require_once __DIR__ . '/../includes/logger.php';
 
 $db = getDB();
-$binary = '/root/sf-api/target/release/examples/member_sync';
+$binary = '/opt/sf-api/member_sync';
 
 if (!file_exists($binary) || !is_executable($binary)) {
     echo "member_sync Binary nicht gefunden!\n";
