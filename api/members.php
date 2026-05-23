@@ -89,10 +89,11 @@ try {
             $member['left_at'] = $matches[3] . '-' . $matches[2] . '-' . $matches[1];
         }
         
-        // Calculate days offline (date-only, no time component)
+        // Calculate days offline (date-only, UTC — last_online is stored as UTC ISO 8601)
+        // gmdate() statt date() damit CEST-Serverzeit den UTC-Timestamp nicht verfälscht
         if ($member['last_online']) {
-            $lastOnlineDate = date('Y-m-d', strtotime($member['last_online']));
-            $todayDate = date('Y-m-d');
+            $lastOnlineDate = gmdate('Y-m-d', strtotime($member['last_online']));
+            $todayDate = gmdate('Y-m-d');
             $member['days_offline'] = (int)((strtotime($todayDate) - strtotime($lastOnlineDate)) / 86400);
         } else {
             $member['days_offline'] = 0;
