@@ -40,7 +40,7 @@ try {
          END as is_departed,
          CASE 
             WHEN last_online IS NULL OR last_online = "" THEN 9999
-            ELSE julianday(date("now")) - julianday(date(last_online))
+            ELSE julianday(date("now","localtime")) - julianday(date(last_online,"localtime"))
          END as days_offline_calc
          FROM members 
          WHERE ' . $whereClause . ' 
@@ -89,11 +89,15 @@ try {
             $member['left_at'] = $matches[3] . '-' . $matches[2] . '-' . $matches[1];
         }
         
-        // Calculate days offline (date-only, UTC — last_online is stored as UTC ISO 8601)
-        // gmdate() statt date() damit CEST-Serverzeit den UTC-Timestamp nicht verfälscht
+        // Calculate days offline — alles in Serverzeit (CEST)
+        // date() nutzt die Serverzeit (CEST), gmdate() würde UTC verwenden und
+        // zu Abweichungen bei der Anzeige führen (z.B. 23:20 UTC = 01:20 CEST folgetag).
+        // last_online wird ebenfalls als CEST-Datum ans Frontend geschickt, damit
+        // JS-Anzeige und days_offline-Berechnung übereinstimmen.
         if ($member['last_online']) {
-            $lastOnlineDate = gmdate('Y-m-d', strtotime($member['last_online']));
-            $todayDate = gmdate('Y-m-d');
+            $lastOnlineDate = date('Y-m-d', strtotime($member['last_online']));
+            $todayDate      = date('Y-m-d');
+            $member['last_online'] = $lastOnlineDate; // CEST-Datum statt UTC-ISO-String
             $member['days_offline'] = (int)((strtotime($todayDate) - strtotime($lastOnlineDate)) / 86400);
         } else {
             $member['days_offline'] = 0;
