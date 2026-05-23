@@ -38,6 +38,7 @@ Konkrete anstehende Aufgaben. Sicherheitsrelevante Details sind in der privaten 
 
 ## ✅ Zuletzt erledigt (Mai 2026)
 
+- [x] **days_offline UTC/CEST-Bug gefixt** — `date()` durch `gmdate()` ersetzt; UTC-Timestamps wurden durch CEST-Serverzeit verfälscht und zeigten -1 Tag offline
 - [x] **member_sync Pfad korrigiert** — cron_member_sync.php und api/sf_member_sync.php zeigten auf Build-Pfad statt /opt/sf-api/
 - [x] **sf-api auf v0.4.3 aktualisiert** — Kompatibilität mit S&F-Server v30.500 wiederhergestellt; Cargo.toml-Konflikt (tokio 1.51→1.52) gelöst, alle Binaries neu gebaut
 - [x] **fetch_guild_reports: robuste systemmessagelist-Behandlung** — leere systemmessagelist (Postfach geleert) wird sofort als "0 Berichte" behandelt; ungültige Seed-Message-IDs werden graceful übersprungen statt mit Fehler abzubrechen
