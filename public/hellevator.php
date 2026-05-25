@@ -107,7 +107,7 @@ $embed = !empty($_GET['embed']);
         // === DATA ===
         const floors = {
             de: [
-                { floor: 'ab 50',  name: 'Highway to Hell', info: '1 Spieler (mind. Lvl 120, eher 150)' },
+                { floor: 'ab 50',  name: 'Highway to Hell', info: '1 Spieler (mind. Lvl 150)' },
                 { floor: 'ab 100', name: 'Limbo',           info: '1 Spieler (min. Lvl 300)' },
                 { floor: 'ab 150', name: 'Lust',            info: '1 Spieler (min. Lvl 500)' },
                 { floor: 'ab 200', name: 'Völlerei',        info: '1 Spieler (min. Lvl 600)' },
@@ -121,7 +121,7 @@ $embed = !empty($_GET['embed']);
                 { floor: 'ab 600', name: 'Highway to Hell', info: 'keine Daten' },
             ],
             en: [
-                { floor: 'from 50',  name: 'Highway to Hell', info: '1 player (min. Lvl 120, maybe 150)' },
+                { floor: 'from 50',  name: 'Highway to Hell', info: '1 player (min. Lvl 150)' },
                 { floor: 'from 100', name: 'Limbo',           info: '1 player (min. Lvl 300)' },
                 { floor: 'from 150', name: 'Lust',            info: '1 player (min. Lvl 500)' },
                 { floor: 'from 200', name: 'Gluttony',        info: '1 player (min. Lvl 600)' },
