@@ -322,10 +322,13 @@ document.querySelectorAll('.calendar-day.has-data').forEach(day => {
                 ? '<span class="badge badge-won">Gewonnen</span>'
                 : battle.won === 0
                     ? '<span class="badge badge-lost">Verloren</span>'
-                    : '<span class="badge badge-unknown">-</span>';
+                    : '';
             row.innerHTML = `
                 <td>${battle.battle_time}</td>
-                <td>${battle.battle_type === 'attack' ? 'Angriff' : battle.battle_type === 'defense' ? 'Verteidigung' : 'Gildenraid'} ${wonBadge}</td>
+                <td>
+                    <div>${battle.battle_type === 'attack' ? 'Angriff' : battle.battle_type === 'defense' ? 'Verteidigung' : 'Gildenraid'}</div>
+                    ${battle.won !== null ? `<div style="margin-top:4px">${wonBadge}</div>` : ''}
+                </td>
                 <td>${escapedOpponent}</td>
                 <td>
                     <button onclick="showParticipants(${battle.id}, '${battle.battle_date}', '${battle.battle_time}', '${escapedOpponent}', '${battle.battle_type}', ${battle.won})" class="btn-small">Teilnehmer</button>

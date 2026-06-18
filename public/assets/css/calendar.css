@@ -503,7 +503,7 @@ input[type="time"]::-webkit-datetime-edit-minute-field {
     font-size: 0.78rem;
     font-weight: 600;
     vertical-align: middle;
-    margin-left: 0.35rem;
+    margin-left: 0;
 }
 
 .badge-won {
