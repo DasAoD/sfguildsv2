@@ -61,3 +61,4 @@ migrate_*.php
 CLAUDE.md
 .claude/
 .claude/worktrees/
+*.bak
