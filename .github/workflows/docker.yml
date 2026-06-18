@@ -1,10 +1,9 @@
 name: Docker Build & Push
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
+    # Nur manuell auslösbar - automatischer Push-Trigger deaktiviert
+    # bis die Containerisierung vollständig umgesetzt ist
 
 jobs:
   build-and-push:
@@ -30,8 +29,8 @@ jobs:
             PATCH=$((PATCH + 1))
             NEW_TAG="v${MAJOR}.${MINOR}.${PATCH}"
           fi
-          echo "new_tag=$NEW_TAG" >> $GITHUB_OUTPUT
-          echo "new_version=${NEW_TAG#v}" >> $GITHUB_OUTPUT
+          echo "new_tag=$NEW_TAG" >> $FORGEMO_OUTPUT
+          echo "new_version=${NEW_TAG#v}" >> $FORGEJO_OUTPUT
           git tag $NEW_TAG
           git push origin $NEW_TAG
 
