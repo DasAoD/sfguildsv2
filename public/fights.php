@@ -44,7 +44,8 @@ $stmt = $db->prepare("
         battle_type,
         opponent_guild,
         battle_date,
-        battle_time
+        battle_time,
+        won
     FROM sf_eval_battles
     WHERE guild_id = ? 
     AND battle_date BETWEEN ? AND ?
@@ -317,12 +318,17 @@ document.querySelectorAll('.calendar-day.has-data').forEach(day => {
         data.battles.forEach(battle => {
             const row = document.createElement('tr');
             const escapedOpponent = escapeHtml(battle.opponent_guild);
+            const wonBadge = battle.won === 1
+                ? '<span class="badge badge-won">Gewonnen</span>'
+                : battle.won === 0
+                    ? '<span class="badge badge-lost">Verloren</span>'
+                    : '<span class="badge badge-unknown">-</span>';
             row.innerHTML = `
                 <td>${battle.battle_time}</td>
-                <td>${battle.battle_type === 'attack' ? 'Angriff' : battle.battle_type === 'defense' ? 'Verteidigung' : 'Gildenraid'}</td>
+                <td>${battle.battle_type === 'attack' ? 'Angriff' : battle.battle_type === 'defense' ? 'Verteidigung' : 'Gildenraid'} ${wonBadge}</td>
                 <td>${escapedOpponent}</td>
                 <td>
-                    <button onclick="showParticipants(${battle.id}, '${battle.battle_date}', '${battle.battle_time}', '${escapedOpponent}', '${battle.battle_type}')" class="btn-small">Teilnehmer</button>
+                    <button onclick="showParticipants(${battle.id}, '${battle.battle_date}', '${battle.battle_time}', '${escapedOpponent}', '${battle.battle_type}', ${battle.won})" class="btn-small">Teilnehmer</button>
                     <button onclick="deleteBattle(${battle.id})" class="btn-small btn-danger">Löschen</button>
                     <select onchange="moveBattle(${battle.id}, this.value)" class="guild-select">
                         <option value="">Verschieben...</option>
@@ -434,7 +440,7 @@ function showConfirm(message, title = 'Bestätigung') {
 }
 
 // Show participants
-async function showParticipants(battleId, date, time, opponent, type) {
+async function showParticipants(battleId, date, time, opponent, type, won = null) {
     try {
         const response = await fetch(`../api/get_participants.php?battle_id=${battleId}`);
         const data = await response.json();
@@ -443,12 +449,19 @@ async function showParticipants(battleId, date, time, opponent, type) {
         const [year, month, day] = date.split('-');
         const formattedDate = `${day}.${month}.${year}`;
         
+        const wonText = won === 1
+            ? '<span class="badge badge-won">Gewonnen</span>'
+            : won === 0
+                ? '<span class="badge badge-lost">Verloren</span>'
+                : '';
+        
         const content = document.getElementById('participantsContent');
         content.innerHTML = `
             <div class="battle-info">
                 <p><strong>Datum:</strong> ${formattedDate} ${time}</p>
                 <p><strong>Gegner:</strong> ${opponent}</p>
                 <p><strong>Typ:</strong> ${type === 'attack' ? 'Angriff' : type === 'defense' ? 'Verteidigung' : 'Gildenraid'}</p>
+                ${won !== null ? `<p><strong>Ergebnis:</strong> ${wonText}</p>` : ''}
             </div>
             <div class="participants-grid">
                 <div class="participants-column">

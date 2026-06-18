@@ -88,11 +88,12 @@ try {
             $stmt = $db->prepare("
                 INSERT INTO sf_eval_battles 
                 (guild_id, battle_type, opponent_guild, battle_date, battle_time, 
-                 raw_text, raw_hash, message_id)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                 raw_text, raw_hash, message_id, won)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
             
             $rawHash = md5($content);
+            $wonValue = isset($parsed['won']) ? $parsed['won'] : null;
             
             $stmt->execute([
                 $inboxReport['guild_id'],
@@ -102,7 +103,8 @@ try {
                 $inboxReport['battle_time'],
                 $content,
                 $rawHash,
-                $inboxReport['message_id']
+                $inboxReport['message_id'],
+                $wonValue
             ]);
             
             $battleId = $db->lastInsertId();

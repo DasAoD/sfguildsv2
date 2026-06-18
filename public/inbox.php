@@ -419,6 +419,11 @@ $totalPending = $stmt->fetchColumn();
                         <span class="battle-type-badge battle-type-${r.battle_type}">
                             ${r.battle_type === 'attack' ? '⚔️ Angriff' : r.battle_type === 'defense' ? '🛡️ Verteidigung' : '🏰 Gildenraid'}
                         </span>
+                        ${r.won === 1
+                            ? '<span class="battle-type-badge" style="background:rgba(34,197,94,0.2);color:#22c55e;">Gewonnen</span>'
+                            : r.won === 0
+                                ? '<span class="battle-type-badge" style="background:rgba(239,68,68,0.2);color:#ef4444;">Verloren</span>'
+                                : ''}
                     </td>
                     <td>${escapeHtml(r.opponent_guild)}</td>
                     <td><small>${escapeHtml(r.server)}</small></td>

@@ -30,6 +30,7 @@ try {
             i.server,
             i.character_name,
             i.status,
+            i.won,
             i.created_at,
             g.id as guild_id,
             g.name as guild_name

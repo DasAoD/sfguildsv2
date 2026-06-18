@@ -1,5 +1,6 @@
 use chrono::{TimeZone, Utc};
 use sf_api::{command::Command, gamestate::GameState, sso::SFAccount};
+use sf_api::gamestate::social::CombatMessageType;
 use std::{env, fs, io::{self, Write}, path::PathBuf, time::Duration};
 use unidecode::unidecode;
 
@@ -65,6 +66,13 @@ fn time_utc(ts: i64) -> String {
         .unwrap_or_else(|| "??:??:??".to_string())
 }
 
+fn date_iso_utc(ts: i64) -> String {
+    Utc.timestamp_opt(ts, 0)
+        .single()
+        .map(|dt| dt.format("%Y-%m-%d").to_string())
+        .unwrap_or_else(|| "????-??-??".to_string())
+}
+
 #[derive(Debug, Clone)]
 struct PlayerLine {
     name: String,
@@ -108,6 +116,39 @@ fn typ_label(code: &str) -> &'static str {
     }
 }
 
+/// Baut eine Lookup-Map aus dem Combat Log:
+/// Key: (gegnername_lowercase, datum_iso_utc) → won: bool
+/// Berücksichtigt GuildFight und GuildRaid.
+fn build_combat_lookup(
+    gs: &GameState,
+) -> std::collections::HashMap<(String, String), bool> {
+    let mut map = std::collections::HashMap::new();
+    for entry in &gs.mail.combat_log {
+        let is_guild = matches!(
+            entry.battle_type,
+            CombatMessageType::GuildFight | CombatMessageType::GuildRaid
+        );
+        if !is_guild { continue; }
+        let date_str = entry.time.format("%Y-%m-%d").to_string();
+        let key = (entry.player_name.to_lowercase(), date_str);
+        // Erster Treffer gewinnt (neueste zuerst im log)
+        map.entry(key).or_insert(entry.won);
+    }
+    map
+}
+
+/// Sucht das Kampfergebnis für einen Bericht.
+/// Matching: Gegnername (case-insensitive) + Datum (UTC, YYYY-MM-DD).
+fn lookup_result(
+    map: &std::collections::HashMap<(String, String), bool>,
+    opponent: &str,
+    received_ts: i64,
+) -> Option<bool> {
+    let date_str = date_iso_utc(received_ts);
+    let key = (opponent.to_lowercase(), date_str);
+    map.get(&key).copied()
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let sso_user = need_env("SSO_USERNAME");
@@ -141,19 +182,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         return Ok(());
     }
 
-    // ── Charakterauswahl ────────────────────────────────────────────────────
-    //
-    // WICHTIG: Im automatischen Modus (SERVER_HOST + CHARACTER gesetzt) wird
-    // NUR der gewünschte Charakter eingeloggt. Alle anderen Sessions bleiben
-    // unberührt – server_url() und username() sind ohne login() verfügbar
-    // (kommen direkt aus der SSO-Response).
-    //
-    // Im interaktiven Modus (kein SERVER_HOST/CHARACTER) werden alle Charaktere
-    // eingeloggt, um die Auswahltabelle mit Gildennamen anzuzeigen.
-
     let (mut session, char_name, char_server, guild_name) =
         if let (Some(ref srv), Some(ref chr)) = (target_server.clone(), target_char.clone()) {
-            // ── Automatischer Modus: nur Ziel-Charakter einloggen ──────────
             let pos = sessions
                 .iter()
                 .position(|s| {
@@ -179,7 +209,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             (session, name, server, guild)
 
         } else {
-            // ── Interaktiver Modus: alle einloggen für Auswahltabelle ──────
             println!("\n╔═══════════════════════════════════════════════════════════════════╗");
             println!("║  Verfügbare Charaktere:                                          ║");
             println!("╠═══════════════════════════════════════════════════════════════════╣");
@@ -229,9 +258,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             println!("\n✓ Gewählt: {} @ {} (Gilde: {})\n", info.name, info.server, info.guild);
 
-            // Im interaktiven Modus ist der Charakter schon eingeloggt
-            // (durch die Tabellen-Schleife oben) – nochmal einloggen für
-            // aktuelle Inbox/systemmessagelist.
             let login_res = session.login().await?;
             let gs = GameState::new(login_res)?;
             let guild = gs.guild.as_ref()
@@ -246,22 +272,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("\n✓ Starte Berichtabruf für {} @ {} (Gilde: {})\n",
         char_name, char_server, guild_name);
 
-    // ── systemmessagelist holen ──────────────────────────────────────────────
-    //
-    // Wir brauchen eine frische Login-Response für die systemmessagelist.
-    // Im automatischen Modus haben wir das Login oben schon gemacht und
-    // den GameState verworfen – wir müssen nochmal einloggen.
-    // Im interaktiven Modus ebenfalls (zweites Login oben).
-    //
-    // Einfachster Weg: nochmal einloggen und systemmessagelist direkt lesen.
-
+    // ── Zweiter Login: systemmessagelist + Combat Log ────────────────────────
     let login_res2 = session.login().await?;
 
-    // systemmessagelist aus Login-Response extrahieren
-    // Drei Fälle:
-    //   (a) Key vorhanden, Wert nicht leer  → direkt verwenden
-    //   (b) Key vorhanden, Wert leer/";"   → keine Berichte, sofort Ok()
-    //   (c) Key fehlt komplett              → Fallback-Seed nötig
     let syslist_raw = login_res2
         .values()
         .iter()
@@ -273,7 +286,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let login_syslist: Option<String> = syslist_raw
         .filter(|s| !s.trim().is_empty() && s.trim() != ";");
 
-    // Fall (b): Key da, aber leer → nichts zu holen
     if syslist_key_present && login_syslist.is_none() {
         println!("✓ systemmessagelist leer – keine neuen Berichte");
         return Ok(());
@@ -281,26 +293,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let gs2 = GameState::new(login_res2)?;
 
+    // ── Combat Log Lookup aufbauen ───────────────────────────────────────────
+    let combat_lookup = build_combat_lookup(&gs2);
+    println!("✓ Combat Log: {} Gildenkampf-Einträge für Ergebnis-Lookup",
+        combat_lookup.len());
+
     let raw_list = if let Some(ref list) = login_syslist {
         println!("✓ systemmessagelist direkt aus Login-Response ({} bytes)", list.len());
         list.clone()
     } else {
-        // Fallback: Seed-ID holen und PlayerMessageView senden
-        // Inbox/claimables/combat_log in GameState prüfen
         eprintln!("⚠️  Fallback: inbox={} claimables={} combat_log={}",
             gs2.mail.inbox.len(), gs2.mail.claimables.len(), gs2.mail.combat_log.len());
 
         let seed_candidates: Vec<i32> = {
             let mut v = Vec::new();
-            for msg in &gs2.mail.inbox {
-                v.push(msg.msg_id);
-            }
-            for c in &gs2.mail.claimables {
-                v.push(c.msg_id as i32);
-            }
-            for e in &gs2.mail.combat_log {
-                v.push(e.msg_id as i32);
-            }
+            for msg in &gs2.mail.inbox { v.push(msg.msg_id); }
+            for c in &gs2.mail.claimables { v.push(c.msg_id as i32); }
+            for e in &gs2.mail.combat_log { v.push(e.msg_id as i32); }
             v
         };
 
@@ -404,6 +413,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let opponent_safe = sanitize_filename(&opponent);
         let typ = typ_label(&rc);
 
+        // ── Ergebnis aus Combat Log Lookup ───────────────────────────────────
+        let result_opt = lookup_result(&combat_lookup, &opponent, m.received);
+        let result_line = match result_opt {
+            Some(true)  => "Ergebnis: Gewonnen",
+            Some(false) => "Ergebnis: Verloren",
+            None        => "Ergebnis: Unbekannt",
+        };
+        // JSON-kompatibles Feld für PHP-Caller
+        let result_json = match result_opt {
+            Some(true)  => "won",
+            Some(false) => "lost",
+            None        => "unknown",
+        };
+
         let filename = if opponent_safe.is_empty() || opponent_safe == "unknown" {
             format!("{}_{}_unknown_msg{}.txt", timestamp, typ, m.id)
         } else {
@@ -427,6 +450,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         out.push_str(&format!("Datum: {}\n", date_de_utc(m.received)));
         out.push_str(&format!("Uhrzeit: {}\n", time_utc(m.received)));
         out.push_str(&format!("Message-ID: msg{}\n", m.id));
+        out.push_str(&format!("{}\n", result_line));
         out.push_str("=== ENDE HEADER ===\n\n");
         out.push_str("Mitglieder, die nicht teilgenommen haben:\n");
         for p in &not_participated {
@@ -438,8 +462,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             out.push_str(&format!("{} (Stufe {})\n", p.name, p.level));
         }
 
+        // Ergebnis auch auf stdout für PHP-Caller (ein Wort pro Zeile am Ende)
+        println!("✓  {} [{}] result={}", filename, typ, result_json);
+
         fs::write(&out_path, out)?;
-        println!("✓  {}", filename);
 
         tokio::time::sleep(Duration::from_millis(1100)).await;
     }

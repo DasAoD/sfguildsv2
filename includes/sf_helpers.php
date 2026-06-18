@@ -53,7 +53,14 @@ function parseRustBattleReport($content) {
     
     preg_match('/Message-ID:\s*msg(\d+)/m', $content, $m);
     $result['message_id'] = $m[1] ?? null;
-    
+
+    // Ergebnis: "Ergebnis: Gewonnen" / "Ergebnis: Verloren" / fehlt → null
+    if (preg_match('/Ergebnis:\s*(Gewonnen|Verloren)/m', $content, $m)) {
+        $result['won'] = ($m[1] === 'Gewonnen') ? 1 : 0;
+    } else {
+        $result['won'] = null;
+    }
+
     // Extract content after header
     $parts = preg_split('/=== ENDE HEADER ===\s*/m', $content, 2);
     $result['content'] = trim($parts[1] ?? '');
