@@ -6,15 +6,15 @@ Ein privates Guild-Management-System für das Browsergame [Shakes & Fidget](http
 
 - 🏰 **Multi-Gilden-Verwaltung** – Verwaltung mehrerer Gilden auf verschiedenen S&F-Servern
 - 👥 **Mitglieder-Tracking** – Statistiken, Beitrittsdaten, Gold-Donationen, Tags und Notizen; intelligente Sortierung (aktive nach Rang/Level, lang-Offline als Block nach Offline-Tagen)
-- ⚔️ **Kampfberichte** – Import und Auswertung von Gildenkampf-Berichten
+- ⚔️ **Kampfberichte** – Import und Auswertung von Gildenkampf-Berichten inkl. Ergebnis (Gewonnen/Verloren)
 - 📊 **Statistiken & Analysen** – Mitglieder-Entwicklung, Kampf-Performance
-- 📅 **Battle-Kalender** – Übersicht über vergangene und geplante Gildenkämpfe
+- 📅 **Battle-Kalender** – Übersicht über vergangene Gildenkämpfe
 - 🔱 **Hellevator-Übersicht** – Etagen-Anforderungen und Spieler-Empfehlungen
-- 🔄 **sf-api Member-Sync** – Mitgliederdaten direkt via sf-api abrufen (CSV als Fallback)
+- 📄 **sf-api Member-Sync** – Mitgliederdaten direkt via sf-api abrufen (CSV als Fallback)
 - ⏱️ **Cron-System** – Automatischer Fetch von Kampfberichten und Mitglieder-Sync
 - 📋 **Import-Log** – Letzter Import pro Gilde und Import-Aktivitäten im Admin-Bereich
 - 🛡️ **Wappen-Upload** – Gilden-Wappen hochladen und verwalten
-- 🔐 **Benutzerverwaltung** – Login, Sessions, Passwort-Reset (inkl. CLI-Admin-Tool)
+- 👤 **Benutzerverwaltung** – Login, Sessions, Passwort-Reset (inkl. CLI-Admin-Tool)
 
 ## Technischer Stack
 
@@ -52,6 +52,7 @@ Ein privates Guild-Management-System für das Browsergame [Shakes & Fidget](http
 │   ├── fetch_guild_reports.rs
 │   ├── list_chars.rs
 │   ├── member_sync.rs
+│   ├── guild_battle_info.rs
 │   └── README.md           # Build- und Deploy-Anleitung
 └── storage/
     ├── import/             # CSV-Import-Ordner (Fallback)
@@ -64,7 +65,7 @@ Ein privates Guild-Management-System für das Browsergame [Shakes & Fidget](http
 
 - PHP >= 8.4 mit SQLite3-Extension
 - nginx
-- Rust (für CLI-Tools — Binaries aus rust_examples/ bauen)
+- Rust (für CLI-Tools – Binaries aus rust_examples/ bauen)
 
 ### 1. Dateien deployen
 
@@ -133,13 +134,16 @@ Siehe `rust_examples/README.md` für Build- und Deploy-Anleitung.
 ## Daten-Import
 
 ### sf-api Member-Sync (primär)
-Mitgliederdaten direkt via [sf-api von The Marenga](https://github.com/the-marenga/sf-api) — manuell per Button auf der Gildenseite oder automatisch via Cron. Nur Admin-Accounts werden verwendet.
+Mitgliederdaten direkt via [sf-api von The Marenga](https://github.com/the-marenga/sf-api) – manuell per Button auf der Gildenseite oder automatisch via Cron. Für den sf-api-Login werden ausschließlich Admin-Accounts verwendet (Compliance mit S&F-Spielregeln).
 
 ### CSV-Import (Fallback)
 SFTools CSV-Export → manueller Upload oder automatisierter Import via `storage/import/`. Bleibt als Fallback erhalten für den Fall, dass sf-api nach einem S&F-Spielupdate vorübergehend nicht funktioniert.
 
 ### Kampfberichte
-Automatisch via sf-api aus dem S&F-Postkasten (Cron: 07:25 + 19:10 Uhr).
+Automatisch via sf-api aus dem S&F-Postkasten (Cron: 07:25 + 19:10 Uhr). Der Cron verwendet ausschließlich Admin-Accounts. Der Import der abgeholten Berichte in den Kalender ist für Benutzer ab Moderator-Rolle möglich – beschränkt auf Gildenleiter und Offiziere, die im Spiel Zugang zu Kampfberichten haben. Erkanntes Kampfergebnis (Gewonnen/Verloren) wird automatisch aus dem Combat Log ermittelt und gespeichert.
+
+### guild_battle_info (CLI)
+Zeigt geplante Gildenangriffe und Verteidigungen mit exaktem Zeitpunkt (sekundengenau) an. Nur für den manuellen Gebrauch per Kommandozeile. Binary: `/opt/sf-api/guild_battle_info`.
 
 ## Sicherheit
 
@@ -149,14 +153,14 @@ Automatisch via sf-api aus dem S&F-Postkasten (Cron: 07:25 + 19:10 Uhr).
 - Whitelist-basierte API-Antworten
 - Atomares `flock()`-Locking für konkurrierende Prozesse
 - CLI-Only-Guards für interne Skripte
-- Cron verwendet ausschließlich Admin-Accounts (role='admin')
+- Cron und sf-api-Sync verwenden ausschließlich Admin-Accounts (role='admin')
 
 ## Notizen
 
 - Dieses System ist für den privaten Gebrauch konzipiert
-- `guild_joined` wird seit S&F v29.500 nicht mehr vom Server geliefert — "first seen"-Ansatz implementiert
+- `guild_joined` wird seit S&F v29.500 nicht mehr vom Server geliefert – "first seen"-Ansatz implementiert
 - Die öffentliche API gibt nur nicht-sensitive Felder zurück
-- `last_online` wird als ISO 8601 Timestamp gespeichert — Offline-Tage werden datums-basiert berechnet (ohne Uhrzeit)
+- `last_online` wird als ISO 8601 Timestamp gespeichert – Offline-Tage werden datums-basiert berechnet (ohne Uhrzeit)
 - Mitglieder-Sortierung: Aktive <7 Tage offline nach Rang/Level, dann alle ≥7 Tage offline als Block nach Tagen offline, dann Entlassene/Verlassene
 
 ## Mitwirkende
@@ -166,7 +170,7 @@ Der überwiegende Teil des Codes, der Architektur und der Dokumentation wurde du
 
 | Rolle | Person / Tool |
 |---|---|
-| Projektidee, Anforderungen & Tests | [DasAoD](https://github.com/DasAoD) |
+| Projektidee, Anforderungen & Tests | [DasAoD](https://git.uliana.de/DasAoD) |
 | Code, Architektur, Dokumentation | Claude (Anthropic) |
 
 ## Lizenz
