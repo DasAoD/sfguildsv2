@@ -171,7 +171,7 @@ Der überwiegende Teil des Codes, der Architektur und der Dokumentation wurde du
 | Rolle | Person / Tool |
 |---|---|
 | Projektidee, Anforderungen & Tests | [DasAoD](https://git.uliana.de/DasAoD) |
-| Code, Architektur, Dokumentation | Claude (Anthropic) |
+| Code, Architektur, Dokumentation | [Claude](https://git.uliana.de/Claude) (Anthropic) |
 
 ## Lizenz
 
