@@ -66,13 +66,6 @@ fn time_utc(ts: i64) -> String {
         .unwrap_or_else(|| "??:??:??".to_string())
 }
 
-fn date_iso_utc(ts: i64) -> String {
-    Utc.timestamp_opt(ts, 0)
-        .single()
-        .map(|dt| dt.format("%Y-%m-%d").to_string())
-        .unwrap_or_else(|| "????-??-??".to_string())
-}
-
 #[derive(Debug, Clone)]
 struct PlayerLine {
     name: String,
@@ -129,7 +122,7 @@ fn build_combat_lookup(
             CombatMessageType::GuildFight | CombatMessageType::GuildRaid
         );
         if !is_guild { continue; }
-        let date_str = entry.time.format("%Y-%m-%d").to_string();
+        let date_str = entry.time.with_timezone(&chrono::Utc).format("%Y-%m-%d").to_string();
         let key = (entry.player_name.to_lowercase(), date_str);
         // Erster Treffer gewinnt (neueste zuerst im log)
         map.entry(key).or_insert(entry.won);
@@ -144,9 +137,19 @@ fn lookup_result(
     opponent: &str,
     received_ts: i64,
 ) -> Option<bool> {
-    let date_str = date_iso_utc(received_ts);
-    let key = (opponent.to_lowercase(), date_str);
-    map.get(&key).copied()
+    // Try exact date first, then ±1 day to handle servers running ahead/behind
+    // (e.g. f9.sfgame.net runs 24h ahead of real time)
+    let base = Utc.timestamp_opt(received_ts, 0).single()?;
+    let opponent_lc = opponent.to_lowercase();
+    for delta in [0i64, -1, 1] {
+        let candidate = base + chrono::Duration::days(delta);
+        let date_str = candidate.format("%Y-%m-%d").to_string();
+        let key = (opponent_lc.clone(), date_str);
+        if let Some(&result) = map.get(&key) {
+            return Some(result);
+        }
+    }
+    None
 }
 
 #[tokio::main]

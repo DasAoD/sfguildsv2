@@ -188,8 +188,8 @@ function importToInbox($dir, $userId, $db) {
             $stmt = $db->prepare("
                 INSERT INTO battle_inbox
                 (user_id, guild_id, message_id, opponent_guild, battle_type,
-                 battle_date, battle_time, server, character_name, file_path)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 battle_date, battle_time, server, character_name, file_path, won)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
 
             $stmt->execute([
@@ -202,7 +202,8 @@ function importToInbox($dir, $userId, $db) {
                 $parsed['time'],
                 $parsed['server'],
                 $parsed['character'],
-                $newPath
+                $newPath,
+                $parsed['won'] ?? null
             ]);
 
             // Only move file after successful insert
