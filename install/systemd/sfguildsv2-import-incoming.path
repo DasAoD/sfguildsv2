@@ -1,0 +1,9 @@
+[Unit]
+Description=Watch incoming folder for SFGuildsV2 CSVs
+
+[Path]
+PathExistsGlob=/var/www/sfguildsv2/storage/import/incoming/*.csv
+Unit=sfguildsv2-import-incoming.service
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,101 @@
+server {	
+
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+
+    server_name sfguilds.uliana.de;
+    root /var/www/sfguildsv2/public;
+    index index.php index.html;
+
+    access_log /var/log/nginx/sfguilds_access.log;
+    error_log  /var/log/nginx/sfguilds_error.log;
+
+    client_max_body_size 20m;
+	
+    ssl_certificate /etc/letsencrypt/live/sfguilds.uliana.de/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/sfguilds.uliana.de/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    # Security Headers
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+	
+    # Custom Error Pages (im S&F-Style)
+    recursive_error_pages on;
+
+    error_page 400 /errors/400.html;
+    error_page 401 /errors/401.html;
+    error_page 403 /errors/403.html;
+    error_page 404 /errors/404.html;
+    error_page 413 /errors/413.html;
+    error_page 500 /errors/500.html;
+    error_page 502 /errors/502.html;
+    error_page 503 /errors/503.html;
+    error_page 504 /errors/504.html;
+
+    location ^~ /errors/ {
+        internal;
+        try_files $uri =404;
+    }
+
+    # Let's Encrypt (HTTP-01)
+    location ^~ /.well-known/acme-challenge/ {
+        allow all;
+    }
+
+    # Standard: try files, then index.php
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    # PHP 8.3 via php-fpm Socket
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php8.4-fpm.sock;
+        fastcgi_intercept_errors on;
+
+        fastcgi_read_timeout 60s;
+        fastcgi_buffer_size 32k;
+        fastcgi_buffers 16 16k;
+    }
+
+    # No hidden files (except .well-known)
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+
+    # Block PHP execution in uploads/storage
+    location ~* ^/(uploads|storage)/.*\.php$ {
+        deny all;
+    }
+	
+    location ~ /\.git {
+        deny all;
+    }
+	
+    location ^~ /uploads/ {
+        if ($uri ~* \.(php|phtml|phar|php\d)$) { return 403; }
+        try_files $uri =404;
+    }
+
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+
+    server_name sfguilds.uliana.de;
+
+    # ACME Challenge (HTTP-01)
+    location ^~ /.well-known/acme-challenge/ {
+        root /var/www/sfguildsv2;
+        allow all;
+    }
+
+    # Redirect to HTTPS
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}

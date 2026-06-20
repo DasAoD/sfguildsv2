@@ -51,8 +51,6 @@ Thumbs.db
 # --- Leere Ordner beibehalten ---
 !.gitkeep
 
-# --- Install/Setup (vorerst nicht ins Repo) ---
-/install/
 
 # Migration scripts (run once, then delete)
 migrate_*.php
