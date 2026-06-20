@@ -28,12 +28,12 @@ Benutzeranmeldung.
 
     { "success": true, "redirect": "/" }
     { "success": true, "must_change_password": true, "redirect": "/change_password.php" }
-    { "success": false, "message": "Ungueltige Anmeldedaten" }
+    { "success": false, "message": "Ungültige Anmeldedaten" }
 
 ---
 
 ### `POST /api/change_password.php`
-Eigenes Passwort aendern.
+Eigenes Passwort ändern.
 
 **Auth:** user
 
@@ -43,7 +43,7 @@ Eigenes Passwort aendern.
 
 **Response:**
 
-    { "success": true, "message": "Passwort erfolgreich geaendert" }
+    { "success": true, "message": "Passwort erfolgreich geändert" }
 
 ---
 
@@ -79,7 +79,7 @@ Alle Gilden mit Statistiken.
 ### `GET /api/members.php?guild_id=N`
 Mitglieder einer Gilde.
 
-**Auth:** public (ausgetretene/entlassene Mitglieder nur fuer eingeloggte User sichtbar)
+**Auth:** public (ausgetretene/entlassene Mitglieder nur für eingeloggte User sichtbar)
 
 **Query-Parameter:**
 | Parameter | Typ | Beschreibung |
@@ -111,14 +111,14 @@ Mitglieder einer Gilde.
       ]
     }
 
-**Sortierung:** Aktive vor Entlassenen → Aktive >=7 Tage offline am Ende → Rang → Level DESC (bzw. Offline-Tage fuer die Offline-Gruppe).
+**Sortierung:** Aktive vor Entlassenen → Aktive ≥7 Tage offline am Ende → Rang → Level DESC (bzw. Offline-Tage für die Offline-Gruppe).
 
 ---
 
 ## Mitglieder-Verwaltung
 
 ### `POST /api/update_member.php`
-Einzelnes Feld eines Mitglieds aendern.
+Einzelnes Feld eines Mitglieds ändern.
 
 **Auth:** moderator
 
@@ -127,7 +127,7 @@ Einzelnes Feld eines Mitglieds aendern.
     { "member_id": 1, "field": "notes|fired_at|left_at|joined_at", "value": "string|null" }
 
 **Erlaubte Felder:** `notes`, `fired_at`, `left_at`, `joined_at`
-Datum-Felder: Format `YYYY-MM-DD` oder `null` zum Loeschen.
+Datum-Felder: Format `YYYY-MM-DD` oder `null` zum Löschen.
 
 **Response:**
 
@@ -136,7 +136,7 @@ Datum-Felder: Format `YYYY-MM-DD` oder `null` zum Loeschen.
 ---
 
 ### `POST /api/delete_member.php`
-Mitglied loeschen.
+Mitglied löschen.
 
 **Auth:** admin
 
@@ -146,12 +146,12 @@ Mitglied loeschen.
 
 **Response:**
 
-    { "success": true, "message": "Mitglied \"Spielername\" wurde geloescht" }
+    { "success": true, "message": "Mitglied \"Spielername\" wurde gelöscht" }
 
 ---
 
 ### `POST /api/import_guild_members.php`
-Mitglieder-Import per CSV (Fallback fuer sf-api-Ausfall).
+Mitglieder-Import per CSV (Fallback für sf-api-Ausfall).
 
 **Auth:** admin
 
@@ -250,7 +250,7 @@ Berichte aus dem Posteingang in die Auswertungs-DB importieren.
 ---
 
 ### `POST /api/inbox_reject.php`
-Berichte ablehnen (Status -> `rejected`).
+Berichte ablehnen (Status → `rejected`).
 
 **Auth:** moderator
 
@@ -298,7 +298,7 @@ Teilnehmer eines Kampfes.
 ---
 
 ### `POST /api/delete_battle.php`
-Kampf loeschen (inkl. Inbox-Eintrag und .txt-Datei).
+Kampf löschen (inkl. Inbox-Eintrag und .txt-Datei).
 
 **Auth:** admin
 
@@ -330,7 +330,7 @@ Kampf in andere Gilde verschieben.
 ## Statistiken
 
 ### `GET /api/battle_stats.php?guild_id=N`
-Kampfstatistiken einer Gilde (Spieler-Uebersicht).
+Kampfstatistiken einer Gilde (Spieler-Übersicht).
 
 **Auth:** user
 
@@ -421,12 +421,12 @@ S&F-Account anlegen oder aktualisieren.
 
     { "success": true, "account_id": 1 }
 
-**Hinweis:** Passwort wird AES-verschluesselt gespeichert.
+**Hinweis:** Passwort wird AES-verschlüsselt gespeichert.
 
 ---
 
 ### `DELETE /api/sf_account_manage.php`
-S&F-Account loeschen.
+S&F-Account löschen.
 
 **Auth:** user
 
@@ -479,7 +479,7 @@ Charaktere live von S&F abrufen (Verbindungstest).
 ---
 
 ### `POST /api/sf_save_characters.php`
-Ausgewaehlte Charaktere eines Accounts speichern.
+Ausgewählte Charaktere eines Accounts speichern.
 
 **Auth:** user
 
@@ -494,7 +494,7 @@ Ausgewaehlte Charaktere eines Accounts speichern.
 ---
 
 ### `POST /api/sf_disconnect.php`
-S&F-Zugangsdaten aus dem User-Profil entfernen *(Legacy, primaer durch `sf_account_manage` ersetzt)*.
+S&F-Zugangsdaten aus dem User-Profil entfernen *(Legacy, primär durch `sf_account_manage` ersetzt)*.
 
 **Auth:** user
 
@@ -568,7 +568,7 @@ Benutzer bearbeiten (Passwort, Rolle).
 ---
 
 ### `DELETE /api/admin_users.php`
-Benutzer loeschen.
+Benutzer löschen.
 
 **Auth:** admin
 
@@ -603,7 +603,7 @@ Gilde anlegen (inkl. optionalem Wappen-Upload).
 |---|---|---|
 | `name` | string | Gildenname (max. 30 Zeichen) |
 | `server` | string | Servername, z. B. `fX` (max. 20 Zeichen) |
-| `tag` | string | Kuerzel (max. 10 Zeichen, optional) |
+| `tag` | string | Kürzel (max. 10 Zeichen, optional) |
 | `notes` | string | Notizen (max. 1000 Zeichen, optional) |
 | `crest` | file | Wappen-Bild (max. 2,5 MB, max. 4096x4096, optional) |
 
@@ -617,12 +617,12 @@ Gilde anlegen (inkl. optionalem Wappen-Upload).
 Gilde bearbeiten.
 
 **Auth:** admin
-**Request:** `multipart/form-data` (gleiche Felder wie POST, zusaetzlich `guild_id`)
+**Request:** `multipart/form-data` (gleiche Felder wie POST, zusätzlich `guild_id`)
 
 ---
 
 ### `DELETE /api/admin_guilds.php`
-Gilde loeschen.
+Gilde löschen.
 
 **Auth:** admin
 
@@ -637,7 +637,7 @@ Gilde loeschen.
 ---
 
 ### `GET /api/admin_logs.php?action=read&type=activity&lines=100`
-Log-Eintraege lesen.
+Log-Einträge lesen.
 
 **Auth:** admin
 
@@ -671,7 +671,7 @@ Log leeren.
 ---
 
 ### `GET /api/admin_import_log.php`
-Import-Status pro Gilde + gefilterte Activity-Log-Eintraege.
+Import-Status pro Gilde + gefilterte Activity-Log-Einträge.
 
 **Auth:** admin
 
@@ -730,7 +730,7 @@ Cron-Job sofort manuell starten (asynchron).
 
     { "success": true, "message": "Job gestartet - Ergebnis in wenigen Minuten im Status sichtbar." }
 
-**Fehler (409):** Job laeuft bereits.
+**Fehler (409):** Job läuft bereits.
 
 ---
 
@@ -757,12 +757,12 @@ Datenbank-Backup herunterladen.
 
 **Auth:** admin
 **Response:** `application/x-sqlite3` als Datei-Download (`sfguilds_backup_YYYY-MM-DD_HH-MM-SS.sqlite`).
-**Hinweis:** Verwendet `VACUUM INTO` fuer konsistentes Backup (WAL-sicher).
+**Hinweis:** Verwendet `VACUUM INTO` für konsistentes Backup (WAL-sicher).
 
 ---
 
 ### `GET /api/admin_player_merge.php?action=orphans`
-Spieler in Kampfberichten ohne zugehoeriges aktives Mitglied.
+Spieler in Kampfberichten ohne zugehöriges aktives Mitglied.
 
 **Auth:** admin
 
@@ -781,7 +781,7 @@ Spieler in Kampfberichten ohne zugehoeriges aktives Mitglied.
 ---
 
 ### `GET /api/admin_player_merge.php?action=suggestions&player_name=NAME&guild_id=N`
-Moegliche Mitglied-Zuordnungen fuer einen verwaisten Spieler.
+Mögliche Mitglied-Zuordnungen für einen verwaisten Spieler.
 
 **Auth:** admin
 
@@ -805,9 +805,9 @@ Spielernamen in Berichten und Mitgliederliste umbenennen (Merge).
 ## Interne Endpunkte (CLI only)
 
 ### `sf_fetch_single.php`
-Kampfberichte fuer einen einzelnen Charakter abrufen. Wird von `sf_fetch_reports.php` als Subprozess gestartet.
+Kampfberichte für einen einzelnen Charakter abrufen. Wird von `sf_fetch_reports.php` als Subprozess gestartet.
 
-**Aufruf:** Nur als CLI-Subprocess (`PHP_SAPI === 'cli'`). HTTP-Zugriff gibt 404 zurueck.
+**Aufruf:** Nur als CLI-Subprocess (`PHP_SAPI === 'cli'`). HTTP-Zugriff gibt 404 zurück.
 
     SF_PASSWORD=... php sf_fetch_single.php '{"name":"Charaktername","server":"fX.sfgame.net"}' USER_ID USERNAME
 
@@ -821,11 +821,11 @@ Alle Fehlerantworten folgen diesem Schema:
 
 | Code | Bedeutung |
 |---|---|
-| 400 | Ungueltige Parameter / fehlende Pflichtfelder |
+| 400 | Ungültige Parameter / fehlende Pflichtfelder |
 | 401 | Nicht authentifiziert |
 | 403 | Keine Berechtigung |
 | 404 | Ressource nicht gefunden |
 | 405 | HTTP-Methode nicht erlaubt |
 | 409 | Konflikt (z. B. Duplikat, Lock aktiv) |
-| 429 | Zu viele Anfragen (Lock: Fetch laeuft bereits) |
+| 429 | Zu viele Anfragen (Lock: Fetch läuft bereits) |
 | 500 | Interner Serverfehler |
