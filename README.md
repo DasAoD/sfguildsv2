@@ -1,5 +1,9 @@
 # S&F Guilds v2
 
+> **📌 Mirror-Hinweis:** Dieses Repository ist ein automatischer Spiegel.
+> Die primäre Entwicklung findet auf **[git.uliana.de/DasAoD/sfguildsv2](https://git.uliana.de/DasAoD/sfguildsv2)** statt.
+> Issues und Pull Requests bitte dort öffnen.
+
 Ein privates Guild-Management-System für das Browsergame [Shakes & Fidget](https://sfgame.net), das mehrere Gilden auf verschiedenen Servern verwaltet.
 
 ## Features
@@ -166,7 +170,7 @@ Zeigt geplante Gildenangriffe und Verteidigungen mit exaktem Zeitpunkt (sekunden
 ## Mitwirkende
 
 Dieses Projekt wurde in Zusammenarbeit mit [Claude](https://claude.ai) (Sonnet 4.6) von [Anthropic](https://anthropic.com) entwickelt und iterativ ausgebaut.  
-Der überwiegende Teil des Codes, der Architektur und der Dokumentation wurde durch KI generiert und gemeinsam verfeinert.
+Der øberwiegende Teil des Codes, der Architektur und der Dokumentation wurde durch KI generiert und gemeinsam verfeinert.
 
 | Rolle | Person / Tool |
 |---|---|
