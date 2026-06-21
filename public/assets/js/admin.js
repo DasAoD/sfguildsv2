@@ -689,7 +689,11 @@ function renderImportLog(data, container) {
 async function runCronJobNow(jobKey, label) {
     const btn = document.getElementById(`cron-run-${jobKey}`);
     btn.disabled = true;
-    btn.textContent = '⏳ Läuft...';
+    const cronTexts = {
+        'fetch_reports': 'Kampfberichte werden abgerufen…',
+        'member_sync':   'Mitglieder werden synchronisiert…'
+    };
+    showOverlay(cronTexts[jobKey] || 'Job wird gestartet…');
 
     try {
         const r = await fetch('/api/admin_cron_run.php', {
@@ -699,16 +703,17 @@ async function runCronJobNow(jobKey, label) {
         });
         const d = await r.json();
         if (d.success) {
-            btn.textContent = '⏳ Läuft im Hintergrund...';
-            // Status nach ~15s nachladen
-            setTimeout(() => { loadCronJobs(); btn.disabled = false; btn.textContent = '▶ Jetzt ausführen'; }, 15000);
+            // Job läuft asynchron im Hintergrund
+            setTimeout(() => { loadCronJobs(); btn.disabled = false; hideOverlay(); }, 3000);
             showAlert(d.message);
         } else {
             showAlert('Fehler: ' + (d.message || 'Unbekannt'));
+            btn.disabled = false;
+            hideOverlay();
         }
     } catch(e) {
         showAlert('Verbindungsfehler');
         btn.disabled = false;
-        btn.textContent = '▶ Jetzt ausführen';
+        hideOverlay();
     }
 }

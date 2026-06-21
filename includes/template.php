@@ -9,7 +9,7 @@
  */
 function renderHead($title, $additionalCSS = []) {
     $version = '20260124d'; // Update this when CSS changes
-    $cssFiles = array_merge(['/assets/css/main.css'], $additionalCSS);
+    $cssFiles = array_merge(['/assets/css/main.css', '/assets/css/overlay.css'], $additionalCSS);
     ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -125,7 +125,7 @@ function renderFooter() {
  */
 function renderScripts($additionalJS = []) {
     $version = '20260226'; // Update this when JS changes
-    $jsFiles = array_merge(['/assets/js/main.js'], $additionalJS);
+    $jsFiles = array_merge(['/assets/js/overlay.js', '/assets/js/main.js'], $additionalJS);
     foreach ($jsFiles as $js): ?>
     <script src="<?php echo $js . '?v=' . $version; ?>"></script>
     <?php endforeach;

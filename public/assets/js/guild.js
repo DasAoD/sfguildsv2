@@ -431,9 +431,8 @@ async function syncMembers() {
     if (!guildId) { showAlert('Keine Gilde ausgewählt.'); return; }
 
     const btn = document.getElementById('syncBtn');
-    const originalText = btn.textContent;
     btn.disabled = true;
-    btn.textContent = '↻ Synchronisiere...';
+    showOverlay('Mitglieder werden synchronisiert…');
 
     try {
         const r = await fetch('/api/sf_member_sync.php', {
@@ -459,6 +458,6 @@ async function syncMembers() {
         showAlert('Fehler beim Sync: Verbindungsfehler');
     } finally {
         btn.disabled = false;
-        btn.textContent = originalText;
+        hideOverlay();
     }
 }
