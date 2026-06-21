@@ -30,6 +30,7 @@ function renderGuildTabs() {
 
 // Load battle statistics
 async function loadStats() {
+    showOverlay('Statistiken werden geladen…');
     try {
         const r = await fetch(`/api/battle_stats.php?guild_id=${guildId}`);
         const d = await r.json();
@@ -47,11 +48,14 @@ async function loadStats() {
             renderStatsGrid(d.stats);
             renderTable(d.players);
             renderSidebar(d.insights);
+            hideOverlay();
         } else {
             document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" class="loading">Fehler beim Laden</td></tr>';
+            hideOverlay();
         }
     } catch (e) {
         document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" class="loading">Fehler beim Laden</td></tr>';
+        hideOverlay();
     }
 }
 

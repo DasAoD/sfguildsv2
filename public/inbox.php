@@ -199,7 +199,7 @@ $totalPending = $stmt->fetchColumn();
                         Überprüfe automatisch abgeholte Kampfberichte vor dem Import
                     </p>
                 </div>
-                <button onclick="fetchAllReports()" class="btn btn-primary" style="margin-top: 0.5rem;">
+                <button onclick="fetchAllReports(this)" class="btn btn-primary" style="margin-top: 0.5rem;">
                     📥 Berichte abholen
                 </button>
             </div>
@@ -298,6 +298,7 @@ $totalPending = $stmt->fetchColumn();
         </div>
     </div>
 
+    <script src="/assets/js/overlay.js?v=20260621"></script>
     <script>
     // Modal Helper Functions
     function showAlert(message, title = 'Hinweis') {
@@ -515,7 +516,7 @@ $totalPending = $stmt->fetchColumn();
         
         const btn = document.querySelector(`.btn-import[data-guild-id="${guildId}"]`);
         btn.disabled = true;
-        btn.textContent = '⏳ Importiere...';
+        showOverlay('Kampfberichte werden importiert…');
         
         try {
             const response = await fetch('/api/inbox_import.php', {
@@ -538,7 +539,7 @@ $totalPending = $stmt->fetchColumn();
             console.error(error);
         } finally {
             btn.disabled = false;
-            btn.textContent = '✅ Ausgewählte importieren';
+            hideOverlay();
         }
     }
 
@@ -551,7 +552,7 @@ $totalPending = $stmt->fetchColumn();
         
         const btn = document.querySelector(`.btn-reject[data-guild-id="${guildId}"]`);
         btn.disabled = true;
-        btn.textContent = '⏳ Lehne ab...';
+        showOverlay('Berichte werden abgelehnt…');
         
         try {
             const response = await fetch('/api/inbox_reject.php', {
@@ -573,7 +574,7 @@ $totalPending = $stmt->fetchColumn();
             console.error(error);
         } finally {
             btn.disabled = false;
-            btn.textContent = '❌ Ausgewählte ablehnen';
+            hideOverlay();
         }
     }
 
@@ -619,10 +620,9 @@ $totalPending = $stmt->fetchColumn();
     });
 
     // Fetch all reports
-    async function fetchAllReports() {
-        const btn = event.target;
+    async function fetchAllReports(btn) {
         btn.disabled = true;
-        btn.textContent = '⏳ Hole Berichte ab...';
+        showOverlay('Kampfberichte werden abgerufen…');
         
         try {
             const response = await fetch('/api/sf_fetch_reports.php', {
@@ -667,7 +667,7 @@ $totalPending = $stmt->fetchColumn();
             console.error(error);
         } finally {
             btn.disabled = false;
-            btn.textContent = '📥 Berichte abholen';
+            hideOverlay();
         }
     }
 
