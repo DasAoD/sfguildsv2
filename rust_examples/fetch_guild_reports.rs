@@ -137,11 +137,12 @@ fn lookup_result(
     opponent: &str,
     received_ts: i64,
 ) -> Option<bool> {
-    // Try exact date first, then ±1 day to handle servers running ahead/behind
-    // (e.g. f9.sfgame.net runs 24h ahead of real time)
+    // Try exact date first, then ±1/±2 days to handle servers running ahead/behind
+    // (e.g. f9.sfgame.net runs 24h ahead of real time; combined with the
+    // local→UTC shift a fight shortly after midnight can differ by 2 days)
     let base = Utc.timestamp_opt(received_ts, 0).single()?;
     let opponent_lc = opponent.to_lowercase();
-    for delta in [0i64, -1, 1] {
+    for delta in [0i64, -1, 1, -2, 2] {
         let candidate = base + chrono::Duration::days(delta);
         let date_str = candidate.format("%Y-%m-%d").to_string();
         let key = (opponent_lc.clone(), date_str);
