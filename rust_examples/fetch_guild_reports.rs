@@ -363,7 +363,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("Hole Gildenkampfberichte...\n");
 
-    let mut msgs = parse_systemmessagelist(&raw_list);
+    let all_msgs = parse_systemmessagelist(&raw_list);
+    let mut msgs = all_msgs.clone();
     msgs.retain(|m| m.code == "2a" || m.code == "2d" || m.code == "3");
 
     if let Some(since) = since_epoch {
@@ -472,6 +473,28 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         fs::write(&out_path, out)?;
 
         tokio::time::sleep(Duration::from_millis(1100)).await;
+    }
+
+    // ── Hydra/Gildenportal-Nachrichten (Code 17) als gelesen markieren ──────
+    // Diese Systemnachrichten werden nicht als Bericht gespeichert, sollen aber
+    // nicht manuell im Spiel angeklickt werden müssen. PlayerMessageView
+    // entspricht dem Klick im Client und setzt die Nachricht auf gelesen.
+    let mark_read: Vec<&SysMsg> = all_msgs.iter().filter(|m| m.code == "17").collect();
+    if !mark_read.is_empty() {
+        println!("\nMarkiere {} Hydra/Gildenportal-Nachricht(en) als gelesen...", mark_read.len());
+        for m in mark_read {
+            match session
+                .send_command(Command::Custom {
+                    cmd_name: "PlayerMessageView".to_string(),
+                    arguments: vec![m.id.to_string()],
+                })
+                .await
+            {
+                Ok(_)  => println!("✓  msg{} als gelesen markiert", m.id),
+                Err(e) => eprintln!("⚠  msg{} konnte nicht markiert werden: {:?}", m.id, e),
+            }
+            tokio::time::sleep(Duration::from_millis(500)).await;
+        }
     }
 
     println!("\n✓ Fertig!");
