@@ -26,17 +26,21 @@ Konkrete anstehende Aufgaben. Sicherheitsrelevante Details sind in der privaten 
 ### Setup-System
 - [ ] Installations-Assistent (Web-basiert oder CLI) für Erst-Einrichtung
 
-### Dokumentation
-- [ ] API-Endpunkte intern dokumentieren
-- [ ] Nginx-Konfiguration in install/ auf php8.4-fpm.sock aktualisieren
-
 ### UI-Verbesserungen
 - [ ] Mobile-Ansicht überarbeiten
-- [ ] Ladeanimationen bei API-Calls
 
 ---
 
-## ✅ Zuletzt erledigt (Mai 2026)
+## ✅ Zuletzt erledigt (Juli 2026)
+
+- [x] **fetch_guild_reports: Mitternachtsgrenze bei Zeitzonen-Offset-Servern gefixt** — Ergebnis-Matching für Kämpfe kurz vor/nach Mitternacht auf Servern mit abweichendem UTC-Offset korrigiert
+- [x] **Posteingang: Hydra-/Gildenportal-Nachrichten automatisch als gelesen markiert**
+- [x] **Interne API-Dokumentation** aller 31 Endpunkte (docs/api.md)
+- [x] **Nginx-Konfiguration in install/ auf php8.4-fpm.sock aktualisiert**
+- [x] **Ladeanimationen bei API-Calls**
+- [x] **Totes Duplikat public/dashboard.php entfernt** — alte, eigenständige Kopie von index.php (eigenes Inline-CSS/JS, Nav verwies noch auf nicht mehr existierendes /calendar.php), war nirgends verlinkt
+
+## ✅ Davor erledigt (Mai 2026)
 
 - [x] **PHP 8.4 Timezone gesetzt** — `date.timezone = Europe/Berlin` in php.ini (FPM + CLI) fehlte nach Upgrade von 8.2; führte zu UTC-Datumsberechnung statt CEST
 - [x] **days_offline UTC/CEST-Bug gefixt** — `date()` durch `gmdate()` ersetzt; UTC-Timestamps wurden durch CEST-Serverzeit verfälscht und zeigten -1 Tag offline
@@ -65,4 +69,4 @@ Konkrete anstehende Aufgaben. Sicherheitsrelevante Details sind in der privaten 
 
 ---
 
-*Letzte Aktualisierung: Mai 2026*
+*Letzte Aktualisierung: Juli 2026*
