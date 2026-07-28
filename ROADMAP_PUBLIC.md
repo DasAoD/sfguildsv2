@@ -43,6 +43,12 @@
 - [x] Kämpfe verschieben (zwischen Gilden) und löschen
 - [x] Teilnehmerliste pro Kampf
 
+### Posteingang (Battle-Inbox)
+- [x] Kampfberichte landen zunächst im Posteingang (Review vor Übernahme in den Kalender)
+- [x] Übernehmen/Ablehnen einzelner Berichte, Dedup-Abgleich gegen bereits importierte Kämpfe
+- [x] Ungelesen-Badge in der Navigation
+- [x] Automatisches Markieren von Hydra-/Gildenportal-Systemnachrichten als gelesen
+
 ### Import-Log
 - [x] Import-Protokoll in Admin-Bereich (Logs → Import-Tab): letzter Import pro Gilde + gefilterte Activity-Einträge
 
@@ -71,6 +77,10 @@
 - [x] Cron verwendet ausschließlich Admin-Accounts
 - [x] Zentralisierte API-Antworten, Whitelist-Ansatz, CLI-Guards, flock()-Locking
 
+### UI & Dokumentation
+- [x] Ladeanimationen bei API-Calls
+- [x] Interne API-Dokumentation aller Endpunkte (docs/api.md)
+
 ---
 
 ## 🚧 Geplant
@@ -91,4 +101,4 @@
 
 ---
 
-*Letzte Aktualisierung: Mai 2026*
+*Letzte Aktualisierung: Juli 2026*

@@ -1,7 +1,12 @@
 <?php
 /**
  * Cron Runner — wird jede Minute via crontab aufgerufen.
- * Liest konfigurierte Jobs aus der DB und führt fällige aus.
+ * Liest konfigurierte Jobs aus der DB (Tabelle cron_jobs) und führt alle
+ * Jobs aus, deren konfigurierte Zeit auf die aktuelle Minute fällt.
+ *
+ * Siehe auch: cron_runner_single.php führt genau EINEN Job gezielt aus
+ * (z.B. für einen manuellen Sofort-Lauf über die Admin-UI), unabhängig
+ * vom Zeitplan in cron_jobs.times.
  *
  * Usage: php /var/www/sfguildsv2/cli/cron_runner.php
  */

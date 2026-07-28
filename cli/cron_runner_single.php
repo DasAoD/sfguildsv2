@@ -1,6 +1,11 @@
 <?php
 /**
- * Führt einen einzelnen Cron-Job aus (als Hintergrundprozess).
+ * Führt EINEN einzelnen Cron-Job gezielt aus, unabhängig vom Zeitplan
+ * (z.B. für "Jetzt ausführen" in der Admin-UI oder manuelle Tests).
+ *
+ * Siehe auch: cron_runner.php ist der Master-Runner, der minütlich per
+ * crontab alle fälligen Jobs aus cron_jobs.times automatisch anstößt.
+ *
  * Usage: php cron_runner_single.php fetch_reports
  */
 if (PHP_SAPI !== 'cli') { exit(1); }
