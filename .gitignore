@@ -16,6 +16,8 @@
 /data/*.backup
 /data/*.bak
 /data/*.sqlite.*
+/data/*.sqlite-shm
+/data/*.sqlite-wal
 
 # --- Runtime-Ordner: Inhalt ignorieren, Struktur behalten (via .gitkeep) ---
 /data/uploads/*
