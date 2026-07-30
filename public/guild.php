@@ -36,7 +36,7 @@ $guildId = isset($_GET['id']) ? (int)$_GET['id'] : 1;
                         </div>
                     </div>
                     <div style="display:flex;gap:0.75rem">
-                        <button onclick="syncMembers()" class="btn btn-secondary" id="syncBtn" style="display:none">↻ Mitglieder synchronisieren</button>
+                        <button onclick="syncMembers()" class="btn btn-secondary" id="syncBtn" style="display:none">⟳ Mitglieder synchronisieren</button>
                         <button onclick="openImportModal()" class="btn btn-primary" id="importBtn" style="display:none">+ Mitglieder importieren</button>
                     </div>
                 </div>
@@ -80,6 +80,19 @@ $guildId = isset($_GET['id']) ? (int)$_GET['id'] : 1;
         </div>
     </div>
 
+    <!-- Character Modal -->
+    <div id="characterModal" class="modal">
+        <div class="modal-content" style="max-width: 480px;">
+            <div class="modal-header">
+                <h3 id="characterModalTitle">Charakter</h3>
+                <button class="modal-close" onclick="closeCharacterModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="characterModalBody">
+                <div class="loading">Lade…</div>
+            </div>
+        </div>
+    </div>
+
     <?php renderFooter(); ?>
 
     <script>
@@ -88,7 +101,7 @@ $guildId = isset($_GET['id']) ? (int)$_GET['id'] : 1;
         const guildId = <?php echo $guildId; ?>;
         let currentMembers = [];
     </script>
-    
+
     <?php renderScripts(['/assets/js/guild.js']); ?>
 </body>
 </html>
