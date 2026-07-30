@@ -15,22 +15,22 @@ function parseRustBattleReport($content) {
     if (!preg_match('/^=== S&F KAMPFBERICHT ===/', $content)) {
         return null; // Not Rust format
     }
-    
+
     $result = [];
-    
+
     // Parse header fields
     preg_match('/Gildenname:\s*(.+)/m', $content, $m);
     $result['guild_name'] = trim($m[1] ?? '');
-    
+
     preg_match('/Server:\s*(.+)/m', $content, $m);
     $result['server'] = trim($m[1] ?? '');
-    
+
     preg_match('/Charakter:\s*(.+)/m', $content, $m);
     $result['character'] = trim($m[1] ?? '');
-    
+
     preg_match('/Gegner:\s*(.+)/m', $content, $m);
     $result['opponent'] = trim($m[1] ?? '');
-    
+
     preg_match('/Typ:\s*(Angriff|Verteidigung|Gildenraid)/m', $content, $m);
     $typMap = [
         'Angriff' => 'attack',
@@ -38,19 +38,19 @@ function parseRustBattleReport($content) {
         'Gildenraid' => 'raid',
     ];
     $result['type'] = $typMap[$m[1] ?? ''] ?? 'attack';
-    
+
     // Raid-Name aus numerischer ID auflösen
     if ($result['type'] === 'raid' && is_numeric($result['opponent'])) {
         $result['raid_id'] = (int)$result['opponent'];
         $result['opponent'] = resolveRaidName($result['raid_id']);
     }
-    
+
     preg_match('/Datum:\s*(\d{2}\.\d{2}\.\d{4})/m', $content, $m);
     $result['date'] = convertDateToSQL($m[1] ?? '');
-    
+
     preg_match('/Uhrzeit:\s*(\d{2}:\d{2})/m', $content, $m);
     $result['time'] = $m[1] ?? '';
-    
+
     preg_match('/Message-ID:\s*msg(\d+)/m', $content, $m);
     $result['message_id'] = $m[1] ?? null;
 
@@ -64,10 +64,10 @@ function parseRustBattleReport($content) {
     // Extract content after header
     $parts = preg_split('/=== ENDE HEADER ===\s*/m', $content, 2);
     $result['content'] = trim($parts[1] ?? '');
-    
+
     // Parse participants from content
     $result['participants'] = parseRustParticipants($result['content']);
-    
+
     return $result;
 }
 
@@ -78,10 +78,10 @@ function parseRustParticipants($content) {
     $participants = [];
     $lines = explode("\n", $content);
     $currentSection = null;
-    
+
     foreach ($lines as $line) {
         $line = trim($line);
-        
+
         if (strpos($line, 'nicht teilgenommen haben') !== false) {
             $currentSection = 'not_participated';
             continue;
@@ -90,21 +90,21 @@ function parseRustParticipants($content) {
             $currentSection = 'participated';
             continue;
         }
-        
+
         // Parse player line: Name (Stufe Level)
         if (!preg_match('/^(.+?)\s*\(Stufe\s*(\d+)\)\s*$/ui', $line, $m)) {
             continue;
         }
-        
+
         $namePart = trim($m[1]);
         $level = (int)$m[2];
-        
+
         // Extract server tag if present (but keep it in the name!)
         $serverTag = null;
         if (preg_match('/\(([a-z][0-9]+[a-z0-9]+)\)/ui', $namePart, $mm)) {
             $serverTag = strtolower($mm[1]);
         }
-        
+
         $participants[] = [
             'name' => $namePart,
             'level' => $level,
@@ -112,7 +112,7 @@ function parseRustParticipants($content) {
             'participated' => ($currentSection === 'participated') ? 1 : 0
         ];
     }
-    
+
     return $participants;
 }
 
@@ -145,4 +145,46 @@ function findGuildIdByName($db, $guildName) {
     $stmt->execute([$guildName]);
     $guild = $stmt->fetch(PDO::FETCH_ASSOC);
     return $guild ? $guild['id'] : null;
+}
+
+/**
+ * Findet den passenden sf_account + Charakter für eine Gilde anhand von
+ * sf_accounts.selected_characters (JSON-Array mit 'guild'-Feld pro Charakter).
+ *
+ * $userId = null durchsucht die Accounts ALLER Admin-User (Cron-Kontext,
+ * kein eingeloggter Benutzer vorhanden). Ein konkreter $userId beschränkt
+ * die Suche auf dessen eigene Accounts (manueller Trigger im eingeloggten
+ * Kontext, z.B. "Mitglieder synchronisieren"-Button).
+ *
+ * @return array{account: array, character: array}|null
+ */
+function findSfAccountForGuild($db, ?int $userId, string $guildName) {
+    if ($userId !== null) {
+        $stmt = $db->prepare("
+            SELECT id, user_id, sf_username, sf_password_encrypted, sf_iv, sf_hmac, selected_characters
+            FROM sf_accounts
+            WHERE user_id = ? AND selected_characters IS NOT NULL AND selected_characters != '[]'
+        ");
+        $stmt->execute([$userId]);
+    } else {
+        $stmt = $db->query("
+            SELECT a.id, a.user_id, a.sf_username, a.sf_password_encrypted, a.sf_iv, a.sf_hmac, a.selected_characters
+            FROM sf_accounts a
+            JOIN users u ON u.id = a.user_id
+            WHERE u.role = 'admin'
+              AND a.selected_characters IS NOT NULL AND a.selected_characters != '[]'
+        ");
+    }
+    $accounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($accounts as $account) {
+        $chars = json_decode($account['selected_characters'], true) ?? [];
+        foreach ($chars as $char) {
+            if (($char['guild'] ?? '') === $guildName) {
+                return ['account' => $account, 'character' => $char];
+            }
+        }
+    }
+
+    return null;
 }
