@@ -1,3 +1,4 @@
+#![allow(deprecated)]
 //! character_sync — Attribut- und Ausrüstungs-Sync für sfguildsv2
 //!
 //! Loggt einen Charakter ein, liest alle Gildenmitglieder aus und ruft
@@ -5,6 +6,11 @@
 //! kein erneuter Login pro Mitglied). Gibt die Rohdaten als JSON auf
 //! stdout aus — Aufbereitung (Attribut-Summen, Ausrüstungsliste) passiert
 //! PHP-seitig beim Speichern.
+//!
+//! Der Charakter, mit dem eingeloggt wird, taucht nicht in gs.lookup auf
+//! (das Cache enthält nur per ViewPlayer abgerufene *andere* Spieler) —
+//! seine eigenen Daten werden daher direkt aus GameState.character
+//! entnommen, statt über ViewPlayer/lookup versucht zu werden.
 //!
 //! Umgebungsvariablen:
 //!   SSO_USERNAME   — Pflicht
@@ -15,8 +21,6 @@
 //!   TIME_BUDGET_S  — Hartes Zeitbudget für alle ViewPlayer-Calls, um die
 //!                    ~2-Minuten-Session-Grenze nicht zu riskieren
 //!                    (optional, default 90)
-
-#![allow(deprecated)]
 
 use sf_api::{command::Command, gamestate::GameState, sso::SFAccount};
 use serde::Serialize;
@@ -110,7 +114,7 @@ async fn run() -> SyncOutput {
         Ok(r) => r,
         Err(e) => return err_output(format!("Login fehlgeschlagen: {e}"), &server_host),
     };
-    let mut gs = match GameState::new(login_res) {
+    let gs = match GameState::new(login_res) {
         Ok(g) => g,
         Err(e) => return err_output(format!("GameState fehlgeschlagen: {e}"), &server_host),
     };
@@ -128,14 +132,30 @@ async fn run() -> SyncOutput {
     let mut characters = Vec::new();
     let mut skipped = Vec::new();
 
-    for (i, name) in member_names.iter().enumerate() {
+    // Eigenen Charakter (mit dem wir eingeloggt sind) direkt aus dem
+    // GameState übernehmen — ViewPlayer/lookup enthält uns selbst nicht.
+    let own_name = gs.character.name.clone();
+    match serde_json::to_value(&gs.character) {
+        Ok(v) => characters.push(CharacterEntry { name: own_name.clone(), data: v }),
+        Err(_) => skipped.push(own_name.clone()),
+    }
+
+    let mut gs = gs;
+    let mut calls_made = 0u32;
+
+    for name in member_names.iter() {
+        if *name == own_name {
+            continue;
+        }
+
         if start.elapsed() > budget {
             skipped.push(name.clone());
             continue;
         }
-        if i > 0 {
+        if calls_made > 0 {
             tokio::time::sleep(Duration::from_millis(delay_ms)).await;
         }
+        calls_made += 1;
 
         let resp = session
             .send_command(Command::ViewPlayer { ident: name.clone() })
@@ -149,7 +169,6 @@ async fn run() -> SyncOutput {
                             Ok(v) => characters.push(CharacterEntry { name: name.clone(), data: v }),
                             Err(_) => skipped.push(name.clone()),
                         },
-                        // Der eigene eingeloggte Account taucht nicht im Lookup-Cache auf.
                         None => skipped.push(name.clone()),
                     }
                 } else {
