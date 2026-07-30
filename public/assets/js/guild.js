@@ -41,8 +41,8 @@ async function loadGuild() {
         const r = await fetch(`/api/members.php?guild_id=${guildId}`);
         const d = await r.json();
         if (d.success) {
-            const crestHtml = d.guild.crest_file 
-                ? `<img src="/assets/images/${d.guild.crest_file}" alt="Wappen" style="width:100%;height:100%;object-fit:contain">` 
+            const crestHtml = d.guild.crest_file
+                ? `<img src="/assets/images/${d.guild.crest_file}" alt="Wappen" style="width:100%;height:100%;object-fit:contain">`
                 : '<img src="/assets/images/helmet.png" alt="Wappen" style="width:100%;height:100%;object-fit:contain">';
             document.getElementById('guildCrest').innerHTML = crestHtml;
             document.getElementById('guildName').textContent = d.guild.name;
@@ -94,7 +94,7 @@ function renderStats(s) {
 function renderTable(members, logged) {
     const head = document.getElementById('tableHead');
     const body = document.getElementById('tableBody');
-    
+
     if (logged) {
         head.innerHTML = `<tr>
             <th>Name</th><th class="center">Level</th><th>Zul. Online</th><th>Beitritt</th>
@@ -107,16 +107,16 @@ function renderTable(members, logged) {
             <th class="center">Goldschatz</th><th class="center">Lehrmeister</th><th class="center">Ritterhalle</th><th class="center">Gildenpet</th>
         </tr>`;
     }
-    
+
     if (!members.length) {
         body.innerHTML = '<tr><td colspan="13" class="loading">Keine Mitglieder</td></tr>';
         return;
     }
-    
+
     body.innerHTML = members.map((m, idx) => {
         const rank = rankIcons[m.rank] || rankIcons['member'];
         let rowClass = '';
-        
+
         if (m.fired_at) {
             rowClass = 'fired';
         } else if (m.left_at) {
@@ -124,14 +124,14 @@ function renderTable(members, logged) {
         } else if (m.notes && m.notes.trim()) {
             rowClass = 'has-notes';
         }
-        
+
         if (m.days_offline >= 14) {
             rowClass += ' long-offline';
         }
-        
+
         if (logged) {
             return `<tr class="${rowClass.trim()}">
-                <td>${rank} ${escapeHtml(m.name)}</td>
+                <td><span class="player-name" data-player="${escapeHtml(m.name)}">${rank} ${escapeHtml(m.name)}</span></td>
                 <td class="center">${m.level}</td>
                 <td>${formatDate(m.last_online)}</td>
                 <td class="editable" data-idx="${idx}" data-field="joined_at">${formatDate(m.joined_at)}</td>
@@ -158,17 +158,23 @@ function renderTable(members, logged) {
     }).join('');
 }
 
-// Inline editing
+// Inline editing + Charakter-Modal
 document.addEventListener('click', function(e) {
+    const nameEl = e.target.closest('.player-name');
+    if (nameEl && isLoggedIn) {
+        openCharacterModal(nameEl.dataset.player);
+        return;
+    }
+
     if (!isLoggedIn) return;
-    
+
     const cell = e.target.closest('td.editable');
     if (!cell) return;
     if (cell.querySelector('.edit-input')) return;
-    
+
     const idx = parseInt(cell.dataset.idx);
     const field = cell.dataset.field;
-    
+
     if (field === 'notes') {
         editNotes(idx, cell);
     } else {
@@ -180,7 +186,7 @@ function editNotes(idx, cell) {
     const member = currentMembers[idx];
     const oldValue = member.notes || '';
     const clearBtn = oldValue ? `<button class="btn btn-danger btn-sm" onclick="clearField(${idx}, 'notes')">Löschen</button>` : '';
-    
+
     cell.innerHTML = `
         <div class="edit-form">
             <textarea class="edit-input" rows="2">${escapeHtml(oldValue)}</textarea>
@@ -191,7 +197,7 @@ function editNotes(idx, cell) {
             </div>
         </div>
     `;
-    
+
     cell.querySelector('textarea').focus();
 }
 
@@ -199,7 +205,7 @@ function editDate(idx, field, cell) {
     const member = currentMembers[idx];
     const oldValue = member[field] || '';
     const clearBtn = oldValue ? `<button class="btn btn-danger btn-sm" onclick="clearField(${idx}, '${field}')">Löschen</button>` : '';
-    
+
     cell.innerHTML = `
         <div class="edit-form">
             <input type="date" class="edit-input" value="${oldValue}">
@@ -210,7 +216,7 @@ function editDate(idx, field, cell) {
             </div>
         </div>
     `;
-    
+
     cell.querySelector('input').focus();
 }
 
@@ -218,7 +224,7 @@ async function saveEdit(idx, field, form) {
     const input = form.querySelector('.edit-input');
     const newValue = input.value.trim();
     const member = currentMembers[idx];
-    
+
     try {
         const r = await fetch('/api/update_member.php', {
             method: 'POST',
@@ -229,9 +235,9 @@ async function saveEdit(idx, field, form) {
                 value: newValue
             })
         });
-        
+
         const d = await r.json();
-        
+
         if (d.success) {
             member[field] = newValue;
             loadGuild();
@@ -252,7 +258,7 @@ async function clearField(idx, field) {
     const member = currentMembers[idx];
     const fieldLabels = { notes: 'Notizen', fired_at: 'Entlassen-Datum', left_at: 'Verlassen-Datum', joined_at: 'Gildenbeitritt' };
     const label = fieldLabels[field] || field;
-    
+
     confirmDialog(`${label} von "${member.name}" wirklich löschen?`, async () => {
         try {
             const r = await fetch('/api/update_member.php', {
@@ -282,7 +288,7 @@ async function clearField(idx, field) {
 async function deleteMember(idx) {
     const member = currentMembers[idx];
     if (!member) return;
-    
+
     confirmDialog(
         `"${member.name}" (Level ${member.level}) wirklich löschen?\n\nDiese Aktion kann nicht rückgängig gemacht werden!`,
         async () => {
@@ -318,29 +324,29 @@ function closeImportModal() {
 // Handle import form submission
 document.getElementById('importForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    
+
     const fileInput = document.getElementById('csvFile');
     const file = fileInput.files[0];
-    
+
     if (!file) {
         await showAlert('Bitte wähle eine CSV-Datei aus', 'Fehler');
         return;
     }
-    
+
     const formData = new FormData();
     formData.append('file', file);
     formData.append('guild_id', guildId);
-    
+
     try {
         const response = await fetch('/api/import_guild_members.php', {
             method: 'POST',
             body: formData
         });
-        
+
         const result = await response.json();
-        
+
         closeImportModal();
-        
+
         if (result.success) {
             await showAlert(`Import erfolgreich!\n\nEingefügt: ${result.inserted}\nAktualisiert: ${result.updated}\nÜbersprungen: ${result.skipped}`, 'Erfolg');
             loadGuild(); // Reload data
@@ -353,6 +359,101 @@ document.getElementById('importForm').addEventListener('submit', async function(
         console.error(error);
     }
 });
+
+// ─── Character Modal ────────────────────────────────────────────────────
+
+const slotLabels = {
+    Hat: 'Kopf', BreastPlate: 'Brust', Gloves: 'Hände', FootWear: 'Füße',
+    Amulet: 'Hals', Belt: 'Taille', Ring: 'Finger', Talisman: 'Schmuck',
+    Weapon: 'Waffe', Shield: 'Waffe 2'
+};
+const slotOrder = ['Hat', 'BreastPlate', 'Gloves', 'FootWear', 'Amulet', 'Belt', 'Ring', 'Talisman', 'Weapon', 'Shield'];
+const attrLabels = { Strength: 'Stärke', Dexterity: 'Geschick', Intelligence: 'Intelligenz', Constitution: 'Ausdauer', Luck: 'Glück' };
+
+function formatCharDate(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    if (isNaN(d)) return '—';
+    return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' +
+           d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+}
+
+async function openCharacterModal(playerName) {
+    document.getElementById('characterModalTitle').textContent = playerName;
+    document.getElementById('characterModalBody').innerHTML = '<div class="loading">Lade Charakterdaten…</div>';
+    document.getElementById('characterModal').style.display = 'flex';
+
+    try {
+        const r = await fetch(`/api/player_character.php?guild_id=${guildId}&player_name=${encodeURIComponent(playerName)}`);
+        const d = await r.json();
+
+        if (!d.success) {
+            document.getElementById('characterModalBody').innerHTML = `<div class="loading">Fehler beim Laden</div>`;
+            return;
+        }
+        if (!d.available) {
+            document.getElementById('characterModalBody').innerHTML = '<div class="loading">Noch keine Charakterdaten vorhanden. Werden beim nächsten automatischen Sync abgerufen.</div>';
+            return;
+        }
+
+        renderCharacterModal(d.data, d.fetched_at);
+    } catch (e) {
+        console.error(e);
+        document.getElementById('characterModalBody').innerHTML = '<div class="loading">Fehler beim Laden</div>';
+    }
+}
+
+function closeCharacterModal() {
+    document.getElementById('characterModal').style.display = 'none';
+}
+
+function renderCharacterModal(data, fetchedAt) {
+    const attrsHtml = Object.keys(attrLabels).map(key => `
+        <div class="char-attr">
+            <div class="char-attr-label">${attrLabels[key]}</div>
+            <div class="char-attr-value">${(data.attributes?.[key] ?? 0).toLocaleString('de-DE')}</div>
+        </div>
+    `).join('');
+
+    const equipHtml = slotOrder.map(slot => {
+        const item = data.equipment?.[slot];
+        if (!item) {
+            return `<div class="char-equip-row"><span class="char-equip-slot">${slotLabels[slot]}</span><span class="char-equip-detail char-equip-empty">—</span></div>`;
+        }
+        const bonusEntries = Object.entries(item.attributes || {})
+            .filter(([, v]) => v > 0)
+            .map(([k, v]) => `+${v.toLocaleString('de-DE')} ${attrLabels[k] || k}`);
+        const parts = [];
+        if (item.class) parts.push(item.class);
+        if (bonusEntries.length) parts.push(bonusEntries.join('/'));
+        if (item.gem) parts.push(`${item.gem.typ}-Gem`);
+        if (item.rune) parts.push(`${item.rune.typ} ${item.rune.value}`);
+        if (item.upgrade_count) parts.push(`${item.upgrade_count}x verbessert`);
+        return `<div class="char-equip-row"><span class="char-equip-slot">${slotLabels[slot]}</span><span class="char-equip-detail">${escapeHtml(parts.join(' · '))}</span></div>`;
+    }).join('');
+
+    const activePotions = (data.potions || []).filter(p => p);
+    const potionsHtml = activePotions.length
+        ? activePotions.map(p => `<div class="char-equip-row"><span class="char-equip-slot">${escapeHtml(p.typ)} (${escapeHtml(p.size)})</span><span class="char-equip-detail">bis ${formatCharDate(p.expires)}</span></div>`).join('')
+        : '<div class="char-equip-row"><span class="char-equip-detail char-equip-empty">Keine aktiven Tränke</span></div>';
+
+    document.getElementById('characterModalBody').innerHTML = `
+        <div class="char-meta">Level ${data.level ?? '?'} · ${escapeHtml(data.class || '')} · ${escapeHtml(data.race || '')}</div>
+        <div class="char-attrs-grid">${attrsHtml}</div>
+        <div class="char-section-title">Ausrüstung</div>
+        <div class="char-equip-list">${equipHtml}</div>
+        <div class="char-section-title">Tränke</div>
+        <div class="char-equip-list">${potionsHtml}</div>
+        <div class="char-section-title">Sonstiges</div>
+        <div class="char-misc-grid">
+            <div>Rüstung <strong>${(data.armor || 0).toLocaleString('de-DE')}</strong></div>
+            <div>Schaden <strong>${(data.min_damage || 0).toLocaleString('de-DE')}–${(data.max_damage || 0).toLocaleString('de-DE')}</strong></div>
+            <div>Ehre <strong>${(data.honor || 0).toLocaleString('de-DE')}</strong></div>
+            <div>Rang <strong>${(data.rank || 0).toLocaleString('de-DE')}</strong></div>
+        </div>
+        <div class="char-fetched-at">Stand: ${formatCharDate(fetchedAt)}</div>
+    `;
+}
 
 // Custom alert modal function (from fights.php)
 function showAlert(message, title = 'Hinweis') {
@@ -381,36 +482,36 @@ function showAlert(message, title = 'Hinweis') {
             `;
             document.body.appendChild(modal);
         }
-        
+
         const titleEl = document.getElementById('confirmTitle');
         const messageEl = document.getElementById('confirmMessage');
         const okBtn = document.getElementById('confirmOk');
         const cancelBtn = document.getElementById('confirmCancel');
         const closeBtn = modal.querySelector('.modal-close');
-        
+
         titleEl.textContent = title;
         messageEl.textContent = message;
-        
+
         // Hide cancel button for alerts
         cancelBtn.style.display = 'none';
         okBtn.textContent = 'OK';
         okBtn.className = 'btn-small btn-primary';
-        
+
         modal.style.display = 'flex';
-        
+
         const cleanup = () => {
             modal.style.display = 'none';
             cancelBtn.style.display = '';
             okBtn.className = 'btn-small btn-primary';
         };
-        
+
         const handleOk = () => {
             cleanup();
             okBtn.removeEventListener('click', handleOk);
             closeBtn.removeEventListener('click', handleOk);
             resolve();
         };
-        
+
         okBtn.addEventListener('click', handleOk);
         closeBtn.addEventListener('click', handleOk);
     });
