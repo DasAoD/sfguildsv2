@@ -35,35 +35,13 @@ if (!$guild) {
     jsonError('Gilde nicht gefunden', 404);
 }
 
-// Passenden Charakter aus sf_accounts suchen
-// selected_characters enthält: [{"name":"...","server":"f25.sfgame.net","guild":"Blutzirkel",...}]
-// guild.server ist z.B. "F25" → normalisieren für Vergleich
-$stmt = $db->prepare("
-    SELECT id, sf_username, sf_password_encrypted, sf_iv, sf_hmac, selected_characters
-    FROM sf_accounts
-    WHERE user_id = ? AND selected_characters IS NOT NULL AND selected_characters != '[]'
-");
-$stmt->execute([$userId]);
-$accounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-$foundCharacter = null;
-$foundAccount   = null;
-
-foreach ($accounts as $account) {
-    $chars = json_decode($account['selected_characters'], true) ?? [];
-    foreach ($chars as $char) {
-        // Gildenname direkt vergleichen
-        if (($char['guild'] ?? '') === $guild['name']) {
-            $foundCharacter = $char;
-            $foundAccount   = $account;
-            break 2;
-        }
-    }
-}
-
-if (!$foundCharacter || !$foundAccount) {
+// Passenden Charakter aus sf_accounts suchen (nur eigene Accounts des eingeloggten Users)
+$match = findSfAccountForGuild($db, $userId, $guild['name']);
+if (!$match) {
     jsonError('Kein Charakter für diese Gilde gefunden. Bitte Kontoeinstellungen prüfen.', 404);
 }
+$foundAccount   = $match['account'];
+$foundCharacter = $match['character'];
 
 $sfPassword = decryptData(
     $foundAccount['sf_password_encrypted'],
@@ -199,14 +177,13 @@ try {
         if ($existing) {
             $wasGone = !empty($existing['fired_at']) || !empty($existing['left_at']);
             if ($wasGone) {
-                // Mitglied war entlassen/verlassen und ist wieder dabei
                 $rejoinStmt->execute(array_merge($params, [
                     ':joined_at' => $today,
                     ':id'        => $existing['id'],
                 ]));
                 $rejoined++;
             } else {
-                $updStmt->execute(array_merge($params, [':id' => $existing['id']]));
+                $updStmt->execute(array_merge($params, ['id' => $existing['id']]));
                 $updated++;
             }
         } else {
