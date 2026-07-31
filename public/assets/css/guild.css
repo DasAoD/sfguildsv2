@@ -132,6 +132,16 @@ tr.has-notes {
     background: rgba(255, 107, 53, 0.1);
 }
 
+/* Player name (öffnet Charakter-Modal) */
+.player-name {
+    cursor: pointer;
+}
+
+.player-name:hover {
+    color: var(--color-primary);
+    text-decoration: underline;
+}
+
 /* Inline edit form */
 .edit-form {
     display: flex;
@@ -205,9 +215,9 @@ input[type="date"]::-webkit-datetime-edit-year-field {
     color: var(--color-text-primary);
 }
 
-/* ======================
+/* ===========================
    Modal Styles
-   ====================== */
+   =========================== */
 .modal {
     display: none;
     position: fixed;
@@ -269,9 +279,9 @@ input[type="date"]::-webkit-datetime-edit-year-field {
     padding: var(--spacing-lg);
 }
 
-/* ======================
+/* ===========================
    Form Styling (Dark Mode)
-   ====================== */
+   =========================== */
 .form-group {
     margin-bottom: var(--spacing-md);
 }
@@ -304,9 +314,9 @@ input[type="file"].form-input {
     cursor: pointer;
 }
 
-/* ======================
+/* ===========================
    Button Styles
-   ====================== */
+   =========================== */
 .btn-small {
     padding: 0.35rem 0.75rem;
     font-size: 0.85rem;
@@ -382,4 +392,95 @@ input[type="file"].form-input {
 
 .rank-icon {
     margin-right: 0.5rem;
+}
+
+/* ===========================
+   Character Modal
+   =========================== */
+.char-meta {
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-md);
+}
+
+.char-attrs-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1px;
+    background: var(--color-border);
+    margin-bottom: var(--spacing-lg);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.char-attr {
+    background: var(--color-bg-secondary);
+    padding: var(--spacing-sm) var(--spacing-xs);
+    text-align: center;
+}
+
+.char-attr-label {
+    font-size: 0.7rem;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+}
+
+.char-attr-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+.char-section-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-secondary);
+    margin: var(--spacing-md) 0 var(--spacing-xs);
+}
+
+.char-equip-list {
+    border-top: 1px solid var(--color-border);
+}
+
+.char-equip-row {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
+    padding: 0.4rem 0;
+    border-bottom: 1px solid var(--color-border);
+    font-size: 0.85rem;
+}
+
+.char-equip-slot {
+    color: var(--color-text-primary);
+    min-width: 70px;
+    flex-shrink: 0;
+}
+
+.char-equip-detail {
+    color: var(--color-text-secondary);
+    text-align: right;
+}
+
+.char-equip-empty {
+    font-style: italic;
+}
+
+.char-misc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-md);
+}
+
+.char-misc-grid strong {
+    color: var(--color-text-primary);
+}
+
+.char-fetched-at {
+    font-size: 0.75rem;
+    color: var(--color-text-muted, #888);
+    text-align: right;
 }

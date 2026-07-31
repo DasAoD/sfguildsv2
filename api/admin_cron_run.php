@@ -1,7 +1,7 @@
 <?php
 /**
  * Admin API: Cron-Job sofort ausführen (asynchron)
- * POST { job_key: "fetch_reports" | "member_sync" }
+ * POST { job_key: "fetch_reports" | "member_sync" | "character_sync" }
  * Startet den Job als Hintergrundprozess und antwortet sofort.
  */
 require_once __DIR__ . '/../includes/bootstrap_api.php';
@@ -15,7 +15,7 @@ try {
 } catch (JsonException $e) { jsonError('Ungültige JSON-Daten', 400); }
 
 $jobKey = $input['job_key'] ?? null;
-$allowed = ['fetch_reports', 'member_sync'];
+$allowed = ['fetch_reports', 'member_sync', 'character_sync'];
 if (!$jobKey || !in_array($jobKey, $allowed)) jsonError('Unbekannter Job', 400);
 
 // Lock prüfen — läuft bereits?

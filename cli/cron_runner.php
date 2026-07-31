@@ -43,8 +43,9 @@ foreach ($jobs as $job) {
     $start = microtime(true);
 
     $scriptMap = [
-        'fetch_reports' => __DIR__ . '/cron_fetch_reports.php',
-        'member_sync'   => __DIR__ . '/cron_member_sync.php',
+        'fetch_reports'   => __DIR__ . '/cron_fetch_reports.php',
+        'member_sync'     => __DIR__ . '/cron_member_sync.php',
+        'character_sync'  => __DIR__ . '/cron_character_sync.php',
     ];
 
     $script = $scriptMap[$jobKey] ?? null;
