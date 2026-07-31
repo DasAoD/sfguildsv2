@@ -426,8 +426,9 @@ function renderCharacterModal(data, fetchedAt) {
         const parts = [];
         if (item.class) parts.push(item.class);
         if (bonusEntries.length) parts.push(bonusEntries.join('/'));
-        if (item.gem) parts.push(`${item.gem.typ}-Gem`);
+        if (item.gem) parts.push(`${item.gem.typ}-Gem ${item.gem.value.toLocaleString('de-DE')}`);
         if (item.rune) parts.push(`${item.rune.typ} ${item.rune.value}`);
+        if (item.enchantment) parts.push(item.enchantment);
         if (item.upgrade_count) parts.push(`${item.upgrade_count}x verbessert`);
         return `<div class="char-equip-row"><span class="char-equip-slot">${slotLabels[slot]}</span><span class="char-equip-detail">${escapeHtml(parts.join(' · '))}</span></div>`;
     }).join('');
