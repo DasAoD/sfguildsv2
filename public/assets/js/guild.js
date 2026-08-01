@@ -369,6 +369,34 @@ const slotLabels = {
 };
 const slotOrder = ['Hat', 'BreastPlate', 'Gloves', 'FootWear', 'Amulet', 'Belt', 'Ring', 'Talisman', 'Weapon', 'Shield'];
 const attrLabels = { Strength: 'Stärke', Dexterity: 'Geschick', Intelligence: 'Intelligenz', Constitution: 'Ausdauer', Luck: 'Glück' };
+const classLabels = {
+    Warrior: 'Krieger', Mage: 'Magier', Scout: 'Kundschafter', Assassin: 'Assassine',
+    BattleMage: 'Kampfmagier', Berserker: 'Berserker', DemonHunter: 'Dämonenjäger',
+    Druid: 'Druide', Bard: 'Barde', Necromancer: 'Nekromant', Paladin: 'Paladin', PlagueDoctor: 'Pestdoktor'
+};
+const raceLabels = {
+    Human: 'Mensch', Elf: 'Elf', Dwarf: 'Zwerg', Gnome: 'Gnom', Orc: 'Ork',
+    DarkElf: 'Dunkelelf', Goblin: 'Goblin', Demon: 'Dämon'
+};
+const gemTypeLabels = { ...attrLabels, All: 'Alle', Legendary: 'Legendär' };
+const runeTypeLabels = {
+    QuestGold: 'Questgold', EpicChance: 'Epenchance', ItemQuality: 'Itemqualität', QuestXP: 'Quest-EP',
+    ExtraHitPoints: 'Extra-Lebenspunkte', FireResistance: 'Feuerresistenz', ColdResistence: 'Kälteresistenz',
+    LightningResistance: 'Blitzresistenz', TotalResistence: 'Gesamtresistenz', FireDamage: 'Feuerschaden',
+    ColdDamage: 'Kälteschaden', LightningDamage: 'Blitzschaden'
+};
+// Feste Effektwerte pro Verzauberung (spielweite Konstanten, nicht Item-abhängig)
+const enchantmentLabels = {
+    SwordOfVengeance: { label: 'Fuchtel des Rächers', effect: '+5% Schaden bei kritischen Treffern' },
+    MariosBeard: { label: 'Marios Bart', effect: '+50% Pilzfundchance' },
+    ManyFeetBoots: { label: '36960-Fuß-Stiefel', effect: '−30 Sek. Reisezeit' },
+    ShadowOfTheCowboy: { label: 'Schatten des Cowboys', effect: '+1 Reaktionswert' },
+    AdventurersArchaeologicalAura: { label: 'Abenteuerarchäologenaura', effect: '+10% Erfahrung auf Expeditionen' },
+    ThirstyWanderer: { label: 'Durstiger Wanderer', effect: '+1 Bier täglich' },
+    UnholyAcquisitiveness: { label: 'Unheilige Sammelwut', effect: '+10% Itemfundchance' },
+    TheGraveRobbersPrayer: { label: 'Gebet des Grabräubers', effect: '+10% Gold auf Expeditionen' },
+    RobberBaronRitual: { label: 'Raubritter-Ritual', effect: 'bis zu +20% Gold bei Spielerkämpfen' }
+};
 
 function formatCharDate(iso) {
     if (!iso) return '—';
@@ -424,11 +452,13 @@ function renderCharacterModal(data, fetchedAt) {
             .filter(([, v]) => v > 0)
             .map(([k, v]) => `+${v.toLocaleString('de-DE')} ${attrLabels[k] || k}`);
         const parts = [];
-        if (item.class) parts.push(item.class);
         if (bonusEntries.length) parts.push(bonusEntries.join('/'));
-        if (item.gem) parts.push(`${item.gem.typ}-Gem ${item.gem.value.toLocaleString('de-DE')}`);
-        if (item.rune) parts.push(`${item.rune.typ} ${item.rune.value}`);
-        if (item.enchantment) parts.push(item.enchantment);
+        if (item.gem) parts.push(`${gemTypeLabels[item.gem.typ] || item.gem.typ}-Edelstein ${item.gem.value.toLocaleString('de-DE')}`);
+        if (item.rune) parts.push(`${runeTypeLabels[item.rune.typ] || item.rune.typ} ${item.rune.value}`);
+        if (item.enchantment) {
+            const ench = enchantmentLabels[item.enchantment];
+            parts.push(ench ? `${ench.label} (${ench.effect})` : item.enchantment);
+        }
         if (item.upgrade_count) parts.push(`${item.upgrade_count}x verbessert`);
         return `<div class="char-equip-row"><span class="char-equip-slot">${slotLabels[slot]}</span><span class="char-equip-detail">${escapeHtml(parts.join(' · '))}</span></div>`;
     }).join('');
@@ -439,7 +469,7 @@ function renderCharacterModal(data, fetchedAt) {
         : '<div class="char-equip-row"><span class="char-equip-detail char-equip-empty">Keine aktiven Tränke</span></div>';
 
     document.getElementById('characterModalBody').innerHTML = `
-        <div class="char-meta">Level ${data.level ?? '?'} · ${escapeHtml(data.class || '')} · ${escapeHtml(data.race || '')}</div>
+        <div class="char-meta">Level ${data.level ?? '?'} · ${escapeHtml(classLabels[data.class] || data.class || '')} · ${escapeHtml(raceLabels[data.race] || data.race || '')}</div>
         <div class="char-attrs-grid">${attrsHtml}</div>
         <div class="char-section-title">Ausrüstung</div>
         <div class="char-equip-list">${equipHtml}</div>
