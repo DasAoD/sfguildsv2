@@ -139,6 +139,9 @@ tr.has-notes {
 
 .player-name:hover {
     color: var(--color-primary);
+}
+
+.player-name:hover .player-name-text {
     text-decoration: underline;
 }
 
