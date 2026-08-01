@@ -454,7 +454,7 @@ function renderCharacterModal(data, fetchedAt) {
         const parts = [];
         if (bonusEntries.length) parts.push(bonusEntries.join('/'));
         if (item.gem) parts.push(`${gemTypeLabels[item.gem.typ] || item.gem.typ}-Edelstein ${item.gem.value.toLocaleString('de-DE')}`);
-        if (item.rune) parts.push(`${runeTypeLabels[item.rune.typ] || item.rune.typ} ${item.rune.value}`);
+        if (item.rune) parts.push(`${runeTypeLabels[item.rune.typ] || item.rune.typ} ${item.rune.value}%`);
         if (item.enchantment) {
             const ench = enchantmentLabels[item.enchantment];
             parts.push(ench ? `${ench.label} (${ench.effect})` : item.enchantment);
