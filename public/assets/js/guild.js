@@ -131,7 +131,7 @@ function renderTable(members, logged) {
 
         if (logged) {
             return `<tr class="${rowClass.trim()}">
-                <td><span class="player-name" data-player="${escapeHtml(m.name)}">${rank} ${escapeHtml(m.name)}</span></td>
+                <td><span class="player-name" data-player="${escapeHtml(m.name)}">${rank}<span class="player-name-text">${escapeHtml(m.name)}</span></span></td>
                 <td class="center">${m.level}</td>
                 <td>${formatDate(m.last_online)}</td>
                 <td class="editable" data-idx="${idx}" data-field="joined_at">${formatDate(m.joined_at)}</td>
