@@ -502,44 +502,31 @@ function closeCharacterModal() {
 }
 
 function renderCharacterModal(data, fetchedAt, playerName) {
-    const attrsHtml = Object.keys(attrLabels).map(key => `
+    const attrRow1Keys = ['Strength', 'Dexterity', 'Intelligence', 'Constitution'];
+    const attrsRow1 = attrRow1Keys.map(key => `
         <div class="char-attr">
             <div class="char-attr-label">${attrLabels[key]}</div>
             <div class="char-attr-value">${(data.attributes?.[key] ?? 0).toLocaleString('de-DE')}</div>
         </div>
-    `).join('') + `
+    `).join('');
+    const attrsRow2 = `
+        <div class="char-attr">
+            <div class="char-attr-label">${attrLabels.Luck}</div>
+            <div class="char-attr-value">${(data.attributes?.Luck ?? 0).toLocaleString('de-DE')}</div>
+        </div>
         <div class="char-attr">
             <div class="char-attr-label">Rüstung</div>
             <div class="char-attr-value">${(data.armor || 0).toLocaleString('de-DE')}</div>
         </div>
-    `;
-    const damageHtml = `
-        <div class="char-attr-label">Schaden</div>
-        <div class="char-attr-value">${(data.min_damage || 0).toLocaleString('de-DE')}–${(data.max_damage || 0).toLocaleString('de-DE')}</div>
+        <div class="char-attr">
+            <div class="char-attr-label">Schaden</div>
+            <div class="char-attr-value">${(data.min_damage || 0).toLocaleString('de-DE')}–${(data.max_damage || 0).toLocaleString('de-DE')}</div>
+        </div>
     `;
 
     const armorHtml = slotColumns.armor.map(slot => buildEquipTile(slot, data.equipment?.[slot])).join('');
     const weaponHtml = slotColumns.weapons.map(slot => buildEquipTile(slot, data.equipment?.[slot])).join('');
     const jewelryHtml = slotColumns.jewelry.map(slot => buildEquipTile(slot, data.equipment?.[slot])).join('');
-
-    const guildNameText = document.getElementById('guildName')?.textContent?.trim() || '';
-    const heroHtml = `
-        <div class="char-hero">
-            <div class="char-equip-col char-equip-col-armor">${armorHtml}</div>
-            <div class="char-equip-col char-equip-col-weapon">${weaponHtml}</div>
-            <div class="char-portrait-col">
-                <div class="char-portrait-frame">
-                    <div class="char-portrait-placeholder">${escapeHtml((playerName || '?').charAt(0).toUpperCase())}</div>
-                </div>
-                <div class="char-name">${escapeHtml(playerName || '')}</div>
-                ${guildNameText ? `<div class="char-guild-tag">[${escapeHtml(guildNameText)}]</div>` : ''}
-                <div class="char-level-badge">Stufe ${data.level ?? '?'}</div>
-                <div class="char-class-race">${escapeHtml(classLabels[data.class] || data.class || '')} · ${escapeHtml(raceLabels[data.race] || data.race || '')}</div>
-                <div class="char-honor-rank">Ehre ${(data.honor || 0).toLocaleString('de-DE')} · Rang ${(data.rank || 0).toLocaleString('de-DE')}</div>
-            </div>
-            <div class="char-equip-col char-equip-col-jewelry">${jewelryHtml}</div>
-        </div>
-    `;
 
     const activePotions = (data.potions || []).filter(p => p);
     const potionsHtml = activePotions.length
@@ -551,12 +538,31 @@ function renderCharacterModal(data, fetchedAt, playerName) {
         `).join('')
         : '<div class="char-potion-empty">Keine aktiven Träke</div>';
 
+    const guildNameText = document.getElementById('guildName')?.textContent?.trim() || '';
+    const heroHtml = `
+        <div class="char-hero">
+            <div class="char-equip-col char-equip-col-armor">${armorHtml}</div>
+            <div class="char-portrait-col">
+                <div class="char-portrait-frame">
+                    <div class="char-portrait-placeholder">${escapeHtml((playerName || '?').charAt(0).toUpperCase())}</div>
+                </div>
+                <div class="char-name">${escapeHtml(playerName || '')}</div>
+                ${guildNameText ? `<div class="char-guild-tag">[${escapeHtml(guildNameText)}]</div>` : ''}
+                <div class="char-level-badge">Stufe ${data.level ?? '?'}</div>
+                <div class="char-class-race">${escapeHtml(classLabels[data.class] || data.class || '')} · ${escapeHtml(raceLabels[data.race] || data.race || '')}</div>
+                <div class="char-honor-rank">Ehre ${(data.honor || 0).toLocaleString('de-DE')} · Rang ${(data.rank || 0).toLocaleString('de-DE')}</div>
+                <div class="char-section-title">Tränke</div>
+                <div class="char-potions-row">${potionsHtml}</div>
+                <div class="char-weapon-row">${weaponHtml}</div>
+            </div>
+            <div class="char-equip-col char-equip-col-jewelry">${jewelryHtml}</div>
+        </div>
+    `;
+
     document.getElementById('characterModalBody').innerHTML = `
         ${heroHtml}
-        <div class="char-attrs-grid">${attrsHtml}</div>
-        <div class="char-damage-row">${damageHtml}</div>
-        <div class="char-section-title">Tränke</div>
-        <div class="char-potions-row">${potionsHtml}</div>
+        <div class="char-attrs-row">${attrsRow1}</div>
+        <div class="char-attrs-row char-attrs-row-last">${attrsRow2}</div>
         <div class="char-fetched-at">Stand: ${formatCharDate(fetchedAt)}</div>
     `;
 }
