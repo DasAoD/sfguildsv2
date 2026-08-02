@@ -389,13 +389,13 @@ const runeTypeLabels = {
 const enchantmentLabels = {
     SwordOfVengeance: { label: 'Fuchtel des Rächers', effect: '+5% Schaden bei kritischen Treffern' },
     MariosBeard: { label: 'Marios Bart', effect: '+50% Pilzfundchance' },
-    ManyFeetBoots: { label: '36960-Fuß-Stiefel', effect: '−30 Sek. Reisezeit' },
+    ManyFeetBoots: { label: '36960-Fuß-Stiefel', effect: '+10% Metallbonus auf Expeditionen' },
     ShadowOfTheCowboy: { label: 'Schatten des Cowboys', effect: '+1 Reaktionswert' },
     AdventurersArchaeologicalAura: { label: 'Abenteuerarchäologenaura', effect: '+10% Erfahrung auf Expeditionen' },
     ThirstyWanderer: { label: 'Durstiger Wanderer', effect: '+1 Bier täglich' },
     UnholyAcquisitiveness: { label: 'Unheilige Sammelwut', effect: '+10% Itemfundchance' },
     TheGraveRobbersPrayer: { label: 'Gebet des Grabräubers', effect: '+10% Gold auf Expeditionen' },
-    RobberBaronRitual: { label: 'Raubritter-Ritual', effect: 'bis zu +20% Gold bei Spielerkämpfen' }
+    RobberBaronRitual: { label: 'Raubritter-Ritual', effect: '+10% arkaner Splitterbonus auf Expeditionen und beim Würfelspiel' }
 };
 
 // Platzhalter-Icons pro Slot, bis echte Item-Grafiken verfügbar sind
