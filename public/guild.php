@@ -82,7 +82,7 @@ $guildId = isset($_GET['id']) ? (int)$_GET['id'] : 1;
 
     <!-- Character Modal -->
     <div id="characterModal" class="modal">
-        <div class="modal-content" style="max-width: 480px;">
+        <div class="modal-content" style="max-width: 560px;">
             <div class="modal-header">
                 <h3 id="characterModalTitle">Charakter</h3>
                 <button class="modal-close" onclick="closeCharacterModal()">&times;</button>
