@@ -367,4 +367,303 @@ const slotLabels = {
     Amulet: 'Hals', Belt: 'Taille', Ring: 'Finger', Talisman: 'Schmuck',
     Weapon: 'Waffe', Shield: 'Waffe 2'
 };
-const slotOrder = ['Hat', 'BreastPlate', 'Gloves', 'FootWear', 'Amulet',
+const slotOrder = ['Hat', 'BreastPlate', 'Gloves', 'FootWear', 'Amulet', 'Belt', 'Ring', 'Talisman', 'Weapon', 'Shield'];
+const attrLabels = { Strength: 'Stärke', Dexterity: 'Geschick', Intelligence: 'Intelligenz', Constitution: 'Ausdauer', Luck: 'Glück' };
+const classLabels = {
+    Warrior: 'Krieger', Mage: 'Magier', Scout: 'Kundschafter', Assassin: 'Assassine',
+    BattleMage: 'Kampfmagier', Berserker: 'Berserker', DemonHunter: 'Dämonenjäger',
+    Druid: 'Druide', Bard: 'Barde', Necromancer: 'Nekromant', Paladin: 'Paladin', PlagueDoctor: 'Pestdoktor'
+};
+const raceLabels = {
+    Human: 'Mensch', Elf: 'Elf', Dwarf: 'Zwerg', Gnome: 'Gnom', Orc: 'Ork',
+    DarkElf: 'Dunkelelf', Goblin: 'Goblin', Demon: 'Dämon'
+};
+const gemTypeLabels = { ...attrLabels, All: 'Alle', Legendary: 'Legendär' };
+const runeTypeLabels = {
+    QuestGold: 'Questgold', EpicChance: 'Epenchance', ItemQuality: 'Itemqualität', QuestXP: 'Quest-EP',
+    ExtraHitPoints: 'Extra-Lebenspunkte', FireResistance: 'Feuerresistenz', ColdResistence: 'Kälteresistenz',
+    LightningResistance: 'Blitzresistenz', TotalResistence: 'Gesamtresistenz', FireDamage: 'Feuerschaden',
+    ColdDamage: 'Kälteschaden', LightningDamage: 'Blitzschaden'
+};
+// Feste Effektwerte pro Verzauberung (spielweite Konstanten, nicht Item-abhängig)
+const enchantmentLabels = {
+    SwordOfVengeance: { label: 'Fuchtel des Rächers', effect: '+5% Schaden bei kritischen Treffern' },
+    MariosBeard: { label: 'Marios Bart', effect: '+50% Pilzfundchance' },
+    ManyFeetBoots: { label: '36960-Fuß-Stiefel', effect: '−30 Sek. Reisezeit' },
+    ShadowOfTheCowboy: { label: 'Schatten des Cowboys', effect: '+1 Reaktionswert' },
+    AdventurersArchaeologicalAura: { label: 'Abenteuerarchäologenaura', effect: '+10% Erfahrung auf Expeditionen' },
+    ThirstyWanderer: { label: 'Durstiger Wanderer', effect: '+1 Bier täglich' },
+    UnholyAcquisitiveness: { label: 'Unheilige Sammelwut', effect: '+10% Itemfundchance' },
+    TheGraveRobbersPrayer: { label: 'Gebet des Grabräubers', effect: '+10% Gold auf Expeditionen' },
+    RobberBaronRitual: { label: 'Raubritter-Ritual', effect: 'bis zu +20% Gold bei Spielerkämpfen' }
+};
+
+// Platzhalter-Icons pro Slot, bis echte Item-Grafiken verfügbar sind
+const slotIcons = {
+    Hat: '🎩', BreastPlate: '👕', Gloves: '🧤', FootWear: '👢', Belt: '🎗️',
+    Amulet: '📿', Ring: '💍', Talisman: '🔮', Weapon: '⚔️', Shield: '🛡️'
+};
+const slotColumns = {
+    armor: ['Hat', 'BreastPlate', 'Gloves', 'FootWear'],
+    weapons: ['Weapon', 'Shield'],
+    jewelry: ['Amulet', 'Belt', 'Ring', 'Talisman']
+};
+const gemColors = {
+    Strength: '#e74c3c', Dexterity: '#2ecc71', Intelligence: '#3498db',
+    Constitution: '#e84393', Luck: '#f1c40f', All: '#ecf0f1', Legendary: '#9b59b6'
+};
+const potionTypeLabels = {
+    Strength: 'Stärketrank', Dexterity: 'Geschicklichkeitstrank', Intelligence: 'Intelligenztrank',
+    Constitution: 'Ausdauertrank', Luck: 'Glückstrank', EternalLife: 'Trank des ewigen Lebens'
+};
+const potionSizeLabels = { Small: 'Klein', Medium: 'Mittel', Large: 'Groß' };
+
+function formatCountdown(iso) {
+    if (!iso) return null;
+    const target = new Date(iso).getTime();
+    if (isNaN(target)) return null;
+    const diffMs = target - Date.now();
+    if (diffMs <= 0) return 'abgelaufen';
+    const totalHours = Math.floor(diffMs / 3600000);
+    const days = Math.floor(totalHours / 24);
+    const hours = totalHours % 24;
+    return days > 0 ? `${days}T ${hours}Std` : `${hours}Std`;
+}
+
+function buildEquipTile(slot, item) {
+    const icon = slotIcons[slot] || '❔';
+    const label = slotLabels[slot];
+    if (!item) {
+        return `<div class="char-slot char-slot-empty" title="${escapeHtml(label)}: leer">
+            <div class="char-slot-icon">${icon}</div>
+            <div class="char-slot-label">${escapeHtml(label)}</div>
+        </div>`;
+    }
+    const bonusEntries = Object.entries(item.attributes || {})
+        .filter(([, v]) => v > 0)
+        .map(([k, v]) => `+${v.toLocaleString('de-DE')} ${attrLabels[k] || k}`);
+    const parts = [];
+    if (bonusEntries.length) parts.push(bonusEntries.join('/'));
+    if (item.gem) parts.push(`${gemTypeLabels[item.gem.typ] || item.gem.typ}-Edelstein ${item.gem.value.toLocaleString('de-DE')}`);
+    if (item.rune) parts.push(`${runeTypeLabels[item.rune.typ] || item.rune.typ} ${item.rune.value}%`);
+    if (item.enchantment) {
+        const ench = enchantmentLabels[item.enchantment];
+        parts.push(ench ? `${ench.label} (${ench.effect})` : item.enchantment);
+    }
+    if (item.upgrade_count) parts.push(`${item.upgrade_count}x verbessert`);
+    const detail = parts.join(' · ');
+    const gemColor = item.gem ? (gemColors[item.gem.typ] || gemColors.All) : null;
+    const badges = [];
+    if (gemColor) badges.push(`<span class="char-slot-badge-gem" style="background:${gemColor}"></span>`);
+    if (item.enchantment) badges.push(`<span class="char-slot-badge-ench">✨</span>`);
+    if (item.upgrade_count) badges.push(`<span class="char-slot-badge-upgrade">+${item.upgrade_count}</span>`);
+    return `<div class="char-slot" title="${escapeHtml(label + (detail ? ': ' + detail : ''))}">
+        <div class="char-slot-icon">${icon}</div>
+        ${badges.join('')}
+        <div class="char-slot-label">${escapeHtml(label)}</div>
+    </div>`;
+}
+
+function formatCharDate(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    if (isNaN(d)) return '—';
+    return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' +
+           d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+}
+
+async function openCharacterModal(playerName) {
+    document.getElementById('characterModalTitle').textContent = playerName;
+    document.getElementById('characterModalBody').innerHTML = '<div class="loading">Lade Charakterdaten…</div>';
+    document.getElementById('characterModal').style.display = 'flex';
+
+    try {
+        const r = await fetch(`/api/player_character.php?guild_id=${guildId}&player_name=${encodeURIComponent(playerName)}`);
+        const d = await r.json();
+
+        if (!d.success) {
+            document.getElementById('characterModalBody').innerHTML = `<div class="loading">Fehler beim Laden</div>`;
+            return;
+        }
+        if (!d.available) {
+            document.getElementById('characterModalBody').innerHTML = '<div class="loading">Noch keine Charakterdaten vorhanden. Werden beim nächsten automatischen Sync abgerufen.</div>';
+            return;
+        }
+
+        renderCharacterModal(d.data, d.fetched_at, playerName);
+    } catch (e) {
+        console.error(e);
+        document.getElementById('characterModalBody').innerHTML = '<div class="loading">Fehler beim Laden</div>';
+    }
+}
+
+function closeCharacterModal() {
+    document.getElementById('characterModal').style.display = 'none';
+}
+
+function renderCharacterModal(data, fetchedAt, playerName) {
+    const attrsHtml = Object.keys(attrLabels).map(key => `
+        <div class="char-attr">
+            <div class="char-attr-label">${attrLabels[key]}</div>
+            <div class="char-attr-value">${(data.attributes?.[key] ?? 0).toLocaleString('de-DE')}</div>
+        </div>
+    `).join('') + `
+        <div class="char-attr">
+            <div class="char-attr-label">Rüstung</div>
+            <div class="char-attr-value">${(data.armor || 0).toLocaleString('de-DE')}</div>
+        </div>
+        <div class="char-attr">
+            <div class="char-attr-label">Schaden</div>
+            <div class="char-attr-value">${(data.min_damage || 0).toLocaleString('de-DE')}–${(data.max_damage || 0).toLocaleString('de-DE')}</div>
+        </div>
+    `;
+
+    const armorHtml = slotColumns.armor.map(slot => buildEquipTile(slot, data.equipment?.[slot])).join('');
+    const weaponHtml = slotColumns.weapons.map(slot => buildEquipTile(slot, data.equipment?.[slot])).join('');
+    const jewelryHtml = slotColumns.jewelry.map(slot => buildEquipTile(slot, data.equipment?.[slot])).join('');
+
+    const guildNameText = document.getElementById('guildName')?.textContent?.trim() || '';
+    const heroHtml = `
+        <div class="char-hero">
+            <div class="char-equip-col char-equip-col-armor">${armorHtml}</div>
+            <div class="char-equip-col char-equip-col-weapon">${weaponHtml}</div>
+            <div class="char-portrait-col">
+                <div class="char-portrait-frame">
+                    <div class="char-portrait-placeholder">${escapeHtml((playerName || '?').charAt(0).toUpperCase())}</div>
+                </div>
+                <div class="char-name">${escapeHtml(playerName || '')}</div>
+                ${guildNameText ? `<div class="char-guild-tag">[${escapeHtml(guildNameText)}]</div>` : ''}
+                <div class="char-level-badge">Stufe ${data.level ?? '?'}</div>
+                <div class="char-class-race">${escapeHtml(classLabels[data.class] || data.class || '')} · ${escapeHtml(raceLabels[data.race] || data.race || '')}</div>
+                <div class="char-honor-rank">Ehre ${(data.honor || 0).toLocaleString('de-DE')} · Rang ${(data.rank || 0).toLocaleString('de-DE')}</div>
+            </div>
+            <div class="char-equip-col char-equip-col-jewelry">${jewelryHtml}</div>
+        </div>
+    `;
+
+    const activePotions = (data.potions || []).filter(p => p);
+    const potionsHtml = activePotions.length
+        ? activePotions.map(p => `
+            <div class="char-potion" title="${escapeHtml(potionTypeLabels[p.typ] || p.typ)} (${escapeHtml(potionSizeLabels[p.size] || p.size)})">
+                <div class="char-potion-icon">🧪</div>
+                <div class="char-potion-countdown">${escapeHtml(formatCountdown(p.expires) || '—')}</div>
+            </div>
+        `).join('')
+        : '<div class="char-potion-empty">Keine aktiven Tränke</div>';
+
+    document.getElementById('characterModalBody').innerHTML = `
+        ${heroHtml}
+        <div class="char-attrs-grid">${attrsHtml}</div>
+        <div class="char-section-title">Tränke</div>
+        <div class="char-potions-row">${potionsHtml}</div>
+        <div class="char-fetched-at">Stand: ${formatCharDate(fetchedAt)}</div>
+    `;
+}
+
+// Custom alert modal function (from fights.php)
+function showAlert(message, title = 'Hinweis') {
+    return new Promise((resolve) => {
+        // Check if we have a confirm modal to reuse
+        let modal = document.getElementById('confirmModal');
+        if (!modal) {
+            // Create modal if it doesn't exist
+            modal = document.createElement('div');
+            modal.id = 'confirmModal';
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 500px;">
+                    <div class="modal-header">
+                        <h3 id="confirmTitle">Hinweis</h3>
+                        <button class="modal-close">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="confirmMessage" style="white-space: pre-line;"></p>
+                        <div style="display: flex; gap: var(--spacing-md); justify-content: flex-end; margin-top: var(--spacing-lg);">
+                            <button id="confirmCancel" class="btn-small">Abbrechen</button>
+                            <button id="confirmOk" class="btn-small btn-primary">OK</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        const titleEl = document.getElementById('confirmTitle');
+        const messageEl = document.getElementById('confirmMessage');
+        const okBtn = document.getElementById('confirmOk');
+        const cancelBtn = document.getElementById('confirmCancel');
+        const closeBtn = modal.querySelector('.modal-close');
+
+        titleEl.textContent = title;
+        messageEl.textContent = message;
+
+        // Hide cancel button for alerts
+        cancelBtn.style.display = 'none';
+        okBtn.textContent = 'OK';
+        okBtn.className = 'btn-small btn-primary';
+
+        modal.style.display = 'flex';
+
+        const cleanup = () => {
+            modal.style.display = 'none';
+            cancelBtn.style.display = '';
+            okBtn.className = 'btn-small btn-primary';
+        };
+
+        const handleOk = () => {
+            cleanup();
+            okBtn.removeEventListener('click', handleOk);
+            closeBtn.removeEventListener('click', handleOk);
+            resolve();
+        };
+
+        okBtn.addEventListener('click', handleOk);
+        closeBtn.addEventListener('click', handleOk);
+    });
+}
+
+// Show import button only if logged in
+if (isLoggedIn) {
+    document.getElementById('importBtn').style.display = 'block';
+    document.getElementById('syncBtn').style.display = 'block';
+}
+
+// Initialize
+loadGuilds();
+loadGuild();
+// Member Sync via sf-api
+async function syncMembers() {
+    const guildId = new URLSearchParams(window.location.search).get('id');
+    if (!guildId) { showAlert('Keine Gilde ausgewählt.'); return; }
+
+    const btn = document.getElementById('syncBtn');
+    btn.disabled = true;
+    showOverlay('Mitglieder werden synchronisiert…');
+
+    try {
+        const r = await fetch('/api/sf_member_sync.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ guild_id: parseInt(guildId) })
+        });
+        const d = await r.json();
+
+        if (d.success) {
+            const parts = [];
+            if (d.inserted  > 0) parts.push(`${d.inserted} neu`);
+            if (d.updated   > 0) parts.push(`${d.updated} aktualisiert`);
+            if (d.rejoined  > 0) parts.push(`${d.rejoined} wiedereingetreten`);
+            const summary = parts.length > 0 ? parts.join(', ') : 'Keine Änderungen';
+            showAlert(`Sync abgeschlossen: ${summary} (${d.total} Mitglieder gesamt).`);
+            loadGuild();
+        } else {
+            showAlert('Fehler beim Sync: ' + (d.message || 'Unbekannt'));
+        }
+    } catch (e) {
+        console.error(e);
+        showAlert('Fehler beim Sync: Verbindungsfehler');
+    } finally {
+        btn.disabled = false;
+        hideOverlay();
+    }
+}
