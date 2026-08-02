@@ -360,7 +360,7 @@ document.getElementById('importForm').addEventListener('submit', async function(
     }
 });
 
-// ─── Character Modal ────────────────────────────────────────────────────
+// ─── Character Modal ──────────────────────────────────────────────
 
 const slotLabels = {
     Hat: 'Kopf', BreastPlate: 'Brust', Gloves: 'Hände', FootWear: 'Füße',
@@ -512,10 +512,10 @@ function renderCharacterModal(data, fetchedAt, playerName) {
             <div class="char-attr-label">Rüstung</div>
             <div class="char-attr-value">${(data.armor || 0).toLocaleString('de-DE')}</div>
         </div>
-        <div class="char-attr">
-            <div class="char-attr-label">Schaden</div>
-            <div class="char-attr-value">${(data.min_damage || 0).toLocaleString('de-DE')}–${(data.max_damage || 0).toLocaleString('de-DE')}</div>
-        </div>
+    `;
+    const damageHtml = `
+        <div class="char-attr-label">Schaden</div>
+        <div class="char-attr-value">${(data.min_damage || 0).toLocaleString('de-DE')}–${(data.max_damage || 0).toLocaleString('de-DE')}</div>
     `;
 
     const armorHtml = slotColumns.armor.map(slot => buildEquipTile(slot, data.equipment?.[slot])).join('');
@@ -549,11 +549,12 @@ function renderCharacterModal(data, fetchedAt, playerName) {
                 <div class="char-potion-countdown">${escapeHtml(formatCountdown(p.expires) || '—')}</div>
             </div>
         `).join('')
-        : '<div class="char-potion-empty">Keine aktiven Tränke</div>';
+        : '<div class="char-potion-empty">Keine aktiven Träke</div>';
 
     document.getElementById('characterModalBody').innerHTML = `
         ${heroHtml}
         <div class="char-attrs-grid">${attrsHtml}</div>
+        <div class="char-damage-row">${damageHtml}</div>
         <div class="char-section-title">Tränke</div>
         <div class="char-potions-row">${potionsHtml}</div>
         <div class="char-fetched-at">Stand: ${formatCharDate(fetchedAt)}</div>
