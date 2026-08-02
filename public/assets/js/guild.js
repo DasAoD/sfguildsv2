@@ -439,25 +439,24 @@ function buildEquipTile(slot, item) {
             <div class="char-slot-label">${escapeHtml(label)}</div>
         </div>`;
     }
-    const bonusEntries = Object.entries(item.attributes || {})
+    const lines = [`${label}:`];
+    Object.entries(item.attributes || {})
         .filter(([, v]) => v > 0)
-        .map(([k, v]) => `+${v.toLocaleString('de-DE')} ${attrLabels[k] || k}`);
-    const parts = [];
-    if (bonusEntries.length) parts.push(bonusEntries.join('/'));
-    if (item.gem) parts.push(`${gemTypeLabels[item.gem.typ] || item.gem.typ}-Edelstein ${item.gem.value.toLocaleString('de-DE')}`);
-    if (item.rune) parts.push(`${runeTypeLabels[item.rune.typ] || item.rune.typ} ${item.rune.value}%`);
+        .forEach(([k, v]) => lines.push(`${attrLabels[k] || k}: +${v.toLocaleString('de-DE')}`));
+    if (item.gem) lines.push(`Edelstein: ${gemTypeLabels[item.gem.typ] || item.gem.typ} +${item.gem.value.toLocaleString('de-DE')}`);
+    if (item.rune) lines.push(`Rune: ${runeTypeLabels[item.rune.typ] || item.rune.typ} ${item.rune.value}%`);
     if (item.enchantment) {
         const ench = enchantmentLabels[item.enchantment];
-        parts.push(ench ? `${ench.label} (${ench.effect})` : item.enchantment);
+        lines.push(`VZ: ${ench ? ench.effect : item.enchantment}`);
     }
-    if (item.upgrade_count) parts.push(`${item.upgrade_count}x verbessert`);
-    const detail = parts.join(' · ');
+    if (item.upgrade_count) lines.push(`Verbesserung: ${item.upgrade_count}x`);
+    const tooltip = lines.join('\n');
     const gemColor = item.gem ? (gemColors[item.gem.typ] || gemColors.All) : null;
     const badges = [];
     if (gemColor) badges.push(`<span class="char-slot-badge-gem" style="background:${gemColor}"></span>`);
     if (item.enchantment) badges.push(`<span class="char-slot-badge-ench">✨</span>`);
     if (item.upgrade_count) badges.push(`<span class="char-slot-badge-upgrade">+${item.upgrade_count}</span>`);
-    return `<div class="char-slot" title="${escapeHtml(label + (detail ? ': ' + detail : ''))}">
+    return `<div class="char-slot" title="${escapeHtml(tooltip)}">
         <div class="char-slot-icon">${icon}</div>
         ${badges.join('')}
         <div class="char-slot-label">${escapeHtml(label)}</div>
