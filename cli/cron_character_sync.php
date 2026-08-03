@@ -46,6 +46,11 @@ function buildCharDataJson(array $raw): string {
         ];
     }
 
+    // Portrait: alle rein kosmetischen Aussehen-Felder (siehe sf-api
+    // gamestate/character.rs Portrait-Struct), für das echte Charakter-
+    // Portrait im Modal statt des Buchstaben-Platzhalters.
+    $portrait = $raw['portrait'] ?? [];
+
     return json_encode([
         'level'      => $raw['level'] ?? null,
         'class'      => $raw['class'] ?? null,
@@ -58,6 +63,20 @@ function buildCharDataJson(array $raw): string {
         'attributes' => $attrs,
         'equipment'  => $equipment,
         'potions'    => $raw['active_potions'] ?? [],
+        'portrait'   => [
+            'gender'           => $portrait['gender'] ?? null,
+            'hair_color'       => $portrait['hair_color'] ?? null,
+            'hair'             => $portrait['hair'] ?? null,
+            'mouth'            => $portrait['mouth'] ?? null,
+            'brows'            => $portrait['brows'] ?? null,
+            'eyes'             => $portrait['eyes'] ?? null,
+            'beards'           => $portrait['beards'] ?? null,
+            'nose'             => $portrait['nose'] ?? null,
+            'ears'             => $portrait['ears'] ?? null,
+            'extra'            => $portrait['extra'] ?? null,
+            'horns'            => $portrait['horns'] ?? null,
+            'special_portrait' => $portrait['special_portrait'] ?? 0,
+        ],
     ]);
 }
 
