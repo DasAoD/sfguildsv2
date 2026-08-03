@@ -533,12 +533,18 @@ function renderCharacterModal(data, fetchedAt, playerName) {
 
     const activePotions = (data.potions || []).filter(p => p);
     const potionsHtml = activePotions.length
-        ? activePotions.map(p => `
+        ? activePotions.map(p => {
+            const potionIconHtml = p.icon
+                ? `<img class="char-potion-icon-img" src="${escapeHtml(p.icon)}" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='';">
+                   <div class="char-potion-icon" style="display:none">🧪</div>`
+                : `<div class="char-potion-icon">🧪</div>`;
+            return `
             <div class="char-potion" title="${escapeHtml(potionTypeLabels[p.typ] || p.typ)} (${escapeHtml(potionSizeLabels[p.size] || p.size)})">
-                <div class="char-potion-icon">🧪</div>
+                ${potionIconHtml}
                 <div class="char-potion-countdown">${escapeHtml(formatCountdown(p.expires) || '—')}</div>
             </div>
-        `).join('')
+        `;
+        }).join('')
         : '<div class="char-potion-empty">Keine aktiven Träke</div>';
 
     const guildNameText = document.getElementById('guildName')?.textContent?.trim() || '';

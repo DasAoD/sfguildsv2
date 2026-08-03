@@ -120,3 +120,57 @@ function resolveItemIconPath(string $slot, array $item): ?string
 
     return "/assets/images/items/{$bundle}/" . basename($matches[0]);
 }
+
+// Trank-Typ -> Position innerhalb eines 5er-Blocks (eine Größenstufe),
+// gemäß sf-api PotionType::parse (id % 5: 0=>Luck, 1=>Strength, 2=>Dexterity,
+// 3=>Intelligence, 4=>Constitution — als Blockposition 1..5 ausgedrückt)
+const POTION_TYPE_OFFSET = [
+    'Strength'     => 1,
+    'Dexterity'    => 2,
+    'Intelligence' => 3,
+    'Constitution' => 4,
+    'Luck'         => 5,
+];
+
+// Trank-Größe -> Basiswert des 5er-Blocks, gemäß sf-api PotionSize::parse
+// (1..=5 Small, 6..=10 Medium, 11..=16 Large)
+const POTION_SIZE_BASE = [
+    'Small'  => 0,
+    'Medium' => 5,
+    'Large'  => 10,
+];
+
+/**
+ * Liefert den Web-Pfad zum Icon eines aktiven Tranks, oder null.
+ *
+ * Trank-Icons liegen im miscitems_sd-Bundle unter Typ-ID 12. Die model_id
+ * entspricht der rohen Trank-ID (1-16) aus dem Spielprotokoll, die Größe
+ * und Attribut-Typ gemeinsam kodiert — siehe sf-api PotionType/PotionSize::parse
+ * (github.com/the-marenga/sf-api). EternalLife ist die feste ID 16 (Sonderfall,
+ * überschreibt die reguläre %5-Zuordnung für diese eine ID).
+ *
+ * @param array $potion Trank wie in members.char_data_json gespeichert
+ *                       (erwartet: typ, size)
+ */
+function resolvePotionIconPath(array $potion): ?string
+{
+    $typ = $potion['typ'] ?? null;
+    if ($typ === 'EternalLife') {
+        $modelId = 16;
+    } else {
+        $offset = POTION_TYPE_OFFSET[$typ] ?? null;
+        $base = POTION_SIZE_BASE[$potion['size'] ?? null] ?? null;
+        if ($offset === null || $base === null) {
+            return null;
+        }
+        $modelId = $base + $offset;
+    }
+
+    $dir = __DIR__ . '/../public/assets/images/items/miscitems_sd';
+    $matches = glob($dir . "/itm12_{$modelId}_*.png");
+    if (empty($matches)) {
+        return null;
+    }
+
+    return '/assets/images/items/miscitems_sd/' . basename($matches[0]);
+}

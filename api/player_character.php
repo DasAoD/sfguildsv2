@@ -39,6 +39,15 @@ if ($data && !empty($data['equipment'])) {
     unset($item);
 }
 
+if ($data && !empty($data['potions'])) {
+    foreach ($data['potions'] as &$potion) {
+        if ($potion !== null) {
+            $potion['icon'] = resolvePotionIconPath($potion);
+        }
+    }
+    unset($potion);
+}
+
 jsonResponse([
     'success'    => true,
     'available'  => $member['char_data_json'] !== null,
