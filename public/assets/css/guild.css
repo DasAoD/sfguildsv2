@@ -426,11 +426,9 @@ input[type="file"].form-input {
     display: flex;
     gap: var(--spacing-sm);
     justify-content: center;
-    /* Ersetzt den Platz, den vorher die Tränke-Zeile zwischen Ehre/Rang
-       und den Waffen-Slots eingenommen hat (jetzt eigene Sektion unter
-       .char-hero) — damit bleiben die Waffen-Slots exakt auf der Höhe
-       von Füße/Schmuck, unverändert zur vorherigen Version. */
-    margin-top: 29px;
+    /* So bemessen, dass die Waffen-Slots auf Höhe von Füße/Schmuck
+       (letzte Ausrüstungsreihe) landen. */
+    margin-top: 21px;
 }
 
 /* Feste Slot-Größe (statt vormals width:100% der 1fr-Grid-Spalte) —
