@@ -532,8 +532,7 @@ function renderCharacterModal(data, fetchedAt, playerName) {
     const jewelryHtml = slotColumns.jewelry.map(slot => buildEquipTile(slot, data.equipment?.[slot])).join('');
 
     // Immer genau 3 Kacheln rendern (auch bei fehlenden Tränken als Platzhalter),
-    // sonst ändert sich je nach Trankanzahl die Breite der mittleren Grid-Spalte
-    // in .char-hero und damit die Größe der Ausrüstungs-Slots links/rechts davon.
+    // damit die Tränke-Zeile nicht je nach Trankanzahl unterschiedlich breit ist.
     const potionSlots = [0, 1, 2].map(i => (data.potions || [])[i] || null);
     const potionsHtml = potionSlots.map(p => {
         if (!p) {
@@ -546,11 +545,10 @@ function renderCharacterModal(data, fetchedAt, playerName) {
             ? `<img class="char-potion-icon-img" src="${escapeHtml(p.icon)}" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='';">
                <div class="char-potion-icon" style="display:none">🧪</div>`
             : `<div class="char-potion-icon">🧪</div>`;
-        const countdown = formatCountdown(p.expires) || '—';
         return `
-        <div class="char-potion" title="${escapeHtml(potionTypeLabels[p.typ] || p.typ)} (${escapeHtml(potionSizeLabels[p.size] || p.size)}) — noch ${escapeHtml(countdown)}">
+        <div class="char-potion" title="${escapeHtml(potionTypeLabels[p.typ] || p.typ)} (${escapeHtml(potionSizeLabels[p.size] || p.size)})">
             ${potionIconHtml}
-            <div class="char-potion-countdown">${escapeHtml(countdown)}</div>
+            <div class="char-potion-countdown">${escapeHtml(formatCountdown(p.expires) || '—')}</div>
         </div>
     `;
     }).join('');
@@ -569,15 +567,22 @@ function renderCharacterModal(data, fetchedAt, playerName) {
                 <div class="char-level-badge">Stufe ${data.level ?? '?'}</div>
                 <div class="char-class-race">${escapeHtml(classLabels[data.class] || data.class || '')} · ${escapeHtml(raceLabels[data.race] || data.race || '')}</div>
                 <div class="char-honor-rank">Ehre ${(data.honor || 0).toLocaleString('de-DE')} · Rang ${(data.rank || 0).toLocaleString('de-DE')}</div>
-                <div class="char-potions-row">${potionsHtml}</div>
                 <div class="char-weapon-row">${weaponHtml}</div>
             </div>
             <div class="char-equip-col char-equip-col-jewelry">${jewelryHtml}</div>
         </div>
     `;
 
+    const potionsSectionHtml = `
+        <div class="char-potions-section">
+            <div class="char-section-title">Tränke</div>
+            <div class="char-potions-row">${potionsHtml}</div>
+        </div>
+    `;
+
     document.getElementById('characterModalBody').innerHTML = `
         ${heroHtml}
+        ${potionsSectionHtml}
         <div class="char-attrs-row">${attrsRow1}</div>
         <div class="char-attrs-row char-attrs-row-last">${attrsRow2}</div>
         <div class="char-fetched-at">Stand: ${formatCharDate(fetchedAt)}</div>

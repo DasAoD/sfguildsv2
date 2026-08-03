@@ -8,7 +8,7 @@
  * Render HTML head with CSS links
  */
 function renderHead($title, $additionalCSS = []) {
-    $version = '20260803d'; // Update this when CSS changes
+    $version = '20260804'; // Update this when CSS changes
     $cssFiles = array_merge(['/assets/css/main.css', '/assets/css/overlay.css'], $additionalCSS);
     ?>
     <meta charset="UTF-8">
@@ -124,7 +124,7 @@ function renderFooter() {
  * Render script tags
  */
 function renderScripts($additionalJS = []) {
-    $version = '20260803d'; // Update this when JS changes
+    $version = '20260804'; // Update this when JS changes
     $jsFiles = array_merge(['/assets/js/overlay.js', '/assets/js/main.js'], $additionalJS);
     foreach ($jsFiles as $js): ?>
     <script src="<?php echo $js . '?v=' . $version; ?>"></script>
