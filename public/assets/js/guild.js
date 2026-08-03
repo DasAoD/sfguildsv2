@@ -546,10 +546,11 @@ function renderCharacterModal(data, fetchedAt, playerName) {
             ? `<img class="char-potion-icon-img" src="${escapeHtml(p.icon)}" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='';">
                <div class="char-potion-icon" style="display:none">🧪</div>`
             : `<div class="char-potion-icon">🧪</div>`;
+        const countdown = formatCountdown(p.expires) || '—';
         return `
-        <div class="char-potion" title="${escapeHtml(potionTypeLabels[p.typ] || p.typ)} (${escapeHtml(potionSizeLabels[p.size] || p.size)})">
+        <div class="char-potion" title="${escapeHtml(potionTypeLabels[p.typ] || p.typ)} (${escapeHtml(potionSizeLabels[p.size] || p.size)}) — noch ${escapeHtml(countdown)}">
             ${potionIconHtml}
-            <div class="char-potion-countdown">${escapeHtml(formatCountdown(p.expires) || '—')}</div>
+            <div class="char-potion-countdown">${escapeHtml(countdown)}</div>
         </div>
     `;
     }).join('');
@@ -568,7 +569,6 @@ function renderCharacterModal(data, fetchedAt, playerName) {
                 <div class="char-level-badge">Stufe ${data.level ?? '?'}</div>
                 <div class="char-class-race">${escapeHtml(classLabels[data.class] || data.class || '')} · ${escapeHtml(raceLabels[data.race] || data.race || '')}</div>
                 <div class="char-honor-rank">Ehre ${(data.honor || 0).toLocaleString('de-DE')} · Rang ${(data.rank || 0).toLocaleString('de-DE')}</div>
-                <div class="char-section-title">Tränke</div>
                 <div class="char-potions-row">${potionsHtml}</div>
                 <div class="char-weapon-row">${weaponHtml}</div>
             </div>
