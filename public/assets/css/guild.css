@@ -449,6 +449,12 @@ input[type="file"].form-input {
     line-height: 1;
 }
 
+.char-slot-icon-img {
+    max-width: 78%;
+    max-height: 78%;
+    object-fit: contain;
+}
+
 .char-slot-label {
     font-size: 0.6rem;
     color: var(--color-text-secondary);

@@ -9,6 +9,7 @@
  * (befüllt vom character_sync-Cronjob) — kein Live-Aufruf ans Spiel.
  */
 require_once __DIR__ . '/../includes/bootstrap_api.php';
+require_once __DIR__ . '/../includes/item_icons.php';
 
 header('Content-Type: application/json');
 checkAuthAPI();
@@ -29,9 +30,18 @@ if (!$member) {
     jsonError('Mitglied nicht gefunden', 404);
 }
 
+$data = $member['char_data_json'] ? json_decode($member['char_data_json'], true) : null;
+
+if ($data && !empty($data['equipment'])) {
+    foreach ($data['equipment'] as $slot => &$item) {
+        $item['icon'] = resolveItemIconPath($slot, $item);
+    }
+    unset($item);
+}
+
 jsonResponse([
     'success'    => true,
     'available'  => $member['char_data_json'] !== null,
-    'data'       => $member['char_data_json'] ? json_decode($member['char_data_json'], true) : null,
+    'data'       => $data,
     'fetched_at' => $member['char_fetched_at'],
 ]);

@@ -439,6 +439,10 @@ function buildEquipTile(slot, item) {
             <div class="char-slot-label">${escapeHtml(label)}</div>
         </div>`;
     }
+    const iconHtml = item.icon
+        ? `<img class="char-slot-icon-img" src="${escapeHtml(item.icon)}" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='';">
+           <div class="char-slot-icon" style="display:none">${icon}</div>`
+        : `<div class="char-slot-icon">${icon}</div>`;
     const lines = [`${label}:`];
     Object.entries(item.attributes || {})
         .filter(([, v]) => v > 0)
@@ -457,7 +461,7 @@ function buildEquipTile(slot, item) {
     if (item.enchantment) badges.push(`<span class="char-slot-badge-ench">✨</span>`);
     if (item.upgrade_count) badges.push(`<span class="char-slot-badge-upgrade">+${item.upgrade_count}</span>`);
     return `<div class="char-slot" title="${escapeHtml(tooltip)}">
-        <div class="char-slot-icon">${icon}</div>
+        ${iconHtml}
         ${badges.join('')}
         <div class="char-slot-label">${escapeHtml(label)}</div>
     </div>`;
