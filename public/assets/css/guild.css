@@ -581,6 +581,12 @@ input[type="file"].form-input {
     font-size: 1.2rem;
 }
 
+.char-potion-icon-img {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+}
+
 .char-potion-countdown {
     font-size: 0.7rem;
     color: var(--color-text-secondary);
