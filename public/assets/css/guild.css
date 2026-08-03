@@ -593,9 +593,7 @@ input[type="file"].form-input {
 }
 
 .char-potion-empty {
-    font-style: italic;
-    color: var(--color-text-secondary);
-    font-size: 0.85rem;
+    opacity: 0.4;
 }
 
 @media (max-width: 480px) {
