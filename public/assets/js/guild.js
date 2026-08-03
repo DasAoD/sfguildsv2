@@ -568,9 +568,9 @@ function renderCharacterModal(data, fetchedAt, playerName) {
                 <div class="char-level-badge">Stufe ${data.level ?? '?'}</div>
                 <div class="char-class-race">${escapeHtml(classLabels[data.class] || data.class || '')} · ${escapeHtml(raceLabels[data.race] || data.race || '')}</div>
                 <div class="char-honor-rank">Ehre ${(data.honor || 0).toLocaleString('de-DE')} · Rang ${(data.rank || 0).toLocaleString('de-DE')}</div>
-                <div class="char-weapon-row">${weaponHtml}</div>
                 <div class="char-section-title">Tränke</div>
                 <div class="char-potions-row">${potionsHtml}</div>
+                <div class="char-weapon-row">${weaponHtml}</div>
             </div>
             <div class="char-equip-col char-equip-col-jewelry">${jewelryHtml}</div>
         </div>
