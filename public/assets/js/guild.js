@@ -560,6 +560,7 @@ function renderCharacterModal(data, fetchedAt, playerName) {
             <div class="char-equip-col char-equip-col-armor">${armorHtml}</div>
             <div class="char-portrait-col">
                 <div class="char-portrait-frame">
+                    <canvas class="char-portrait-canvas" width="526" height="526" style="display:none"></canvas>
                     <div class="char-portrait-placeholder">${escapeHtml((playerName || '?').charAt(0).toUpperCase())}</div>
                 </div>
                 <div class="char-name">${escapeHtml(playerName || '')}</div>
@@ -581,6 +582,16 @@ function renderCharacterModal(data, fetchedAt, playerName) {
         <div class="char-attrs-row char-attrs-row-last">${attrsRow2}</div>
         <div class="char-fetched-at">Stand: ${formatCharDate(fetchedAt)}</div>
     `;
+
+    const portraitCanvas = document.querySelector('#characterModalBody .char-portrait-canvas');
+    if (portraitCanvas && typeof renderCharacterPortrait === 'function') {
+        renderCharacterPortrait(portraitCanvas, data).then(ok => {
+            if (ok) {
+                portraitCanvas.style.display = '';
+                portraitCanvas.nextElementSibling.style.display = 'none';
+            }
+        }).catch(e => console.error(e));
+    }
 }
 
 // Custom alert modal function (from fights.php)

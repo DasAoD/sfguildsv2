@@ -102,6 +102,6 @@ $guildId = isset($_GET['id']) ? (int)$_GET['id'] : 1;
         let currentMembers = [];
     </script>
 
-    <?php renderScripts(['/assets/js/guild.js']); ?>
+    <?php renderScripts(['/assets/js/portrait.js', '/assets/js/guild.js']); ?>
 </body>
 </html>
