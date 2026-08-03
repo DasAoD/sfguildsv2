@@ -531,21 +531,28 @@ function renderCharacterModal(data, fetchedAt, playerName) {
     const weaponHtml = slotColumns.weapons.map(slot => buildEquipTile(slot, data.equipment?.[slot])).join('');
     const jewelryHtml = slotColumns.jewelry.map(slot => buildEquipTile(slot, data.equipment?.[slot])).join('');
 
-    const activePotions = (data.potions || []).filter(p => p);
-    const potionsHtml = activePotions.length
-        ? activePotions.map(p => {
-            const potionIconHtml = p.icon
-                ? `<img class="char-potion-icon-img" src="${escapeHtml(p.icon)}" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='';">
-                   <div class="char-potion-icon" style="display:none">🧪</div>`
-                : `<div class="char-potion-icon">🧪</div>`;
-            return `
-            <div class="char-potion" title="${escapeHtml(potionTypeLabels[p.typ] || p.typ)} (${escapeHtml(potionSizeLabels[p.size] || p.size)})">
-                ${potionIconHtml}
-                <div class="char-potion-countdown">${escapeHtml(formatCountdown(p.expires) || '—')}</div>
-            </div>
-        `;
-        }).join('')
-        : '<div class="char-potion-empty">Keine aktiven Träke</div>';
+    // Immer genau 3 Kacheln rendern (auch bei fehlenden Tränken als Platzhalter),
+    // sonst ändert sich je nach Trankanzahl die Breite der mittleren Grid-Spalte
+    // in .char-hero und damit die Größe der Ausrüstungs-Slots links/rechts davon.
+    const potionSlots = [0, 1, 2].map(i => (data.potions || [])[i] || null);
+    const potionsHtml = potionSlots.map(p => {
+        if (!p) {
+            return `<div class="char-potion char-potion-empty" title="Kein aktiver Trank">
+                <div class="char-potion-icon">🧪</div>
+                <div class="char-potion-countdown">—</div>
+            </div>`;
+        }
+        const potionIconHtml = p.icon
+            ? `<img class="char-potion-icon-img" src="${escapeHtml(p.icon)}" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='';">
+               <div class="char-potion-icon" style="display:none">🧪</div>`
+            : `<div class="char-potion-icon">🧪</div>`;
+        return `
+        <div class="char-potion" title="${escapeHtml(potionTypeLabels[p.typ] || p.typ)} (${escapeHtml(potionSizeLabels[p.size] || p.size)})">
+            ${potionIconHtml}
+            <div class="char-potion-countdown">${escapeHtml(formatCountdown(p.expires) || '—')}</div>
+        </div>
+    `;
+    }).join('');
 
     const guildNameText = document.getElementById('guildName')?.textContent?.trim() || '';
     const heroHtml = `
