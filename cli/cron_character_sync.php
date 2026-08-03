@@ -29,6 +29,11 @@ function buildCharDataJson(array $raw): string {
     foreach (($raw['equipment'] ?? []) as $slot => $item) {
         if ($item === null) continue;
         $equipment[$slot] = [
+            // Rohes typ-Feld mitspeichern statt dem Slotnamen zu vertrauen:
+            // die Ausrüstungsliste ist positionsbasiert, nicht typbasiert —
+            // z.B. liegt die zweite Waffe der Assassine technisch im
+            // "Shield"-Slot, ist aber ein echtes Waffen-Item (typ.Weapon).
+            'typ'           => $item['typ'] ?? null,
             'model_id'      => $item['model_id'] ?? null,
             'color'         => $item['color'] ?? null,
             'class'         => $item['class'] ?? null,
