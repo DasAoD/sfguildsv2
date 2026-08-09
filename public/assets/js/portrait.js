@@ -10,6 +10,19 @@
  * Alle Grafiken + die Offset-Map liegen lokal im Repo (siehe
  * public/assets/images/portraits/ und public/assets/data/), damit die
  * Portraits nicht von der Verfügbarkeit einer fremden Seite abhängen.
+ *
+ * Sonder-/Streamer-Portraits (sf-api: `portrait.special_portrait`, laut
+ * Kommentar im sf-api-Quellcode "Influencers get a special portrait") sind
+ * fertige Einzelbilder statt einer Ebenen-Komposition — die anderen
+ * Portrait-Felder sind für diese Charaktere alle 0/bedeutungslos. Die
+ * Bild-ID ist der Betrag des (negativen) special_portrait-Werts, z.B.
+ * special_portrait: -259 -> special259.webp. Verifiziert gegen
+ * sfportrait.12hp.de, deren "Custom avatar"-Galerie #259 als
+ * "ZsombeyHD (#259)" labelt, exakt passend zum gespeicherten Wert für
+ * diesen Spieler. Die ~490 Bilder sind (anders als die übrigen
+ * Portrait-Sprites) nicht aus den Spiel-Assets geripped, sondern von
+ * dort übernommen (dortiger Pfad: portraits/special/specialN.webp) und
+ * ebenso lokal vendored.
  */
 
 const PORTRAIT_BASE = '/assets/images/portraits';
@@ -198,6 +211,44 @@ function loadPortraitImage(src) {
 }
 
 /**
+ * Zeichnet ein Sonder-/Streamer-Portrait (fertiges Einzelbild statt
+ * Ebenen-Komposition) auf den bereits geleerten Canvas-Context.
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {number} w Canvas-Breite
+ * @param {number} h Canvas-Höhe
+ * @param {number} specialPortraitId roher sf-api-Wert (negativ = Sonder-ID)
+ * @returns {Promise<boolean>}
+ */
+async function renderSpecialPortrait(ctx, w, h, specialPortraitId) {
+    const id = Math.abs(specialPortraitId);
+    let img;
+    try {
+        img = await loadPortraitImage(`${PORTRAIT_BASE}/special/special${id}.webp`);
+    } catch (e) {
+        // Sonderportrait (noch) nicht lokal vorhanden — sauber auf den
+        // Buchstaben-Platzhalter zurückfallen statt einen Fehler zu zeigen.
+        console.warn(e.message);
+        return false;
+    }
+
+    // Die Bilder sind bereits nahezu quadratisch und rahmenlos (reines
+    // Charakter-Artwork) — mit kleinem Rand einpassen, damit die Zeichnung
+    // den goldenen Rahmen nicht überdeckt.
+    const inset = Math.round(Math.min(w, h) * 0.015);
+    const size = Math.min(w, h) - inset * 2;
+    ctx.drawImage(img, (w - size) / 2, (h - size) / 2, size, size);
+
+    try {
+        const border = await loadPortraitImage(PORTRAIT_BORDER_URL);
+        ctx.drawImage(border, 0, 0, w, h);
+    } catch (e) {
+        console.warn(e.message);
+    }
+
+    return true;
+}
+
+/**
  * Zeichnet das Portrait eines Charakters auf einen Canvas.
  * @param {HTMLCanvasElement} canvas
  * @param {object} data char_data_json-Objekt mit race/class/portrait
@@ -206,11 +257,18 @@ function loadPortraitImage(src) {
  */
 async function renderCharacterPortrait(canvas, data) {
     const portrait = data?.portrait;
-    if (!portrait || !data.race || !data.class) return false;
+    if (!portrait) return false;
+
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width;
+    const h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+
     if (portrait.special_portrait && portrait.special_portrait !== 0) {
-        // Sonder-/Streamer-Portraits liegen uns nicht lokal vor.
-        return false;
+        return renderSpecialPortrait(ctx, w, h, portrait.special_portrait);
     }
+
+    if (!data.race || !data.class) return false;
 
     const race = PORTRAIT_RACE_KEY[data.race];
     if (!race) return false;
@@ -230,10 +288,6 @@ async function renderCharacterPortrait(canvas, data) {
 
     const bundle = `${race}${gender}sprites_sd`;
     const existingNames = new Set(manifest[bundle] || []);
-    const ctx = canvas.getContext('2d');
-    const w = canvas.width;
-    const h = canvas.height;
-    ctx.clearRect(0, 0, w, h);
 
     const loaded = [];
     for (const p of parts) {
