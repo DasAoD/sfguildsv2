@@ -15,7 +15,7 @@
  * Kommentar im sf-api-Quellcode "Influencers get a special portrait") sind
  * fertige Einzelbilder statt einer Ebenen-Komposition — die anderen
  * Portrait-Felder sind für diese Charaktere alle 0/bedeutungslos. Die
- * Bild-ID ist der Betrag des (negativen) special_portrait-Werts, z.B.
+ * Bild-ID ist der Betrag eines NEGATIVEN special_portrait-Werts, z.B.
  * special_portrait: -259 -> special259.webp. Verifiziert gegen
  * sfportrait.12hp.de, deren "Custom avatar"-Galerie #259 als
  * "ZsombeyHD (#259)" labelt, exakt passend zum gespeicherten Wert für
@@ -23,6 +23,15 @@
  * Portrait-Sprites) nicht aus den Spiel-Assets geripped, sondern von
  * dort übernommen (dortiger Pfad: portraits/special/specialN.webp) und
  * ebenso lokal vendored.
+ *
+ * Wichtig — Vorzeichen ist entscheidend: POSITIVE special_portrait-Werte
+ * sind KEINE Bild-Referenz. Live-Daten zeigen mehrere unterschiedliche,
+ * ganz normale Spieler mit demselben positiven Wert (z.B. zwei Spieler mit
+ * special_portrait: 5) und vollständig gefüllten übrigen Portrait-Feldern —
+ * offenbar ein unabhängiges Flag mit anderer Bedeutung (ungeklärt, evtl.
+ * eine Art Achievement/Badge). Nur `special_portrait < 0` löst den
+ * Sonderportrait-Pfad aus, alles andere (0 oder positiv) rendert normal
+ * über die Ebenen-Komposition.
  */
 
 const PORTRAIT_BASE = '/assets/images/portraits';
@@ -264,7 +273,13 @@ async function renderCharacterPortrait(canvas, data) {
     const h = canvas.height;
     ctx.clearRect(0, 0, w, h);
 
-    if (portrait.special_portrait && portrait.special_portrait !== 0) {
+    // Nur negative Werte sind eine Bild-ID für ein Sonder-/Streamer-Portrait
+    // (siehe Kommentar oben). Positive Werte kommen bei ganz normalen
+    // Charakteren mit vollständig gefüllten übrigen Portrait-Feldern vor
+    // (z.B. mehrere unterschiedliche echte Spieler mit demselben Wert 5) —
+    // das ist offenbar ein unabhängiges Flag/Feld, keine Bild-Referenz, und
+    // wird hier ignoriert zugunsten der normalen Ebenen-Komposition.
+    if (portrait.special_portrait < 0) {
         return renderSpecialPortrait(ctx, w, h, portrait.special_portrait);
     }
 
