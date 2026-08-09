@@ -124,7 +124,7 @@ function renderFooter() {
  * Render script tags
  */
 function renderScripts($additionalJS = []) {
-    $version = '20260804'; // Update this when JS changes
+    $version = '20260810'; // Update this when JS changes
     $jsFiles = array_merge(['/assets/js/overlay.js', '/assets/js/main.js'], $additionalJS);
     foreach ($jsFiles as $js): ?>
     <script src="<?php echo $js . '?v=' . $version; ?>"></script>
