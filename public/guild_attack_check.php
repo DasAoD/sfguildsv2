@@ -98,15 +98,21 @@ $servers = listKnownServers($db);
             }
 
             if (d.attacked_at) {
+                // Das Spiel zeigt Kampfzeiten selbst in UTC an (siehe Kommentar in
+                // guild_battle_time.rs) — bewusst NICHT toLocaleString() ohne
+                // timeZone nutzen, das würde in die Browser-Zeitzone umrechnen
+                // (z.B. CEST = UTC+2 im Sommer) und die Zeit 2h "falsch" wirken
+                // lassen im Vergleich zur Zeit, die das Spiel selbst anzeigt.
                 const dt = new Date(d.attacked_at * 1000);
                 const formatted = dt.toLocaleString('de-DE', {
+                    timeZone: 'UTC',
                     day: '2-digit', month: '2-digit', year: 'numeric',
                     hour: '2-digit', minute: '2-digit', second: '2-digit',
                 });
                 resultBox.innerHTML = `
                     <div class="alert alert-success">
                         <strong>${escapeHtml(d.target_guild)}</strong> (${escapeHtml(d.server)}) wird angegriffen:<br>
-                        📅 ${formatted} Uhr${d.attacked_by ? ` — von <strong>${escapeHtml(d.attacked_by)}</strong>` : ''}
+                        📅 ${formatted} UTC${d.attacked_by ? ` — von <strong>${escapeHtml(d.attacked_by)}</strong>` : ''}
                     </div>`;
             } else {
                 resultBox.innerHTML = `
