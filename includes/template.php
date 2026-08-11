@@ -31,6 +31,7 @@ function renderNavbar($activePage = '', $options = []) {
         elseif ($currentPage === 'hellevator') $activePage = 'hellevator';
         elseif ($currentPage === 'fights') $activePage = 'battles';
         elseif ($currentPage === 'reports') $activePage = 'reports';
+        elseif ($currentPage === 'guild_attack_check') $activePage = 'attack-check';
         elseif ($currentPage === 'admin') $activePage = 'admin';
     }
     
@@ -88,6 +89,7 @@ function renderNavbar($activePage = '', $options = []) {
                     <?php endif; ?>
                 </a>
                 <a href="/reports.php" class="nav-item <?php echo $activePage === 'reports' ? 'active' : ''; ?>">Reports</a>
+                <a href="/guild_attack_check.php" class="nav-item <?php echo $activePage === 'attack-check' ? 'active' : ''; ?>">Angriffszeit</a>
                 <?php if (isAdmin()): ?>
                 <a href="/admin.php" class="nav-item <?php echo $activePage === 'admin' ? 'active' : ''; ?>">Admin</a>
                 <?php endif; ?>

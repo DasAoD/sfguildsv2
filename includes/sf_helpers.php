@@ -188,3 +188,79 @@ function findSfAccountForGuild($db, ?int $userId, string $guildName) {
 
     return null;
 }
+
+/**
+ * Findet einen beliebigen sf_account + Charakter für einen Server-Hostnamen
+ * (z.B. "f25.sfgame.net") — unabhängig von der Gilde. Für Abfragen, die nur
+ * irgendeinen eingeloggten Charakter auf dem richtigen Server brauchen
+ * (z.B. guild_attack_time gegen eine fremde Zielgilde), nicht zwingend
+ * einen aus der Zielgilde selbst wie findSfAccountForGuild().
+ *
+ * Bevorzugt eigene Accounts von $userId; hat der Nutzer dort keinen
+ * Charakter, wird auf die Accounts aller anderen Nutzer zurückgegriffen
+ * (gleiches Vertrauensmodell wie findSfAccountForGuild() mit $userId=null:
+ * alle sf_accounts gehören Mitgliedern derselben privaten Installation).
+ *
+ * @return array{account: array, character: array}|null
+ */
+function findAnySfAccountForServer($db, ?int $userId, string $serverHost) {
+    $seenAccountIds = [];
+
+    $searchIn = function (array $accounts) use ($serverHost, &$seenAccountIds) {
+        foreach ($accounts as $account) {
+            if (isset($seenAccountIds[$account['id']])) continue;
+            $seenAccountIds[$account['id']] = true;
+
+            $chars = json_decode($account['selected_characters'], true) ?? [];
+            foreach ($chars as $char) {
+                if (($char['server'] ?? '') === $serverHost) {
+                    return ['account' => $account, 'character' => $char];
+                }
+            }
+        }
+        return null;
+    };
+
+    if ($userId !== null) {
+        $stmt = $db->prepare("
+            SELECT id, user_id, sf_username, sf_password_encrypted, sf_iv, sf_hmac, selected_characters
+            FROM sf_accounts
+            WHERE user_id = ? AND selected_characters IS NOT NULL AND selected_characters != '[]'
+        ");
+        $stmt->execute([$userId]);
+        if ($match = $searchIn($stmt->fetchAll(PDO::FETCH_ASSOC))) {
+            return $match;
+        }
+    }
+
+    $stmt = $db->query("
+        SELECT id, user_id, sf_username, sf_password_encrypted, sf_iv, sf_hmac, selected_characters
+        FROM sf_accounts
+        WHERE selected_characters IS NOT NULL AND selected_characters != '[]'
+    ");
+    return $searchIn($stmt->fetchAll(PDO::FETCH_ASSOC));
+}
+
+/**
+ * Alle Server-Hostnamen, für die mindestens ein sf_account einen nutzbaren
+ * Charakter hat — für das Server-Dropdown der Angriffszeit-Abfrage.
+ * @return string[] sortierte, eindeutige Hostnamen, z.B. ["f25.sfgame.net", "f9.sfgame.net"]
+ */
+function listKnownServers($db) {
+    $stmt = $db->query("
+        SELECT selected_characters FROM sf_accounts
+        WHERE selected_characters IS NOT NULL AND selected_characters != '[]'
+    ");
+    $servers = [];
+    foreach ($stmt->fetchAll(PDO::FETCH_COLUMN) as $json) {
+        $chars = json_decode($json, true) ?? [];
+        foreach ($chars as $char) {
+            if (!empty($char['server'])) {
+                $servers[$char['server']] = true;
+            }
+        }
+    }
+    $list = array_keys($servers);
+    sort($list);
+    return $list;
+}
