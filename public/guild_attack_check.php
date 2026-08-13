@@ -14,7 +14,7 @@ require_once __DIR__ . '/../config/database.php';
 checkAuth();
 
 $db = getDB();
-$servers = listKnownServers($db);
+$servers = listKnownServersForUser($db, (int)$_SESSION['user_id']);
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -42,7 +42,7 @@ $servers = listKnownServers($db);
                 </div>
                 <div class="card-body">
                     <?php if (empty($servers)): ?>
-                        <p>Es sind noch keine Charaktere hinterlegt. Bitte zuerst in den
+                        <p>Du hast noch keine eigenen Charaktere hinterlegt. Bitte zuerst in den
                            <a href="/settings.php">Einstellungen</a> einen S&F-Account mit Charakteren verknüpfen.</p>
                     <?php else: ?>
                         <div class="form-group">
