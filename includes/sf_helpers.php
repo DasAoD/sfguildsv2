@@ -190,67 +190,54 @@ function findSfAccountForGuild($db, ?int $userId, string $guildName) {
 }
 
 /**
- * Findet einen beliebigen sf_account + Charakter für einen Server-Hostnamen
- * (z.B. "f25.sfgame.net") — unabhängig von der Gilde. Für Abfragen, die nur
- * irgendeinen eingeloggten Charakter auf dem richtigen Server brauchen
- * (z.B. guild_attack_time gegen eine fremde Zielgilde), nicht zwingend
- * einen aus der Zielgilde selbst wie findSfAccountForGuild().
+ * Findet einen sf_account + Charakter des übergebenen Users für einen
+ * Server-Hostnamen (z.B. "f25.sfgame.net") — unabhängig von der Gilde. Für
+ * Abfragen, die nur irgendeinen eingeloggten Charakter auf dem richtigen
+ * Server brauchen (z.B. guild_attack_time gegen eine fremde Zielgilde),
+ * nicht zwingend einen aus der Zielgilde selbst wie findSfAccountForGuild().
  *
- * Bevorzugt eigene Accounts von $userId; hat der Nutzer dort keinen
- * Charakter, wird auf die Accounts aller anderen Nutzer zurückgegriffen
- * (gleiches Vertrauensmodell wie findSfAccountForGuild() mit $userId=null:
- * alle sf_accounts gehören Mitgliedern derselben privaten Installation).
+ * Bewusst KEIN Fallback auf Accounts anderer Nutzer: laut CLAUDE.md dürfen
+ * nur Cron/automatisierte Jobs auf fremde (Admin-)Accounts zurückgreifen,
+ * interaktive Nutzer-Aktionen sollen ausschließlich mit dem eigenen Account
+ * des klickenden Nutzers laufen — sonst würde ein fremder SF-Account ohne
+ * Wissen/Zutun seines Besitzers eingeloggt, nur weil irgendwer sonst auf
+ * einen Button geklickt hat.
  *
  * @return array{account: array, character: array}|null
  */
-function findAnySfAccountForServer($db, ?int $userId, string $serverHost) {
-    $seenAccountIds = [];
+function findAnySfAccountForServer($db, int $userId, string $serverHost) {
+    $stmt = $db->prepare("
+        SELECT id, user_id, sf_username, sf_password_encrypted, sf_iv, sf_hmac, selected_characters
+        FROM sf_accounts
+        WHERE user_id = ? AND selected_characters IS NOT NULL AND selected_characters != '[]'
+    ");
+    $stmt->execute([$userId]);
 
-    $searchIn = function (array $accounts) use ($serverHost, &$seenAccountIds) {
-        foreach ($accounts as $account) {
-            if (isset($seenAccountIds[$account['id']])) continue;
-            $seenAccountIds[$account['id']] = true;
-
-            $chars = json_decode($account['selected_characters'], true) ?? [];
-            foreach ($chars as $char) {
-                if (($char['server'] ?? '') === $serverHost) {
-                    return ['account' => $account, 'character' => $char];
-                }
+    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $account) {
+        $chars = json_decode($account['selected_characters'], true) ?? [];
+        foreach ($chars as $char) {
+            if (($char['server'] ?? '') === $serverHost) {
+                return ['account' => $account, 'character' => $char];
             }
-        }
-        return null;
-    };
-
-    if ($userId !== null) {
-        $stmt = $db->prepare("
-            SELECT id, user_id, sf_username, sf_password_encrypted, sf_iv, sf_hmac, selected_characters
-            FROM sf_accounts
-            WHERE user_id = ? AND selected_characters IS NOT NULL AND selected_characters != '[]'
-        ");
-        $stmt->execute([$userId]);
-        if ($match = $searchIn($stmt->fetchAll(PDO::FETCH_ASSOC))) {
-            return $match;
         }
     }
 
-    $stmt = $db->query("
-        SELECT id, user_id, sf_username, sf_password_encrypted, sf_iv, sf_hmac, selected_characters
-        FROM sf_accounts
-        WHERE selected_characters IS NOT NULL AND selected_characters != '[]'
-    ");
-    return $searchIn($stmt->fetchAll(PDO::FETCH_ASSOC));
+    return null;
 }
 
 /**
- * Alle Server-Hostnamen, für die mindestens ein sf_account einen nutzbaren
+ * Server-Hostnamen, für die der übergebene User selbst einen nutzbaren
  * Charakter hat — für das Server-Dropdown der Angriffszeit-Abfrage.
+ * Bewusst nutzerspezifisch (nicht global über alle sf_accounts), passend
+ * zu findAnySfAccountForServer()'s Beschränkung auf den eigenen Account.
  * @return string[] sortierte, eindeutige Hostnamen, z.B. ["f25.sfgame.net", "f9.sfgame.net"]
  */
-function listKnownServers($db) {
-    $stmt = $db->query("
+function listKnownServersForUser($db, int $userId) {
+    $stmt = $db->prepare("
         SELECT selected_characters FROM sf_accounts
-        WHERE selected_characters IS NOT NULL AND selected_characters != '[]'
+        WHERE user_id = ? AND selected_characters IS NOT NULL AND selected_characters != '[]'
     ");
+    $stmt->execute([$userId]);
     $servers = [];
     foreach ($stmt->fetchAll(PDO::FETCH_COLUMN) as $json) {
         $chars = json_decode($json, true) ?? [];
