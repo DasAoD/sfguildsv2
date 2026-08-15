@@ -236,18 +236,16 @@ $totalPending = $stmt->fetchColumn();
                 <?php foreach ($guilds as $index => $guild): ?>
                     <div class="guild-content <?php echo $index === 0 ? 'active' : ''; ?>" id="guild-<?php echo $guild['id']; ?>">
                         <div class="card">
-                            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                            <div class="card-header" style="display: flex; align-items: center;">
                                 <h2><?php echo htmlspecialchars($guild['name']); ?> (<?php echo $guild['pending_count']; ?>)</h2>
-                                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                                    <input type="checkbox" class="select-all" data-guild-id="<?php echo $guild['id']; ?>" style="width: 18px; height: 18px;">
-                                    <span>Alle auswählen</span>
-                                </label>
                             </div>
                             <div class="card-body" style="padding: 0;">
                                 <table class="inbox-table">
                                     <thead>
                                         <tr>
-                                            <th style="width: 50px;"></th>
+                                            <th style="width: 50px;">
+                                                <input type="checkbox" class="select-all" data-guild-id="<?php echo $guild['id']; ?>" title="Alle auswählen" style="width: 18px; height: 18px; cursor: pointer;">
+                                            </th>
                                             <th>Datum</th>
                                             <th>Zeit</th>
                                             <th>Typ</th>
