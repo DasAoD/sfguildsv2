@@ -3,7 +3,9 @@
  * API: Angriffszeit einer beliebigen Gilde abfragen
  * Fragt per sf-api-Binary (guild_battle_time) live beim Spiel ab, wann eine
  * Gilde angegriffen wird. Für alle eingeloggten Nutzer verfügbar — nicht auf
- * eigene Gilden beschränkt, siehe includes/sf_helpers.php findAnySfAccountForServer().
+ * eigene Gilden beschränkt, aber ausschließlich mit dem eigenen SF-Account
+ * des anfragenden Nutzers (kein Fallback auf fremde Accounts, siehe
+ * includes/sf_helpers.php findAnySfAccountForServer()).
  *
  * POST Body:
  *   server        — Server-Hostname, z.B. "f25.sfgame.net" (Pflicht)
@@ -19,7 +21,7 @@ header('Content-Type: application/json');
 checkAuthAPI();
 
 $db     = getDB();
-$userId = $_SESSION['user_id'];
+$userId = (int)$_SESSION['user_id'];
 
 try {
     $input = json_decode(file_get_contents('php://input'), true, 512, JSON_THROW_ON_ERROR);
@@ -49,7 +51,7 @@ $_SESSION['guild_attack_time_last_call'] = time();
 
 $match = findAnySfAccountForServer($db, $userId, $server);
 if (!$match) {
-    jsonError('Kein Charakter für Server "' . $server . '" gefunden. Bitte in den Kontoeinstellungen einen Charakter auf diesem Server hinterlegen.', 404);
+    jsonError('Du hast keinen eigenen Charakter für Server "' . $server . '" hinterlegt. Bitte in den Kontoeinstellungen einen Charakter auf diesem Server verknüpfen.', 404);
 }
 $foundAccount   = $match['account'];
 $foundCharacter = $match['character'];
