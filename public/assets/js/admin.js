@@ -7,6 +7,13 @@ document.getElementById('tab-'+tab).classList.add('active');
 if(tab==='system')loadSystemInfo();
 if(tab==='logs')loadLogs();
 if(tab==='cron')loadCronJobs();
+if(tab==='stats')loadStats();
+}
+
+// Stats
+function loadStats(){
+    const frame = document.getElementById('statsFrame');
+    if(!frame.src) frame.src = '/api/admin_stats.php';
 }
 
 
