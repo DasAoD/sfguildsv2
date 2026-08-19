@@ -26,6 +26,12 @@
 /data/logs/*
 !/data/logs/.gitkeep
 
+/data/analytics/*
+!/data/analytics/.gitkeep
+
+/data/geoip/*
+!/data/geoip/.gitkeep
+
 /storage/import/**
 !/storage/import/.gitkeep
 !/storage/import/archive/.gitkeep

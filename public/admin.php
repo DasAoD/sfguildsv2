@@ -38,6 +38,7 @@ $currentUserRole = getCurrentUserRole();
             <button class="tab" onclick="switchTab('maintenance', event)">Wartung</button>
             <button class="tab" onclick="switchTab('system', event)">System</button>
             <button class="tab" onclick="switchTab('cron', event)">Cronjobs</button>
+            <button class="tab" onclick="switchTab('stats', event)">Statistik</button>
         </div>
 
         <!-- Users Tab -->
@@ -193,6 +194,19 @@ $currentUserRole = getCurrentUserRole();
                     Uhrzeiten im Format HH:MM (Berliner Zeit).
                 </p>
                 <div id="cronJobsList">Lädt...</div>
+            </div>
+        </div>
+
+        <!-- Stats Tab -->
+        <div id="tab-stats" class="tab-content">
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Website-Statistik</h2>
+                </div>
+                <p style="color:var(--color-text-secondary);margin-bottom:var(--spacing-lg)">
+                    Zugriffsauswertung der letzten Tage (Seiten, Browser, Herkunftsland), automatisch alle 30 Minuten aus den Server-Logs erzeugt.
+                </p>
+                <iframe id="statsFrame" style="width:100%;height:80vh;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:#fff;"></iframe>
             </div>
         </div>
     </div>
