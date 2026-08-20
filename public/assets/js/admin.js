@@ -697,10 +697,25 @@ async function runCronJobNow(jobKey, label) {
     const btn = document.getElementById(`cron-run-${jobKey}`);
     btn.disabled = true;
     const cronTexts = {
-        'fetch_reports': 'Kampfberichte werden abgerufen…',
-        'member_sync':   'Mitglieder werden synchronisiert…'
+        'fetch_reports':  'Kampfberichte werden abgerufen…',
+        'member_sync':    'Mitglieder werden synchronisiert…',
+        'character_sync': 'Charakterdaten werden synchronisiert… (kann je nach Gildenzahl mehrere Minuten dauern)'
     };
     showOverlay(cronTexts[jobKey] || 'Job wird gestartet…');
+
+    // Baseline merken: der Job läuft asynchron im Hintergrund und kann
+    // (v.a. character_sync über mehrere Gilden) deutlich länger als ein paar
+    // Sekunden dauern. Ein fixer kurzer Timeout hier würde beim Nachladen nur
+    // den alten last_run_at-Stand nochmal zeigen und "nichts passiert"
+    // vortäuschen, obwohl der Job im Hintergrund brav weiterläuft.
+    let baselineLastRunAt = null;
+    try {
+        const before = await fetchJSON('/api/admin_cron.php');
+        if (before.success) {
+            const job = before.jobs.find(j => j.job_key === jobKey);
+            baselineLastRunAt = job ? job.last_run_at : null;
+        }
+    } catch (e) { /* Baseline optional — Polling fällt notfalls auf den Timeout zurück */ }
 
     try {
         const r = await fetch('/api/admin_cron_run.php', {
@@ -709,17 +724,39 @@ async function runCronJobNow(jobKey, label) {
             body: JSON.stringify({ job_key: jobKey })
         });
         const d = await r.json();
-        if (d.success) {
-            // Job läuft asynchron im Hintergrund
-            setTimeout(() => { loadCronJobs(); btn.disabled = false; hideOverlay(); }, 3000);
-            showAlert(d.message);
-        } else {
-            showAlert('Fehler: ' + (d.message || 'Unbekannt'));
-            btn.disabled = false;
-            hideOverlay();
+        if (!d.success) {
+            showAlert('Fehler: ' + (d.error || d.message || 'Unbekannt'));
+            return;
+        }
+
+        // Alle paar Sekunden prüfen, ob last_run_at sich geändert hat —
+        // erst dann ist der Hintergrund-Job wirklich fertig.
+        const maxWaitMs = 5 * 60 * 1000;
+        const intervalMs = 4000;
+        const startedAt = Date.now();
+        let finished = false;
+
+        while (Date.now() - startedAt < maxWaitMs) {
+            await new Promise(res => setTimeout(res, intervalMs));
+            const poll = await fetchJSON('/api/admin_cron.php');
+            if (!poll.success) continue;
+            const job = poll.jobs.find(j => j.job_key === jobKey);
+            if (job && job.last_run_at && job.last_run_at !== baselineLastRunAt) {
+                renderCronJobs(poll.jobs);
+                const icon = job.last_run_status === 'success' ? '✅' : (job.last_run_status === 'partial' ? '⚠️' : '❌');
+                showAlert(`${icon} ${label}: ${job.last_run_message || 'abgeschlossen'}`);
+                finished = true;
+                break;
+            }
+        }
+
+        if (!finished) {
+            showAlert(`${label} läuft noch im Hintergrund — Status oben aktualisiert sich, sobald fertig.`);
+            loadCronJobs();
         }
     } catch(e) {
         showAlert('Verbindungsfehler');
+    } finally {
         btn.disabled = false;
         hideOverlay();
     }
