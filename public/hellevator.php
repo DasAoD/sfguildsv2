@@ -93,6 +93,13 @@ $embed = !empty($_GET['embed']);
                         <span class="help-link-desc" id="helpDesc">Playa Games Helpshift – Alles über den Hellevator</span>
                     </span>
                 </a>
+                <a href="https://playa-games.helpshift.com/hc/de/4-shakes-fidget-1653988985/faq/255-twitch-drops/" target="_blank" class="hellevator-help-link" id="twitchHelpLink">
+                    <span class="help-link-icon">📺</span>
+                    <span class="help-link-text">
+                        <span class="help-link-title" id="twitchHelpTitle">Twitch-Drops verbinden</span>
+                        <span class="help-link-desc" id="twitchHelpDesc">Playa Games Helpshift – S&F mit Twitch verknüpfen</span>
+                    </span>
+                </a>
             </div>
 
         </div>
@@ -152,6 +159,9 @@ $embed = !empty($_GET['embed']);
                 marketText: ' Während des Events könnt ihr im Schwarzmarkt je 3× Schlüsselkarten für Lucky Coins und 3× für Pilze kaufen.',
                 helpTitle: 'Offizielle Hellevator-Hilfe',
                 helpDesc: 'Playa Games Helpshift – Alles über den Hellevator',
+                twitchHelpTitle: 'Twitch-Drops verbinden',
+                twitchHelpDesc: 'Playa Games Helpshift – S&F mit Twitch verknüpfen',
+                twitchHelpUrl: 'https://playa-games.helpshift.com/hc/de/4-shakes-fidget-1653988985/faq/255-twitch-drops/',
                 noData: 'keine Daten'
             },
             en: {
@@ -169,6 +179,9 @@ $embed = !empty($_GET['embed']);
                 marketText: ' During the event you can buy key cards on the Black Market: 3× for Lucky Coins and 3× for Mushrooms.',
                 helpTitle: 'Official Hellevator Help',
                 helpDesc: 'Playa Games Helpshift – Everything about the Hellevator',
+                twitchHelpTitle: 'Connect Twitch Drops',
+                twitchHelpDesc: 'Playa Games Helpshift – Link S&F with Twitch',
+                twitchHelpUrl: 'https://playa-games.helpshift.com/hc/en/4-shakes-fidget-1653988985/faq/255-twitch-drops/',
                 noData: 'no data'
             }
         };
@@ -195,6 +208,9 @@ $embed = !empty($_GET['embed']);
             document.getElementById('marketText').textContent = t.marketText;
             document.getElementById('helpTitle').textContent = t.helpTitle;
             document.getElementById('helpDesc').textContent = t.helpDesc;
+            document.getElementById('twitchHelpTitle').textContent = t.twitchHelpTitle;
+            document.getElementById('twitchHelpDesc').textContent = t.twitchHelpDesc;
+            document.getElementById('twitchHelpLink').href = t.twitchHelpUrl;
 
             renderTable(lang);
         }
