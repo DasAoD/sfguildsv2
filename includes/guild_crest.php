@@ -195,7 +195,7 @@ function renderGuildCrestImage(string $coaCode, string $assetsDir, int $canvasSi
 
     $helmdecke = coaLoadLayer($assetsDir, 'helm', $d['helm']);
     if (!$helmdecke) return null;
-    coaPasteCentered($canvas, $helmdecke, $cx, (int) round($C * 0.50), 1.6);
+    coaPasteCentered($canvas, $helmdecke, $cx, (int) round($C * 0.33), 1.1);
 
     $shield = coaLoadLayer($assetsDir, 'shield', $d['shield']);
     $mask = coaLoadLayer($assetsDir, 'shield', $d['shield'], '_color');
@@ -215,7 +215,7 @@ function renderGuildCrestImage(string $coaCode, string $assetsDir, int $canvasSi
 
     $supporter = coaLoadLayer($assetsDir, 'supporter', $d['supporter']);
     if (!$supporter) return null;
-    coaPasteCentered($canvas, $supporter, $cx, (int) round($C * 0.72), 1.6);
+    coaPasteCentered($canvas, $supporter, $cx, (int) round($C * 0.50), 1.6);
 
     $helmet = coaLoadLayer($assetsDir, 'helmet', $d['helmet']);
     if (!$helmet) return null;
