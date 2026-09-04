@@ -20,14 +20,19 @@ const COA_CATEGORY_NUM = [
     'helmet' => 5, 'order' => 6, 'emblem' => 7,
 ];
 
-// Platzhalter-Palette -- NUR EIN Datenpunkt bisher verifiziert (Index 4 ->
-// #009900, gemessen an einem echten Screenshot). Der Rest ist eine Näherung
-// und muss verfeinert werden, sobald mehr reale Vergleichsdaten vorliegen
-// (siehe Memory sfguildsv2-guild-crest-reverse-engineering).
+// Palette -- Indizes 4 (#009900, Gurkistan-Screenshot), 8 (#7f7f7f) und
+// 9 (#b00000, beide Avadhuta-Gita-Screenshot) sind an echten Screenshots
+// verifiziert. Der Rest ist weiterhin eine Näherung und muss verfeinert
+// werden, sobald mehr reale Vergleichsdaten vorliegen (siehe Memory
+// sfguildsv2-guild-crest-reverse-engineering). Unbekannte Indizes fallen
+// auf ein neutrales Grau zurück (COA_PALETTE_FALLBACK), nicht mehr auf
+// Grün -- das hatte Index 8/9 vor der Verifizierung falsch grün eingefärbt.
 const COA_PALETTE_GUESS = [
     0 => [120, 120, 120], 1 => [200, 60, 60], 2 => [60, 100, 200], 3 => [0, 153, 0],
     4 => [0, 153, 0], 5 => [230, 200, 40], 6 => [140, 80, 200], 7 => [230, 140, 30],
+    8 => [127, 127, 127], 9 => [176, 0, 0],
 ];
+const COA_PALETTE_FALLBACK = [150, 150, 150];
 
 /**
  * Zerlegt den 11-Byte /coa-Hex-Code in Kategorie-Varianten + Farbindizes.
@@ -186,8 +191,8 @@ function renderGuildCrestImage(string $coaCode, string $assetsDir, int $canvasSi
     $shield = coaLoadLayer($assetsDir, 'shield', $d['shield']);
     $mask = coaLoadLayer($assetsDir, 'shield', $d['shield'], '_color');
     if (!$shield || !$mask) return null;
-    $zone1Rgb = COA_PALETTE_GUESS[$d['zone1']] ?? [0, 150, 0];
-    $zone2Rgb = COA_PALETTE_GUESS[$d['zone2']] ?? [150, 0, 0];
+    $zone1Rgb = COA_PALETTE_GUESS[$d['zone1']] ?? COA_PALETTE_FALLBACK;
+    $zone2Rgb = COA_PALETTE_GUESS[$d['zone2']] ?? COA_PALETTE_FALLBACK;
     $shieldTinted = coaApplyShieldZones($shield, $mask, $zone1Rgb, $zone2Rgb);
     $shieldCx = $cx;
     $shieldCy = (int) round($C * 0.52);
@@ -195,7 +200,7 @@ function renderGuildCrestImage(string $coaCode, string $assetsDir, int $canvasSi
 
     $emblem = coaLoadLayer($assetsDir, 'emblem', $d['emblem']);
     if (!$emblem) return null;
-    $figureRgb = COA_PALETTE_GUESS[$d['figure_color']] ?? [0, 150, 0];
+    $figureRgb = COA_PALETTE_GUESS[$d['figure_color']] ?? COA_PALETTE_FALLBACK;
     $emblemTinted = coaTintColorReplace($emblem, $figureRgb);
     coaPasteCentered($canvas, $emblemTinted, $shieldCx, $shieldCy - (int) round($C * 0.02), 1.6);
 
