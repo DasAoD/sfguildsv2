@@ -38,8 +38,9 @@ async function loadStats() {
             currentStats = d;
             
             // Render guild info
-            const crestHtml = d.guild.crest_file 
-                ? `<img src="/assets/images/${d.guild.crest_file}" alt="Wappen" style="width:100%;height:100%;object-fit:contain">` 
+            const crestSrc = d.guild.crest_file || d.guild.coa_image;
+            const crestHtml = crestSrc
+                ? `<img src="/assets/images/${crestSrc}" alt="Wappen" style="width:100%;height:100%;object-fit:contain">`
                 : '⚔️';
             document.getElementById('guildCrest').innerHTML = crestHtml;
             document.getElementById('guildName').textContent = `${d.guild.name} (Report)`;

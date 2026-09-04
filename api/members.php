@@ -6,6 +6,7 @@
 require_once __DIR__ . '/../includes/bootstrap_api.php';
 
 require_once __DIR__ . '/../includes/raid_names.php';
+require_once __DIR__ . '/../includes/guild_crest.php';
 
 // Get guild ID
 $guildId = get('guild_id');
@@ -19,11 +20,15 @@ $isLoggedIn = isLoggedIn();
 
 try {
     // Get guild info
-    $guild = queryOne('SELECT id, name, server, notes, tag, crest_file, last_import_at, created_at, updated_at FROM guilds WHERE id = ?', [$guildId]);
-    
+    $guild = queryOne('SELECT id, name, server, notes, tag, crest_file, coa_code, last_import_at, created_at, updated_at FROM guilds WHERE id = ?', [$guildId]);
+
     if (!$guild) {
         jsonResponse(['success' => false, 'message' => 'Gilde nicht gefunden'], 404);
     }
+
+    // Auto-generiertes Wappen nur, wenn kein manueller Upload existiert
+    // (crest_file hat immer Vorrang -- Backup/Fallback bleibt der Upload).
+    $guild['coa_image'] = $guild['crest_file'] ? null : resolveGuildCrestImage((int) $guild['id'], $guild['coa_code']);
     
     // Get all members with complex sorting
     // Filter fired/left members if not logged in
@@ -180,12 +185,15 @@ try {
         unset($member); // Break the reference
     }
     
+    unset($guild['coa_code']); // Frontend braucht nur den fertigen Bildnamen (coa_image)
+
     // Guild-Daten für Public-View whitelisten – nie SELECT * ungefiltert zurückgeben
     $guildPublic = $isLoggedIn ? $guild : [
         'id'             => $guild['id'],
         'name'           => $guild['name'],
         'server'         => $guild['server'],
         'crest_file'     => $guild['crest_file'],
+        'coa_image'      => $guild['coa_image'],
         'last_import_at' => $guild['last_import_at'] ?? null,
         'notes'          => $guild['notes'] ?? null,
     ];

@@ -40,8 +40,29 @@ struct SyncOutput {
     server: String,
     member_count: usize,
     members: Vec<MemberOutput>,
+    /// Der /coa-Wappencode der Gilde (11 Byte, 22 Hex-Zeichen), aus
+    /// `owngroupsave.groupSave` (Index 1) im rohen Login-Response geparst --
+    /// NICHT aus `GameState::guild.emblem` (das ist ein anderes, meist
+    /// leeres Feld, siehe Memory sfguildsv2-guild-crest-reverse-engineering).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    coa_code: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     error: Option<String>,
+}
+
+/// Extrahiert den /coa-Hex-Code aus dem rohen Server-Response-Text.
+/// Format: `owngroupsave.groupSave:{guild_id}/{coa_hex}/{timestamp}/...`
+fn extract_coa_code(raw: &str) -> Option<String> {
+    let start = raw.find("owngroupsave.groupSave:")? + "owngroupsave.groupSave:".len();
+    let rest = &raw[start..];
+    let end = rest.find('&').unwrap_or(rest.len());
+    let field = &rest[..end];
+    let coa = field.split('/').nth(1)?;
+    if coa.len() == 22 && coa.chars().all(|c| c.is_ascii_hexdigit()) {
+        Some(coa.to_uppercase())
+    } else {
+        None
+    }
 }
 
 #[tokio::main]
@@ -69,6 +90,7 @@ async fn run() -> SyncOutput {
         server: server_host.clone(),
         member_count: 0,
         members: vec![],
+        coa_code: None,
         error: Some(msg),
     };
 
@@ -97,6 +119,10 @@ async fn run() -> SyncOutput {
         Ok(r) => r,
         Err(e) => return err_output(format!("Login fehlgeschlagen: {e}")),
     };
+
+    // Rohtext VOR dem Verbrauch durch GameState::new() sichern -- coa_code
+    // steckt in owngroupsave.groupSave, das sf-api nicht separat exponiert.
+    let coa_code = extract_coa_code(login_res.raw_response());
 
     let gs = match GameState::new(login_res) {
         Ok(g) => g,
@@ -143,6 +169,7 @@ async fn run() -> SyncOutput {
         server,
         member_count: members.len(),
         members,
+        coa_code,
         error: None,
     }
 }

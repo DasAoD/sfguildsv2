@@ -32,6 +32,12 @@
 /data/geoip/*
 !/data/geoip/.gitkeep
 
+# Wappen-Rohgrafiken (aus Spiel-Assets extrahiert, urheberrechtlich nicht
+# fürs Repo geeignet) -- separat auf den Server deployed, siehe
+# install/GUILD_CREST_AUTO_INSTALL.md
+/data/guildcrests/*
+!/data/guildcrests/.gitkeep
+
 /storage/import/**
 !/storage/import/.gitkeep
 !/storage/import/archive/.gitkeep
