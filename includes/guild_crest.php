@@ -103,6 +103,14 @@ function coaPasteCentered(\GdImage $canvas, \GdImage $layer, float $cx, float $c
     imagealphablending($canvas, false);
 }
 
+/** Skaliert anhand einer Ziel-Breite (die Höhe ergibt sich aus dem nativen
+ * Seitenverhältnis) und platziert zentriert -- gibt den verwendeten Skalierungsfaktor zurück. */
+function coaPasteByWidth(\GdImage $canvas, \GdImage $layer, float $cx, float $cy, float $targetWidth): float {
+    $scale = $targetWidth / imagesx($layer);
+    coaPasteCentered($canvas, $layer, $cx, $cy, $scale);
+    return $scale;
+}
+
 /**
  * Wappenbild-Tönung: die coa_7_*-Sprites sind alle eine reine Flach-Schablone
  * in (255,0,0) mit variierendem Alpha (verifiziert: Apfel- und Drachen-Sprite
@@ -179,23 +187,40 @@ function coaApplyShieldZones(\GdImage $shield, \GdImage $mask, array $zone1Rgb, 
     return $out;
 }
 
+// Canvas im echten Seitenverhältnis eines Wappen-Screenshots (215x262,
+// 2x hochskaliert) -- eine quadratische Canvas hatte alles vertikal gestaucht.
+const COA_CANVAS_W = 430;
+const COA_CANVAS_H = 524;
+
+// Aus einem echten Screenshot (Avadhuta Gita) gemessene Ziel-Mittelpunkte/
+// -Breiten in doubled-real-Pixel-Koordinaten. Höhe ergibt sich pro Layer aus
+// dem nativen Seitenverhältnis -- Breite ist auch bei teilverdeckten Layern
+// (Helmdecke) meist noch einigermaßen zuverlässig sichtbar, Höhe nicht.
+const COA_TARGETS = [
+    'shield'    => [215, 270, 170],
+    'supporter' => [215, 255, 390],
+    'helmet'    => [215, 140, 150], // Helm-Aufsatz -- überlappt den Schildkragen
+    'order'     => [215, 380, 90],
+    'banner'    => [215, 425, 370],
+    'helm'      => [215, 165, 230], // Helmdecke -- sichtbare Spitzen überschätzen die Kernbreite
+];
+
 /**
  * Rendert das komplette Wappen-Bild. Gibt null zurück, wenn Assets fehlen
  * oder der Code ungültig ist (Aufrufer soll dann auf Platzhalter zurückfallen).
  */
-function renderGuildCrestImage(string $coaCode, string $assetsDir, int $canvasSize = 440): ?\GdImage {
+function renderGuildCrestImage(string $coaCode, string $assetsDir): ?\GdImage {
     $d = decodeCoaCode($coaCode);
     if ($d === null) {
         return null;
     }
 
-    $C = $canvasSize;
-    $canvas = coaNewCanvas($C, $C);
-    $cx = intdiv($C, 2);
+    $canvas = coaNewCanvas(COA_CANVAS_W, COA_CANVAS_H);
 
     $helmdecke = coaLoadLayer($assetsDir, 'helm', $d['helm']);
     if (!$helmdecke) return null;
-    coaPasteCentered($canvas, $helmdecke, $cx, (int) round($C * 0.33), 1.1);
+    [$cx, $cy, $w] = COA_TARGETS['helm'];
+    coaPasteByWidth($canvas, $helmdecke, $cx, $cy, $w);
 
     $shield = coaLoadLayer($assetsDir, 'shield', $d['shield']);
     $mask = coaLoadLayer($assetsDir, 'shield', $d['shield'], '_color');
@@ -203,31 +228,35 @@ function renderGuildCrestImage(string $coaCode, string $assetsDir, int $canvasSi
     $zone1Rgb = COA_PALETTE_GUESS[$d['zone1']] ?? COA_PALETTE_FALLBACK;
     $zone2Rgb = COA_PALETTE_GUESS[$d['zone2']] ?? COA_PALETTE_FALLBACK;
     $shieldTinted = coaApplyShieldZones($shield, $mask, $zone1Rgb, $zone2Rgb);
-    $shieldCx = $cx;
-    $shieldCy = (int) round($C * 0.52);
-    coaPasteCentered($canvas, $shieldTinted, $shieldCx, $shieldCy, 1.6);
+    [$shieldCx, $shieldCy, $shieldW] = COA_TARGETS['shield'];
+    $shieldScale = coaPasteByWidth($canvas, $shieldTinted, $shieldCx, $shieldCy, $shieldW);
 
     $emblem = coaLoadLayer($assetsDir, 'emblem', $d['emblem']);
     if (!$emblem) return null;
     $figureRgb = COA_PALETTE_GUESS[$d['figure_color']] ?? COA_PALETTE_FALLBACK;
     $emblemTinted = coaTintColorReplace($emblem, $figureRgb);
-    coaPasteCentered($canvas, $emblemTinted, $shieldCx, $shieldCy - (int) round($C * 0.02), 1.6);
+    // gleicher Skalierungsfaktor wie der Schild, damit die Figur proportional passt
+    coaPasteCentered($canvas, $emblemTinted, $shieldCx, $shieldCy - (int) round(0.02 * COA_CANVAS_H), $shieldScale);
 
     $supporter = coaLoadLayer($assetsDir, 'supporter', $d['supporter']);
     if (!$supporter) return null;
-    coaPasteCentered($canvas, $supporter, $cx, (int) round($C * 0.50), 1.6);
+    [$cx, $cy, $w] = COA_TARGETS['supporter'];
+    coaPasteByWidth($canvas, $supporter, $cx, $cy, $w);
 
     $helmet = coaLoadLayer($assetsDir, 'helmet', $d['helmet']);
     if (!$helmet) return null;
-    coaPasteCentered($canvas, $helmet, $cx, (int) round($C * 0.24), 1.6);
+    [$cx, $cy, $w] = COA_TARGETS['helmet'];
+    coaPasteByWidth($canvas, $helmet, $cx, $cy, $w);
 
     $order = coaLoadLayer($assetsDir, 'order', $d['order']);
     if (!$order) return null;
-    coaPasteCentered($canvas, $order, $cx, (int) round($C * 0.80), 1.6);
+    [$cx, $cy, $w] = COA_TARGETS['order'];
+    coaPasteByWidth($canvas, $order, $cx, $cy, $w);
 
     $banner = coaLoadLayer($assetsDir, 'banner', $d['banner']);
     if (!$banner) return null;
-    coaPasteCentered($canvas, $banner, $cx, (int) round($C * 0.90), 1.6);
+    [$cx, $cy, $w] = COA_TARGETS['banner'];
+    coaPasteByWidth($canvas, $banner, $cx, $cy, $w);
 
     return $canvas;
 }
