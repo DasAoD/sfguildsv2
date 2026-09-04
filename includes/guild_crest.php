@@ -27,8 +27,12 @@ const COA_CATEGORY_NUM = [
 // sfguildsv2-guild-crest-reverse-engineering). Unbekannte Indizes fallen
 // auf ein neutrales Grau zurück (COA_PALETTE_FALLBACK), nicht mehr auf
 // Grün -- das hatte Index 8/9 vor der Verifizierung falsch grün eingefärbt.
+// Index 3 war ursprünglich blind von Index 4 übernommen (beide "grünlich"
+// geraten) -- an Avadhuta Gitas Schild (wo Index 3 die dominante Zone-2-
+// Fläche ist, nicht nur ungetestet wie bei Gurkistan) als ~#191919 (fast
+// schwarz) verifiziert.
 const COA_PALETTE_GUESS = [
-    0 => [120, 120, 120], 1 => [200, 60, 60], 2 => [60, 100, 200], 3 => [0, 153, 0],
+    0 => [120, 120, 120], 1 => [200, 60, 60], 2 => [60, 100, 200], 3 => [25, 25, 25],
     4 => [0, 153, 0], 5 => [230, 200, 40], 6 => [140, 80, 200], 7 => [230, 140, 30],
     8 => [127, 127, 127], 9 => [176, 0, 0],
 ];
@@ -99,11 +103,19 @@ function coaPasteCentered(\GdImage $canvas, \GdImage $layer, float $cx, float $c
     imagealphablending($canvas, false);
 }
 
-/** "Color"-artige Tönung: Graustufen des Sprites * Zielfarbe, Alpha bleibt erhalten. */
+/**
+ * Wappenbild-Tönung: die coa_7_*-Sprites sind alle eine reine Flach-Schablone
+ * in (255,0,0) mit variierendem Alpha (verifiziert: Apfel- und Drachen-Sprite
+ * beide exakt so) -- die Zielfarbe wird direkt eingesetzt, Alpha bleibt
+ * erhalten, der ursprüngliche Rot-Kanal wird komplett ignoriert. Eine
+ * Graustufen-Multiply-Tönung (frühere Version) ergab aus reinem Rot nur
+ * ~30% Luminanz und damit einen viel zu dunklen Ton.
+ */
 function coaTintColorReplace(\GdImage $img, array $rgb): \GdImage {
     $w = imagesx($img);
     $h = imagesy($img);
     $out = coaNewCanvas($w, $h);
+    $col = imagecolorallocatealpha($out, $rgb[0], $rgb[1], $rgb[2], 0);
     for ($y = 0; $y < $h; $y++) {
         for ($x = 0; $x < $w; $x++) {
             $rgba = imagecolorat($img, $x, $y);
@@ -111,14 +123,11 @@ function coaTintColorReplace(\GdImage $img, array $rgb): \GdImage {
             if ($a === 127) {
                 continue; // Canvas ist schon transparent initialisiert
             }
-            $r = ($rgba >> 16) & 0xFF;
-            $g = ($rgba >> 8) & 0xFF;
-            $b = $rgba & 0xFF;
-            $gray = (int) round(0.299 * $r + 0.587 * $g + 0.114 * $b);
-            $nr = intdiv($gray * $rgb[0], 255);
-            $ng = intdiv($gray * $rgb[1], 255);
-            $nb = intdiv($gray * $rgb[2], 255);
-            imagesetpixel($out, $x, $y, imagecolorallocatealpha($out, $nr, $ng, $nb, $a));
+            if ($a === 0) {
+                imagesetpixel($out, $x, $y, $col);
+            } else {
+                imagesetpixel($out, $x, $y, imagecolorallocatealpha($out, $rgb[0], $rgb[1], $rgb[2], $a));
+            }
         }
     }
     return $out;
