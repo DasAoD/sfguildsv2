@@ -41,8 +41,9 @@ async function loadGuild() {
         const r = await fetch(`/api/members.php?guild_id=${guildId}`);
         const d = await r.json();
         if (d.success) {
-            const crestHtml = d.guild.crest_file
-                ? `<img src="/assets/images/${d.guild.crest_file}" alt="Wappen" style="width:100%;height:100%;object-fit:contain">`
+            const crestSrc = d.guild.crest_file || d.guild.coa_image;
+            const crestHtml = crestSrc
+                ? `<img src="/assets/images/${crestSrc}" alt="Wappen" style="width:100%;height:100%;object-fit:contain">`
                 : '<img src="/assets/images/helmet.png" alt="Wappen" style="width:100%;height:100%;object-fit:contain">';
             document.getElementById('guildCrest').innerHTML = crestHtml;
             document.getElementById('guildName').textContent = d.guild.name;

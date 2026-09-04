@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../includes/bootstrap_api.php';
+require_once __DIR__ . '/../includes/guild_crest.php';
 
 checkAuthAPI();
 
@@ -13,13 +14,18 @@ if ($guildId <= 0) {
 
 try {
     // Get guild info
-    $stmt = $db->prepare("SELECT id, name, server, crest_file FROM guilds WHERE id = ?");
+    $stmt = $db->prepare("SELECT id, name, server, crest_file, coa_code FROM guilds WHERE id = ?");
     $stmt->execute([$guildId]);
     $guild = $stmt->fetch();
-    
+
     if (!$guild) {
         jsonError('Guild not found', 404);
     }
+
+    // Auto-generiertes Wappen nur, wenn kein manueller Upload existiert
+    // (crest_file hat immer Vorrang -- Backup/Fallback bleibt der Upload).
+    $guild['coa_image'] = $guild['crest_file'] ? null : resolveGuildCrestImage((int) $guild['id'], $guild['coa_code']);
+    unset($guild['coa_code']); // Frontend braucht nur den fertigen Bildnamen
     
     // Get battle counts
     $stmt = $db->prepare("
