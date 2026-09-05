@@ -16,7 +16,7 @@ checkAuth();
 $db = getDB();
 
 // Get all guilds (sorted alphabetically)
-$stmt = $db->query("SELECT id, name, server, tag, crest_file, coa_code FROM guilds ORDER BY name ASC");
+$stmt = $db->query("SELECT id, name, server, tag, crest_file, coa_code, updated_at FROM guilds ORDER BY name ASC");
 $guilds = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Get selected guild (default to first guild)
@@ -131,8 +131,9 @@ $currentUser = getCurrentUsername();
                         <div style="display:flex;align-items:center;gap:1rem">
                             <div class="guild-crest">
                                 <?php $crestSrc = $selectedGuild['crest_file'] ?: ($selectedGuild['coa_image'] ?? null); ?>
+                                <?php $crestV = !empty($selectedGuild['updated_at']) ? '?v=' . urlencode($selectedGuild['updated_at']) : ''; ?>
                                 <?php if (!empty($crestSrc)): ?>
-                                    <img src="/assets/images/<?= e($crestSrc) ?>"
+                                    <img src="/assets/images/<?= e($crestSrc . $crestV) ?>"
                                          alt="<?= e($selectedGuild['name']) ?> Wappen"
                                          style="width:100px;height:100px;object-fit:contain">
                                 <?php else: ?>

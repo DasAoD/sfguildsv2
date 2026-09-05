@@ -14,7 +14,7 @@ if ($guildId <= 0) {
 
 try {
     // Get guild info
-    $stmt = $db->prepare("SELECT id, name, server, crest_file, coa_code FROM guilds WHERE id = ?");
+    $stmt = $db->prepare("SELECT id, name, server, crest_file, coa_code, updated_at FROM guilds WHERE id = ?");
     $stmt->execute([$guildId]);
     $guild = $stmt->fetch();
 

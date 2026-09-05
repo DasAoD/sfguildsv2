@@ -132,7 +132,7 @@ const d=await r.json();
 if(d.success){
 const tbody=document.getElementById('guildsTable');
 tbody.innerHTML=d.guilds.map(g=>{
-const crestImg=g.crest_file?`<img src="/assets/images/${g.crest_file}" alt="Wappen" style="width:32px;height:32px;object-fit:contain">`:'—';
+const crestImg=g.crest_file?`<img src="/assets/images/${g.crest_file}?v=${encodeURIComponent(g.updated_at||'')}" alt="Wappen" style="width:32px;height:32px;object-fit:contain">`:'—';
 return`
 <tr>
 <td>${crestImg}</td>
