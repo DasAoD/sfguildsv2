@@ -89,11 +89,16 @@ try {
                                 $loader = $mimeToLoader[$mimeType] ?? null;
                                 $image  = $loader ? @$loader($tmpFile) : null;
                                 if ($image) {
-                                    if (imagewebp($image, $outputPath, 90)) {
+                                    // Palette-PNGs (indizierte Farben + Transparenz-Chunk statt
+                                    // echtem RGBA) lässt imagewebp() sonst manchmal stillschweigend
+                                    // als 0-Byte-Datei rausfallen, ohne Fehler zu werfen.
+                                    imagepalettetotruecolor($image);
+                                    if (imagewebp($image, $outputPath, 90) && filesize($outputPath) > 0) {
                                         imagedestroy($image);
                                         execute('UPDATE guilds SET crest_file = ? WHERE id = ?', [$crestFile, $guildId]);
                                         $crestUploaded = true;
                                     } else {
+                                        @unlink($outputPath);
                                         $crestError = 'Konvertierung zu WEBP fehlgeschlagen';
                                         logError("WEBP conversion failed (create guild)", ["guild_id" => $guildId]);
                                     }
@@ -184,7 +189,11 @@ try {
                                 $loader = $mimeToLoader[$mimeType] ?? null;
                                 $image  = $loader ? @$loader($tmpFile) : null;
                                 if ($image) {
-                                    if (imagewebp($image, $outputPath, 90)) {
+                                    // Palette-PNGs (indizierte Farben + Transparenz-Chunk statt
+                                    // echtem RGBA) lässt imagewebp() sonst manchmal stillschweigend
+                                    // als 0-Byte-Datei rausfallen, ohne Fehler zu werfen.
+                                    imagepalettetotruecolor($image);
+                                    if (imagewebp($image, $outputPath, 90) && filesize($outputPath) > 0) {
                                         imagedestroy($image);
                                         // Altes Wappen erst löschen, nachdem das neue erfolgreich geschrieben wurde
                                         $oldGuild = queryOne('SELECT crest_file FROM guilds WHERE id = ?', [$guildId]);
@@ -199,6 +208,7 @@ try {
                                         }
                                     } else {
                                         imagedestroy($image);
+                                        @unlink($outputPath);
                                         $crestFile = null;
                                         logError("WEBP conversion failed (update guild)", ["guild_id" => $guildId]);
                                     }
