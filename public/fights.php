@@ -8,6 +8,7 @@ require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/template.php';
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/guild_crest.php';
 
 checkAuth();
 
@@ -15,7 +16,7 @@ checkAuth();
 $db = getDB();
 
 // Get all guilds (sorted alphabetically)
-$stmt = $db->query("SELECT id, name, server, tag, crest_file FROM guilds ORDER BY name ASC");
+$stmt = $db->query("SELECT id, name, server, tag, crest_file, coa_code FROM guilds ORDER BY name ASC");
 $guilds = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Get selected guild (default to first guild)
@@ -27,6 +28,14 @@ foreach ($guilds as $guild) {
         $selectedGuild = $guild;
         break;
     }
+}
+
+// Auto-generiertes Wappen nur, wenn kein manueller Upload existiert
+// (crest_file hat immer Vorrang -- Backup/Fallback bleibt der Upload).
+if ($selectedGuild) {
+    $selectedGuild['coa_image'] = $selectedGuild['crest_file']
+        ? null
+        : resolveGuildCrestImage((int) $selectedGuild['id'], $selectedGuild['coa_code']);
 }
 
 // Get current month/year
@@ -121,8 +130,9 @@ $currentUser = getCurrentUsername();
                     <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
                         <div style="display:flex;align-items:center;gap:1rem">
                             <div class="guild-crest">
-                                <?php if (!empty($selectedGuild['crest_file'])): ?>
-                                    <img src="/assets/images/<?= e($selectedGuild['crest_file']) ?>" 
+                                <?php $crestSrc = $selectedGuild['crest_file'] ?: ($selectedGuild['coa_image'] ?? null); ?>
+                                <?php if (!empty($crestSrc)): ?>
+                                    <img src="/assets/images/<?= e($crestSrc) ?>"
                                          alt="<?= e($selectedGuild['name']) ?> Wappen"
                                          style="width:100px;height:100px;object-fit:contain">
                                 <?php else: ?>

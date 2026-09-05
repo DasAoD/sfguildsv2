@@ -6,6 +6,7 @@
 require_once __DIR__ . '/../includes/bootstrap_api.php';
 
 require_once __DIR__ . '/../includes/raid_names.php';
+require_once __DIR__ . '/../includes/guild_crest.php';
 
 // Guilds API is publicly accessible (no login required)
 
@@ -122,6 +123,11 @@ try {
         $guild['last_update']        = $members['last_update']            ?? null;
         $guild['total_battles']      = $totalBattlesCount;
         $guild['participation_quote'] = $participationQuote;
+
+        // Auto-generiertes Wappen nur, wenn kein manueller Upload existiert
+        // (crest_file hat immer Vorrang -- Backup/Fallback bleibt der Upload).
+        $guild['coa_image'] = $guild['crest_file'] ? null : resolveGuildCrestImage((int) $id, $guild['coa_code']);
+        unset($guild['coa_code']); // Frontend braucht nur den fertigen Bildnamen
     }
     
     jsonResponse([
