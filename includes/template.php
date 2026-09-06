@@ -116,7 +116,7 @@ function renderNavbar($activePage = '', $options = []) {
     <script>
     window.SF_SESSION = { timeout: <?php echo SESSION_IDLE_TIMEOUT; ?>, warning: <?php echo SESSION_IDLE_WARNING; ?>, remaining: <?php echo $remaining; ?> };
     </script>
-    <script src="/assets/js/session-timeout.js?v=20260906b"></script>
+    <script src="/assets/js/session-timeout.js?v=20260906c"></script>
     <?php
     }
 }
