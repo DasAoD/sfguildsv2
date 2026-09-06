@@ -8,6 +8,7 @@
 #   LOG       – Pfad zur Log-Datei
 #   WEB_GROUP – Webserver-Gruppe (meist www-data)
 #   CODE_DIRS – Unterordner mit Code, die Deploy-Rechte bekommen
+#   DEPLOY_USER – Besitzer der Runtime-Ordner (Default: aktueller User)
 # =============================================================================
 set -euo pipefail
 
@@ -15,6 +16,10 @@ REPO_DIR="/var/www/sfguildsv2"
 BRANCH="main"
 REMOTE="origin"
 WEB_GROUP="www-data"
+
+# Besitzer der Runtime-Ordner (storage/import/*). Standard: wer das Script
+# ausfuehrt (auf dns1 = root). Per Env ueberschreibbar: DEPLOY_USER=deploy ...
+DEPLOY_USER="${DEPLOY_USER:-$(id -un)}"
 
 # Verzeichnisse mit ausgeliefertem/ausgefuehrtem Code – bekommen nach dem
 # Checkout Gruppe $WEB_GROUP + 2775/0664. Runtime (data/, storage/) bleibt aussen vor.
@@ -88,7 +93,7 @@ flock -n 200 || { echo "Deploy läuft schon."; exit 1; }
   fi
 
   # Runtime-Ordner sicherstellen (CSV-Upload / Import)
-  install -d -m 2775 -o deploy -g "$WEB_GROUP" \
+  install -d -m 2775 -o "$DEPLOY_USER" -g "$WEB_GROUP" \
     "$REPO_DIR/storage/import/archive" \
     "$REPO_DIR/storage/import/failed" \
     "$REPO_DIR/storage/import/incoming" \
