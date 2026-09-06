@@ -48,7 +48,7 @@ tail -n 20 /var/log/sfguilds-deploy.log
 ### 1. Receiver-Verzeichnis + Secret
 
 ```bash
-install -d -m 0750 -o root -g www-data /var/www/sfguilds-deploy
+install -d -m 2770 -o root -g www-data /var/www/sfguilds-deploy
 install -m 0644 -o root -g root \
   /var/www/sfguildsv2/install/var/www/sfguilds-deploy/webhook.php \
   /var/www/sfguilds-deploy/webhook.php
@@ -61,7 +61,8 @@ cat /var/www/sfguilds-deploy/.webhook-secret     # für Schritt 4 merken
 ```
 
 `www-data` muss in `/var/www/sfguilds-deploy/` schreiben dürfen (Trigger-Datei)
-– durch `-g www-data` + `0750` gegeben.
+– darum `2770` mit Gruppe `www-data` (setgid: neue Dateien erben die Gruppe).
+Das Secret bleibt trotzdem `0640` und damit für www-data nur lesbar.
 
 ### 2. systemd
 
