@@ -108,6 +108,17 @@ function renderNavbar($activePage = '', $options = []) {
         </div>
     </nav>
     <?php
+    // Session-Idle-Timer: Config + Loader auf JEDER Seite mit Navbar –
+    // auch fights/hellevator/inbox/settings, die renderScripts() nicht aufrufen.
+    if ($isLoggedIn && defined('SESSION_IDLE_TIMEOUT')) {
+        $remaining = max(0, SESSION_IDLE_TIMEOUT - (time() - ($_SESSION['last_activity'] ?? time())));
+        ?>
+    <script>
+    window.SF_SESSION = { timeout: <?php echo SESSION_IDLE_TIMEOUT; ?>, warning: <?php echo SESSION_IDLE_WARNING; ?>, remaining: <?php echo $remaining; ?> };
+    </script>
+    <script src="/assets/js/session-timeout.js?v=20260906b"></script>
+    <?php
+    }
 }
 
 /**
@@ -127,26 +138,10 @@ function renderFooter() {
  * Render script tags
  */
 function renderScripts($additionalJS = []) {
-    $version = '20260906a'; // Update this when JS changes
-    // session-timeout.js hängt an window.SF_SESSION und macht nichts, wenn es fehlt
-    $jsFiles = array_merge(
-        ['/assets/js/overlay.js', '/assets/js/main.js', '/assets/js/session-timeout.js'],
-        $additionalJS
-    );
-
-    if (isLoggedIn() && defined('SESSION_IDLE_TIMEOUT')) {
-        $last      = $_SESSION['last_activity'] ?? time();
-        $remaining = max(0, SESSION_IDLE_TIMEOUT - (time() - $last));
-        ?>
-    <script>
-    window.SF_SESSION = {
-        timeout: <?php echo SESSION_IDLE_TIMEOUT; ?>,
-        warning: <?php echo SESSION_IDLE_WARNING; ?>,
-        remaining: <?php echo $remaining; ?>
-    };
-    </script>
-    <?php }
-
+    $version = '20260820a'; // Update this when JS changes
+    // Hinweis: der Session-Idle-Timer wird in renderNavbar() geladen, damit er
+    // auch auf Seiten ohne renderScripts() (fights/hellevator/inbox) greift.
+    $jsFiles = array_merge(['/assets/js/overlay.js', '/assets/js/main.js'], $additionalJS);
     foreach ($jsFiles as $js): ?>
     <script src="<?php echo $js . '?v=' . $version; ?>"></script>
     <?php endforeach;
