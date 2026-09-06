@@ -45,6 +45,14 @@ tail -n 20 /var/log/sfguilds-deploy.log
 > ältere Kopie mit `$REPO_DIR/app` liegt: durch die Vorlage aus dem Repo
 > ersetzen. Erst weitermachen, wenn der manuelle Lauf fehlerfrei ist.
 
+Wenn `/var/www/sfguildsv2` (inkl. `.git`) einem anderen User gehört als dem,
+der den Deploy fährt (hier: Dateien `www-data`, Deploy als `root`), meldet git
+„dubious ownership". Einmalig system-weit erlauben (gilt für systemd + Shell):
+
+```bash
+git config --system --add safe.directory /var/www/sfguildsv2
+```
+
 ### 1. Receiver-Verzeichnis + Secret
 
 ```bash
