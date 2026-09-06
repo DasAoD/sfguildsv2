@@ -150,15 +150,38 @@
         }
     }
 
-    /* ---------- Aktivitäts-Erkennung: nur echte Aktionen ---------- */
+    /* ---------- Aktivitäts-Erkennung: nur echte Aktionen ----------
+       Ein Klick ins Leere zählt NICHT. Nur:
+         - Klick/Tap auf ein interaktives Element (Link, Button, Eingabefeld …)
+         - Tastendruck in einem Eingabefeld
+         - Absenden eines Formulars
+       Seitenwechsel / AJAX verlängern ohnehin serverseitig (auth.php). */
 
-    function onRealAction() {
+    var INTERACTIVE_SEL = 'a[href], button, input, select, textarea, label, summary,' +
+        '[role="button"], [role="link"], [role="tab"], [role="menuitem"], [onclick], .btn';
+
+    function isEditable(el) {
+        if (!el) return false;
+        var tag = el.tagName;
+        return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || el.isContentEditable;
+    }
+
+    function fromInteractive(evt) {
+        var t = evt.target;
+        return !!(t && t.closest && t.closest(INTERACTIVE_SEL));
+    }
+
+    function onRealAction(evt) {
         if (redirecting) return;
         if (warningOpen) return; // im Warnfenster zählt nur der Button
+        if (evt) {
+            if (evt.type === 'keydown' && !isEditable(evt.target)) return;
+            if ((evt.type === 'click' || evt.type === 'touchstart') && !fromInteractive(evt)) return;
+        }
         extend(false);
     }
 
-    ['click', 'keydown', 'touchstart'].forEach(function (evt) {
+    ['click', 'keydown', 'touchstart', 'submit'].forEach(function (evt) {
         document.addEventListener(evt, onRealAction, { passive: true, capture: true });
     });
 
