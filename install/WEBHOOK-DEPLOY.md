@@ -40,10 +40,10 @@ test -x /usr/local/bin/deploy-sfguilds.sh || echo "FEHLT – erst install/usr/lo
 tail -n 20 /var/log/sfguilds-deploy.log
 ```
 
-> Die Repo-Vorlage von `deploy-sfguilds.sh` referenziert u. U. ein
-> `$REPO_DIR/app`-Verzeichnis, das es in diesem Projekt nicht gibt – die
-> dns1-Kopie ggf. anpassen (Pfade auf `api/ cli/ config/ includes/ public/`).
-> Erst weitermachen, wenn der manuelle Lauf fehlerfrei ist.
+> Die aktuelle Repo-Vorlage von `deploy-sfguilds.sh` setzt die Rechte über
+> `CODE_DIRS=(api cli config includes public)`. Falls auf dns1 noch eine
+> ältere Kopie mit `$REPO_DIR/app` liegt: durch die Vorlage aus dem Repo
+> ersetzen. Erst weitermachen, wenn der manuelle Lauf fehlerfrei ist.
 
 ### 1. Receiver-Verzeichnis + Secret
 
@@ -144,7 +144,7 @@ in `/var/www/sfguildsv2` gegen `main` prüfen.
 | 202, aber kein Deploy | `.path`-Unit nicht enabled/aktiv (`systemctl status sfguildsv2-deploy.path`); `daemon-reload` vergessen |
 | `webhook.php` wird als Text ausgeliefert / 404 | nginx-Block nicht aktiv, oder `SCRIPT_FILENAME`-Pfad falsch; `nginx -t` |
 | php-fpm-Fehler „open_basedir" | Pool hat `open_basedir` gesetzt → `/var/www/sfguilds-deploy/` ergänzen (`/etc/php/8.4/fpm/pool.d/www.conf`) |
-| Deploy bricht bei `find … app` ab | dns1-Kopie von `deploy-sfguilds.sh` an die realen Projektpfade anpassen (siehe Schritt 0) |
+| Deploy bricht bei `find … app` ab | veraltete `deploy-sfguilds.sh` auf dns1 – durch die Repo-Vorlage ersetzen (`CODE_DIRS`, siehe Schritt 0) |
 
 ## Rückbau
 

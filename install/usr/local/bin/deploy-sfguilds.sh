@@ -7,6 +7,7 @@
 #   LOCK      – Pfad zur Lock-Datei
 #   LOG       – Pfad zur Log-Datei
 #   WEB_GROUP – Webserver-Gruppe (meist www-data)
+#   CODE_DIRS – Unterordner mit Code, die Deploy-Rechte bekommen
 # =============================================================================
 set -euo pipefail
 
@@ -14,6 +15,10 @@ REPO_DIR="/var/www/sfguildsv2"
 BRANCH="main"
 REMOTE="origin"
 WEB_GROUP="www-data"
+
+# Verzeichnisse mit ausgeliefertem/ausgefuehrtem Code – bekommen nach dem
+# Checkout Gruppe $WEB_GROUP + 2775/0664. Runtime (data/, storage/) bleibt aussen vor.
+CODE_DIRS=(api cli config includes public)
 
 LOCK="/run/lock/sfguilds-deploy.lock"
 LOG="/var/log/sfguilds-deploy.log"
@@ -72,9 +77,15 @@ flock -n 200 || { echo "Deploy läuft schon."; exit 1; }
   echo "Git rev: $(git rev-parse --short HEAD)"
 
   # Rechte: Code schreibbar für deploy+www-data, Runtime nicht anfassen
-  chgrp -R "$WEB_GROUP" "$REPO_DIR/app" "$REPO_DIR/public" || true
-  find "$REPO_DIR/app" "$REPO_DIR/public" -type d -exec chmod 2775 {} +
-  find "$REPO_DIR/app" "$REPO_DIR/public" -type f -exec chmod 0664 {} +
+  CODE_PATHS=()
+  for d in "${CODE_DIRS[@]}"; do
+    [ -d "$REPO_DIR/$d" ] && CODE_PATHS+=("$REPO_DIR/$d")
+  done
+  if [ "${#CODE_PATHS[@]}" -gt 0 ]; then
+    chgrp -R "$WEB_GROUP" "${CODE_PATHS[@]}" || true
+    find "${CODE_PATHS[@]}" -type d -exec chmod 2775 {} +
+    find "${CODE_PATHS[@]}" -type f -exec chmod 0664 {} +
+  fi
 
   # Runtime-Ordner sicherstellen (CSV-Upload / Import)
   install -d -m 2775 -o deploy -g "$WEB_GROUP" \
