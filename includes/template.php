@@ -8,7 +8,7 @@
  * Render HTML head with CSS links
  */
 function renderHead($title, $additionalCSS = []) {
-    $version = '20260804c'; // Update this when CSS changes
+    $version = '20260906a'; // Update this when CSS changes
     $cssFiles = array_merge(['/assets/css/main.css', '/assets/css/overlay.css'], $additionalCSS);
     ?>
     <meta charset="UTF-8">
@@ -98,6 +98,7 @@ function renderNavbar($activePage = '', $options = []) {
             <div class="user-menu">
                 <?php if ($isLoggedIn): ?>
                 <span class="user-name">Angemeldet als: <strong><?php echo e($currentUser); ?></strong></span>
+                <span class="session-timer" id="sessionTimer" title="Verbleibende Sitzungszeit – wird bei jeder Aktion zurückgesetzt" hidden></span>
                 <a href="/settings.php" class="btn-settings" title="Einstellungen">⚙️</a>
                 <a href="/logout.php" class="btn-logout">Abmelden</a>
                 <?php else: ?>
@@ -126,8 +127,26 @@ function renderFooter() {
  * Render script tags
  */
 function renderScripts($additionalJS = []) {
-    $version = '20260820a'; // Update this when JS changes
-    $jsFiles = array_merge(['/assets/js/overlay.js', '/assets/js/main.js'], $additionalJS);
+    $version = '20260906a'; // Update this when JS changes
+    // session-timeout.js hängt an window.SF_SESSION und macht nichts, wenn es fehlt
+    $jsFiles = array_merge(
+        ['/assets/js/overlay.js', '/assets/js/main.js', '/assets/js/session-timeout.js'],
+        $additionalJS
+    );
+
+    if (isLoggedIn() && defined('SESSION_IDLE_TIMEOUT')) {
+        $last      = $_SESSION['last_activity'] ?? time();
+        $remaining = max(0, SESSION_IDLE_TIMEOUT - (time() - $last));
+        ?>
+    <script>
+    window.SF_SESSION = {
+        timeout: <?php echo SESSION_IDLE_TIMEOUT; ?>,
+        warning: <?php echo SESSION_IDLE_WARNING; ?>,
+        remaining: <?php echo $remaining; ?>
+    };
+    </script>
+    <?php }
+
     foreach ($jsFiles as $js): ?>
     <script src="<?php echo $js . '?v=' . $version; ?>"></script>
     <?php endforeach;

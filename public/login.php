@@ -36,6 +36,10 @@ if (isLoggedIn()) {
 
             <div id="errorMessage"></div>
 
+            <?php if (get('expired')): ?>
+            <div class="alert alert-error">Du wurdest wegen Inaktivität abgemeldet. Bitte melde dich erneut an.</div>
+            <?php endif; ?>
+
             <form id="loginForm" class="login-form">
                 <input type="hidden" name="return" value="<?php echo e($returnUrl); ?>">
                 

@@ -22,6 +22,35 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 /**
+ * Inaktivitäts-Timeout: nach dieser Zeit ohne "echte Aktion"
+ * (Seitenaufruf, AJAX-Call, Klick, Tastendruck) wird der User abgemeldet.
+ * Die letzte Minute davor blendet das Frontend eine Warnung ein.
+ */
+const SESSION_IDLE_TIMEOUT = 3600; // Sekunden bis Logout (60 Minuten)
+const SESSION_IDLE_WARNING = 60;   // Sekunden Vorwarnzeit vor dem Logout
+
+/**
+ * Idle-Timeout durchsetzen.
+ * Läuft bei jedem Include automatisch. Endpunkte, die den Timer NICHT
+ * verlängern sollen (z. B. api/session_status.php – der reine Poll für
+ * die Restzeit-Anzeige), definieren vorher SESSION_SKIP_ACTIVITY_TOUCH.
+ */
+if (isset($_SESSION['user_id'])) {
+    $now = time();
+    if (!isset($_SESSION['last_activity'])) {
+        // Bestandssessions / erster Request nach Deploy: Uhr jetzt starten
+        $_SESSION['last_activity'] = $now;
+    }
+    if ($now - $_SESSION['last_activity'] > SESSION_IDLE_TIMEOUT) {
+        logout();
+        // Kein eigener Output hier – nachgelagertes checkAuth()/checkAuthAPI()
+        // bzw. das Frontend übernehmen Redirect / 401.
+    } elseif (!defined('SESSION_SKIP_ACTIVITY_TOUCH')) {
+        $_SESSION['last_activity'] = $now;
+    }
+}
+
+/**
  * Check if user is authenticated
  * Redirects to login if not authenticated
  */
@@ -156,6 +185,7 @@ function login($userId, $username) {
     $_SESSION['user_id'] = $userId;
     $_SESSION['username'] = $username;
     $_SESSION['login_time'] = time();
+    $_SESSION['last_activity'] = time();
 
     // Rolle aus DB laden und in Session speichern
     require_once __DIR__ . '/../config/database.php';

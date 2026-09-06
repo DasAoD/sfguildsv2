@@ -515,6 +515,39 @@ select:focus {
     min-width: 100px;
 }
 
+/* Session Idle Timer (Navbar) */
+.session-timer {
+    font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text-secondary);
+    background: var(--color-bg-tertiary);
+    padding: 0.125rem 0.5rem;
+    border-radius: var(--radius-md);
+    white-space: nowrap;
+}
+
+.session-timer::before {
+    content: "⏳ ";
+}
+
+.session-timer.session-timer--warning {
+    color: white;
+    background: var(--color-danger);
+    animation: sessionPulse 1s ease-in-out infinite;
+}
+
+@keyframes sessionPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+}
+
+/* Countdown-Zahl im Abmelde-Warndialog */
+.session-warning-count {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-danger);
+}
+
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
