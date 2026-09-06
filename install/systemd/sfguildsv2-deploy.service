@@ -1,0 +1,14 @@
+[Unit]
+Description=sfguildsv2 - Deploy bei Webhook-Trigger (git reset --hard origin/main + Lint + Rechte)
+# VORLAGE. Ziel: /etc/systemd/system/sfguildsv2-deploy.service
+# Wird ausschliesslich von sfguildsv2-deploy.path gestartet, nicht beim Boot.
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# deploy-sfguilds.sh braucht root (chgrp/chmod/install -o) und loggt selbst
+# nach /var/log/sfguilds-deploy.log.
+ExecStart=/usr/local/bin/deploy-sfguilds.sh
+TimeoutStartSec=300
+Nice=10

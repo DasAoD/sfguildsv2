@@ -50,6 +50,18 @@ server {
         try_files $uri $uri/ /index.php?$query_string;
     }
 
+    # Deploy-Webhook (Forgejo Push auf main). Der Receiver liegt BEWUSST
+    # ausserhalb des Docroots (/var/www/sfguilds-deploy/), damit `git clean`
+    # im Deploy-Script ihn nicht entfernt. Siehe install/WEBHOOK-DEPLOY.md.
+    location = /deploy {
+        limit_except POST { deny all; }
+        fastcgi_pass unix:/run/php/php8.4-fpm.sock;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME /var/www/sfguilds-deploy/webhook.php;
+        fastcgi_param SCRIPT_NAME     /deploy;
+        fastcgi_read_timeout 15s;
+    }
+
     # PHP 8.3 via php-fpm Socket
     location ~ \.php$ {
         include snippets/fastcgi-php.conf;

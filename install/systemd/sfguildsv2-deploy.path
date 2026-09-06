@@ -1,0 +1,11 @@
+[Unit]
+Description=sfguildsv2 - ueberwacht den Deploy-Trigger des Webhooks
+# VORLAGE. Ziel: /etc/systemd/system/sfguildsv2-deploy.path
+
+[Path]
+# Wird ausgeloest, sobald der Webhook-Receiver die Datei (neu) schreibt.
+PathModified=/var/www/sfguilds-deploy/deploy.trigger
+Unit=sfguildsv2-deploy.service
+
+[Install]
+WantedBy=multi-user.target
