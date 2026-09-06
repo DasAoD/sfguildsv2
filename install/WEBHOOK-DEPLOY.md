@@ -98,8 +98,10 @@ nginx -t && systemctl reload nginx
 Prüfen, dass GET geblockt ist (POST-only):
 
 ```bash
-curl -sS -o /dev/null -w '%{http_code}\n' https://sfguilds.uliana.de/deploy      # -> 403
-curl -sS -X POST -d '{}' -w ' %{http_code}\n' https://sfguilds.uliana.de/deploy  # -> 403 bad signature
+# Live-Hostname ist sfguilds.de (der Dateiname install/nginx/sfguilds.uliana.de
+# ist historisch; server_name/Cert der aktiven vHost lauten sfguilds.de).
+curl -sS -o /dev/null -w '%{http_code}\n' https://sfguilds.de/deploy      # -> 403
+curl -sS -X POST -d '{}' -w ' %{http_code}\n' https://sfguilds.de/deploy  # -> 403 bad signature
 ```
 
 ### 4. Webhook in Forgejo
@@ -108,7 +110,7 @@ Repo → **Einstellungen → Webhooks → Hinzufügen → Forgejo**:
 
 | Feld | Wert |
 |---|---|
-| Ziel-URL | `https://sfguilds.uliana.de/deploy` |
+| Ziel-URL | `https://sfguilds.de/deploy` |
 | HTTP-Methode | `POST` |
 | POST Content Type | `application/json` |
 | Secret | der Hex-String aus Schritt 1 |
