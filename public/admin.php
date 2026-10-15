@@ -228,7 +228,7 @@ $currentUserRole = getCurrentUserRole();
                 <p style="color:var(--color-text-secondary);margin-bottom:var(--spacing-lg)">
                     Zugriffsauswertung der letzten Tage (Seiten, Browser, Herkunftsland), automatisch alle 30 Minuten aus den Server-Logs erzeugt.
                 </p>
-                <iframe id="statsFrame" style="width:100%;height:80vh;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:#fff;"></iframe>
+                <iframe id="statsFrame" title="Statistik" style="width:100%;height:80vh;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:#fff;"></iframe>
             </div>
         </div>
     </div>

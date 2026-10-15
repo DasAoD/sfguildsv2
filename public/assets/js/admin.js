@@ -177,7 +177,7 @@ document.getElementById('guildNotes').value=notes;
 document.getElementById('currentCrest').value=crest;
 document.getElementById('guildCrest').value='';
 if(crest){
-document.getElementById('currentCrestPreview').innerHTML=`<div style="display:flex;align-items:center;gap:0.5rem"><img src="/assets/images/${crest}" style="width:32px;height:32px;object-fit:contain"><span style="color:var(--color-text-secondary);font-size:0.875rem">${crest}</span></div>`;
+document.getElementById('currentCrestPreview').innerHTML=`<div style="display:flex;align-items:center;gap:0.5rem"><img src="/assets/images/${crest}" alt="" style="width:32px;height:32px;object-fit:contain"><span style="color:var(--color-text-secondary);font-size:0.875rem">${crest}</span></div>`;
 }else{
 document.getElementById('currentCrestPreview').innerHTML='';
 }
