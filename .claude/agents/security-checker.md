@@ -12,7 +12,7 @@ Prüfe gezielt auf:
 - Fehlende `catch (Throwable)`-Behandlung in kritischen Pfaden
 - Hartcodierte Secrets, Zugangsdaten oder API-Keys im Code
 - Fehlende Whitelist-Filterung bei API-Antworten (öffentliche API darf nur nicht-sensitive Felder liefern)
-- Race Conditions bei nebenläufigem Zugriff – fehlendes oder falsches `flock()`-Locking, besonders bei Cron-Jobs und Import-Verarbeitung (`storage/import/`)
+- Race Conditions bei nebenläufigem Zugriff – fehlendes oder falsches `flock()`-Locking, besonders bei Cron-Jobs und Kampfbericht-Verarbeitung (`storage/sf_reports/`)
 - Fehlende CLI-Only-Guards bei internen Skripten, die nicht über die Web-API erreichbar sein dürfen
 - **Kritisch spielspezifisch**: Prüfe bei jeder Änderung an Cron- oder sf-api-Sync-Logik, ob ausschließlich Admin-Accounts (`role='admin'`) verwendet werden – reguläre User-Accounts dürfen niemals für automatisierte sf-api-Zugriffe verwendet werden (S&F-Spielregel-Compliance, kein rein technisches sondern auch ein Regelverstoß-Risiko)
 - Unsichere Verarbeitung von Gilden-Wappen-Uploads (`data/uploads/`) – Dateityp-Validierung, Pfad-Traversal bei Dateinamen

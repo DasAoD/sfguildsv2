@@ -38,13 +38,6 @@
 /data/guildcrests/*
 !/data/guildcrests/.gitkeep
 
-/storage/import/**
-!/storage/import/.gitkeep
-!/storage/import/archive/.gitkeep
-!/storage/import/failed/.gitkeep
-!/storage/import/incoming/.gitkeep
-!/storage/import/processing/.gitkeep
-
 /storage/sf_reports/**
 !/storage/sf_reports/.gitkeep
 !/storage/sf_reports/temp/.gitkeep

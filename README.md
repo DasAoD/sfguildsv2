@@ -59,7 +59,6 @@ Ein privates Guild-Management-System für das Browsergame [Shakes & Fidget](http
 │   ├── guild_battle_info.rs
 │   └── README.md           # Build- und Deploy-Anleitung
 └── storage/
-    ├── import/             # ungenutzt (früher CSV-Import)
     └── sf_reports/         # Temporäre Kampfbericht-Dateien
 ```
 
