@@ -671,18 +671,49 @@ input[type="file"].form-input {
 
 @media (max-width: 480px) {
     .char-hero {
-        grid-template-columns: 1fr;
+        grid-template-columns: 72px 1fr 72px;
+        gap: var(--spacing-xs);
+        align-items: stretch;
     }
 
     .char-equip-col {
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: center;
+        gap: var(--spacing-xs);
     }
 
     .char-slot {
-        width: 64px;
-        min-width: 64px;
+        width: 72px;
+        min-width: 72px;
+    }
+
+    .char-slot-label {
+        font-size: 0.5rem;
+        letter-spacing: 0;
+        /* haelt das Label frei vom +N-Badge unten rechts */
+        margin-right: 14px;
+    }
+
+    .char-slot-badge-upgrade {
+        font-size: 0.5rem;
+        padding: 0 2px;
+        bottom: 3px;
+        right: 3px;
+    }
+
+    .char-portrait-col {
+        padding: 0;
+    }
+
+    .char-portrait-frame {
+        width: 100%;
+        max-width: 110px;
+        height: auto;
+        aspect-ratio: 1;
+    }
+
+    .char-weapon-row {
+        flex-wrap: wrap;
+        gap: var(--spacing-xs);
+        margin-top: auto;
     }
 }
 
