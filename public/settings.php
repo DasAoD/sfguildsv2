@@ -361,6 +361,12 @@ unset($acc);
         @media (max-width: 900px) {
             .settings-grid { grid-template-columns: 1fr !important; }
         }
+        @media (max-width: 768px) {
+            .modal-content { padding: 0; }
+            .modal-header, .modal-body, .modal-footer { padding: 1rem; }
+            .modal-footer { flex-wrap: wrap; }
+            .card-header { flex-wrap: wrap; gap: 0.25rem 1rem; }
+        }
     </style>
 </head>
 <body>
