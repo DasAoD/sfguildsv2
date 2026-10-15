@@ -75,4 +75,3 @@ CLAUDE.md
 .claude/worktrees/
 *.bak
 /data/*.sqlite3
-/config/site.php

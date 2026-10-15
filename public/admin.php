@@ -39,6 +39,7 @@ $currentUserRole = getCurrentUserRole();
             <button class="tab" onclick="switchTab('system', event)">System</button>
             <button class="tab" onclick="switchTab('cron', event)">Cronjobs</button>
             <button class="tab" onclick="switchTab('stats', event)">Statistik</button>
+            <button class="tab" onclick="switchTab('legal', event)">Rechtliches</button>
         </div>
 
         <!-- Users Tab -->
@@ -185,6 +186,27 @@ $currentUserRole = getCurrentUserRole();
             </div>
         </div>
 
+        <!-- Legal Tab -->
+        <div id="tab-legal" class="tab-content">
+            <div class="section">
+                <h2 class="section-title">Impressum</h2>
+                <p style="color:var(--color-text-secondary);margin-bottom:var(--spacing-lg)">Wer die Seite für Dritte betreibt, ist selbst für Impressum und Datenschutzerklärung verantwortlich. Die Angaben erscheinen auf /impressum.php und werden in der Datenschutzerklärung als Verantwortlicher verwendet. Die Texte sind eine Vorlage, keine Rechtsberatung.</p>
+                <div style="display:flex;flex-direction:column;gap:var(--spacing-md);max-width:500px;">
+                    <label><input type="checkbox" id="legalImprintEnabled"> Impressum anzeigen (Footer-Link und Seite)</label>
+                    <div class="form-group"><label>Name</label><input type="text" id="legalName" maxlength="120"></div>
+                    <div class="form-group"><label>Straße und Hausnummer</label><input type="text" id="legalStreet" maxlength="120"></div>
+                    <div class="form-group"><label>PLZ und Ort</label><input type="text" id="legalCity" maxlength="120"></div>
+                    <div class="form-group"><label>Telefon (optional)</label><input type="text" id="legalPhone" maxlength="60"></div>
+                    <div class="form-group"><label>E-Mail</label><input type="email" id="legalEmail" maxlength="120"></div>
+                </div>
+            </div>
+            <div class="section">
+                <h2 class="section-title">Datenschutzerklärung</h2>
+                <label><input type="checkbox" id="legalPrivacyEnabled"> Datenschutzerklärung anzeigen (Footer-Link und Seite)</label>
+                <div style="margin-top:var(--spacing-lg)"><button class="btn btn-primary" onclick="saveLegal()">Speichern</button></div>
+                <div id="legalResult" style="margin-top:var(--spacing-md);"></div>
+            </div>
+        </div>
         <!-- Cron Tab -->
         <div id="tab-cron" class="tab-content">
             <div class="section">
