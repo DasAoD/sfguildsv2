@@ -410,7 +410,7 @@ $totalPending = $stmt->fetchColumn();
             tbody.innerHTML = reports.map(r => `
                 <tr>
                     <td>
-                        <input type="checkbox" class="report-checkbox" data-id="${r.id}" data-guild-id="${r.guild_id}">
+                        <input type="checkbox" class="report-checkbox" aria-label="Bericht vom ${formatDate(r.battle_date)} ${r.battle_time} auswählen" data-id="${r.id}" data-guild-id="${r.guild_id}">
                     </td>
                     <td>${formatDate(r.battle_date)}</td>
                     <td>${r.battle_time}</td>
