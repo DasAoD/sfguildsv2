@@ -8,6 +8,7 @@
     gap: var(--spacing-xl);
     margin-bottom: var(--spacing-2xl);
     min-height: 80vh;
+    align-content: start;
 }
 
 .guild-card {
