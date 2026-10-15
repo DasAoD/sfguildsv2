@@ -110,6 +110,7 @@
 .stat {
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
 }
 
 .stat-label {
