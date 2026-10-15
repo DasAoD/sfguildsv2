@@ -7,6 +7,7 @@
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: var(--spacing-xl);
     margin-bottom: var(--spacing-2xl);
+    min-height: 80vh;
 }
 
 .guild-card {

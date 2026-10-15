@@ -304,3 +304,26 @@ function resolveGuildCrestImage(int $guildId, ?string $coaCode): ?string {
         return null;
     }
 }
+
+/**
+ * Verkleinert ein Wappen auf maximal $max Pixel Kantenlänge (Seitenverhältnis
+ * bleibt, Transparenz bleibt). Angezeigt wird es nur mit rund 60 Pixeln; die
+ * Originale mit 2048 px waren der größte Posten beim Dashboard-Laden.
+ */
+function limitCrestSize(GdImage $image, int $max = 512): GdImage {
+    $w = imagesx($image);
+    $h = imagesy($image);
+    if ($w <= $max && $h <= $max) {
+        return $image;
+    }
+    $scale = $max / max($w, $h);
+    $nw = max(1, (int) round($w * $scale));
+    $nh = max(1, (int) round($h * $scale));
+    $out = imagecreatetruecolor($nw, $nh);
+    imagealphablending($out, false);
+    imagesavealpha($out, true);
+    imagefill($out, 0, 0, imagecolorallocatealpha($out, 0, 0, 0, 127));
+    imagecopyresampled($out, $image, 0, 0, 0, 0, $nw, $nh, $w, $h);
+    imagedestroy($image);
+    return $out;
+}

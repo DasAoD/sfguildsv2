@@ -442,11 +442,11 @@ select:focus {
 .footer a:visited,
 .footer a:hover {
     color: var(--color-primary);
-    text-decoration: none;
+    text-decoration: underline;
 }
 
 .footer a:hover {
-    text-decoration: underline;
+    text-decoration-thickness: 2px;
 }
 
 /* Keyboard focus for clickable headers */
