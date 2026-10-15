@@ -450,6 +450,22 @@
         font-size: 3rem;
     }
 
+    #battleModal .data-table th,
+    #battleModal .data-table td {
+        padding: var(--spacing-sm) var(--spacing-xs);
+        font-size: 0.8rem;
+        letter-spacing: 0;
+    }
+
+    #battleModal .modal-body {
+        padding: var(--spacing-md);
+    }
+
+    #battleList .btn-small {
+        display: block;
+        margin: 0 0 var(--spacing-xs);
+    }
+
     .guild-title {
         font-size: 1.35rem;
     }
