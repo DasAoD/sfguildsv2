@@ -163,8 +163,35 @@ function renderTable(members, logged) {
     }).join('');
 }
 
+// Touch-Geraete haben kein Hover, daher title-Texte der Slots per Tap anzeigen
+let charTipSrc = null;
+
+function hideCharTip() {
+    document.querySelector('.char-tip')?.remove();
+    charTipSrc = null;
+}
+
+document.addEventListener('scroll', hideCharTip, true);
+
 // Inline editing + Charakter-Modal
 document.addEventListener('click', function(e) {
+    const tipSrc = e.target.closest('#characterModalBody [title]:not([title=""])');
+    const prevSrc = charTipSrc;
+    hideCharTip();
+    if (tipSrc && e.pointerType !== 'mouse' && tipSrc !== prevSrc) {
+        const tip = document.createElement('div');
+        tip.className = 'char-tip';
+        tip.textContent = tipSrc.getAttribute('title');
+        charTipSrc = tipSrc;
+        document.getElementById('characterModal').appendChild(tip);
+        const r = tipSrc.getBoundingClientRect();
+        const w = tip.offsetWidth;
+        const h = tip.offsetHeight;
+        tip.style.left = Math.max(8, Math.min(r.left + r.width / 2 - w / 2, window.innerWidth - w - 8)) + 'px';
+        tip.style.top = (r.bottom + 6 + h > window.innerHeight ? r.top - 6 - h : r.bottom + 6) + 'px';
+        return;
+    }
+
     const nameEl = e.target.closest('.player-name');
     if (nameEl && isLoggedIn) {
         openCharacterModal(nameEl.dataset.player);
@@ -506,6 +533,7 @@ async function openCharacterModal(playerName) {
 }
 
 function closeCharacterModal() {
+    hideCharTip();
     document.getElementById('characterModal').style.display = 'none';
 }
 

@@ -10,7 +10,7 @@ require_once __DIR__ . '/site_settings.php';
  * Render HTML head with CSS links
  */
 function renderHead($title, $additionalCSS = []) {
-    $version = '20261015w'; // Update this when CSS changes
+    $version = '20261015x'; // Update this when CSS changes
     $cssFiles = array_merge(['/assets/css/main.css', '/assets/css/overlay.css'], $additionalCSS);
     ?>
     <meta charset="UTF-8">
@@ -155,7 +155,7 @@ function renderFooter() {
  * Render script tags
  */
 function renderScripts($additionalJS = []) {
-    $version = '20260820a'; // Update this when JS changes
+    $version = '20261015a'; // Update this when JS changes
     // Hinweis: der Session-Idle-Timer wird in renderNavbar() geladen, damit er
     // auch auf Seiten ohne renderScripts() (fights/hellevator/inbox) greift.
     $jsFiles = array_merge(['/assets/js/overlay.js', '/assets/js/main.js'], $additionalJS);
