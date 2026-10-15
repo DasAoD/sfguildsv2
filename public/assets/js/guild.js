@@ -343,55 +343,6 @@ async function deleteMember(idx) {
     );
 }
 
-// Import Modal Functions
-function openImportModal() {
-    document.getElementById('importModal').style.display = 'flex';
-    document.getElementById('csvFile').value = '';
-}
-
-function closeImportModal() {
-    document.getElementById('importModal').style.display = 'none';
-}
-
-// Handle import form submission
-document.getElementById('importForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-
-    const fileInput = document.getElementById('csvFile');
-    const file = fileInput.files[0];
-
-    if (!file) {
-        await showAlert('Bitte wähle eine CSV-Datei aus', 'Fehler');
-        return;
-    }
-
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('guild_id', guildId);
-
-    try {
-        const response = await fetch('/api/import_guild_members.php', {
-            method: 'POST',
-            body: formData
-        });
-
-        const result = await response.json();
-
-        closeImportModal();
-
-        if (result.success) {
-            await showAlert(`Import erfolgreich!\n\nEingefügt: ${result.inserted}\nAktualisiert: ${result.updated}\nÜbersprungen: ${result.skipped}`, 'Erfolg');
-            loadGuild(); // Reload data
-        } else {
-            await showAlert('Fehler beim Import: ' + (result.error || 'Unbekannter Fehler'), 'Fehler');
-        }
-    } catch (error) {
-        closeImportModal();
-        await showAlert('Fehler beim Import: ' + error.message, 'Fehler');
-        console.error(error);
-    }
-});
-
 // ─── Character Modal ──────────────────────────────────────────────
 
 const slotLabels = {
@@ -694,9 +645,8 @@ function showAlert(message, title = 'Hinweis') {
     });
 }
 
-// Show import button only if logged in
+// Show sync button only if logged in
 if (isLoggedIn) {
-    document.getElementById('importBtn').style.display = 'block';
     document.getElementById('syncBtn').style.display = 'block';
 }
 
