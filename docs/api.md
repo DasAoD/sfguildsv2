@@ -150,23 +150,6 @@ Mitglied löschen.
 
 ---
 
-### `POST /api/import_guild_members.php`
-Mitglieder-Import per CSV (Fallback für sf-api-Ausfall).
-
-**Auth:** admin
-
-**Request:** `multipart/form-data`
-| Feld | Typ | Beschreibung |
-|---|---|---|
-| `guild_id` | int | Ziel-Gilde |
-| `file` | file | CSV-Datei |
-
-**Response:**
-
-    { "success": true, "inserted": 5, "updated": 18, "skipped": 2 }
-
----
-
 ### `POST /api/sf_member_sync.php`
 Mitglieder-Sync via sf-api Rust-Binary.
 

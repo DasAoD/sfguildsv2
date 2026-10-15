@@ -17,7 +17,7 @@ Privates Guild-Management-System für das Browsergame Shakes & Fidget – verwal
 - `install/` – Installations-Skripte & Schema
 - `public/` – Document Root (nginx), Dark-Theme-Assets
 - `rust_examples/` – Rust-Quellcode für sf-api-Binaries (fetch_guild_reports, member_sync, guild_battle_info, list_chars)
-- `storage/` – CSV-Import (Fallback), temporäre Kampfbericht-Dateien
+- `storage/` – temporäre Kampfbericht-Dateien
 
 ## Wichtige Konventionen
 - Zentrale Fehlerbehandlung über `jsonResponse()` / `jsonError()`
@@ -29,7 +29,6 @@ Privates Guild-Management-System für das Browsergame Shakes & Fidget – verwal
 
 ## Datenquellen
 - **Primär**: sf-api (the-marenga/sf-api) für Member-Sync und Kampfberichte
-- **Fallback**: CSV-Import via SFTools-Export, wenn sf-api nach einem S&F-Update vorübergehend nicht funktioniert
 
 ## Besonderheiten
 - `guild_joined` wird seit S&F v29.500 nicht mehr vom Server geliefert → "first seen"-Ansatz implementiert
