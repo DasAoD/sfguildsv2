@@ -178,6 +178,31 @@ $totalPending = $stmt->fetchColumn();
         line-height: 1.6;
     }
     
+    .inbox-table-wrap {
+        overflow-x: auto;
+    }
+
+    .inbox-table td,
+    .inbox-table th {
+        white-space: nowrap;
+    }
+
+    @media (max-width: 768px) {
+        .inbox-header {
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .inbox-actions {
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .inbox-actions .btn {
+            flex: 1 1 100%;
+        }
+    }
+
     .guild-content {
         display: none;
     }
@@ -192,7 +217,7 @@ $totalPending = $stmt->fetchColumn();
 
     <main class="main-content">
         <div class="container">
-            <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div class="page-header inbox-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
                 <div>
                     <h1>📥 Kampfbericht-Posteingang</h1>
                     <p class="page-description">
@@ -240,6 +265,7 @@ $totalPending = $stmt->fetchColumn();
                                 <h2><?php echo htmlspecialchars($guild['name']); ?> (<?php echo $guild['pending_count']; ?>)</h2>
                             </div>
                             <div class="card-body" style="padding: 0;">
+                                <div class="inbox-table-wrap">
                                 <table class="inbox-table">
                                     <thead>
                                         <tr>
@@ -262,6 +288,7 @@ $totalPending = $stmt->fetchColumn();
                                         </tr>
                                     </tbody>
                                 </table>
+                                </div>
                             </div>
                         </div>
 
