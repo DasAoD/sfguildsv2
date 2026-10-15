@@ -461,9 +461,17 @@
         padding: 0.75rem;
     }
 
-    #battleList .btn-small {
+    #battleList .btn-small,
+    #battleList .guild-select {
         display: block;
+        box-sizing: border-box;
+        width: 100%;
         margin: 0 0 var(--spacing-xs);
+    }
+
+    #battleList .guild-select {
+        padding: 0.35rem 0.25rem;
+        font-size: 0.8rem;
     }
 
     .guild-title {
