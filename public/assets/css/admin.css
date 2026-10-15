@@ -265,3 +265,45 @@ input[type="file"] {
     padding: 0.35rem 0.7rem;
     font-size: 0.8rem;
 }
+
+@media (max-width: 767px) {
+    .tabs {
+        overflow-x: auto;
+        gap: 0;
+    }
+
+    .tab {
+        flex-shrink: 0;
+        white-space: nowrap;
+        padding: var(--spacing-md);
+    }
+
+    .section {
+        padding: var(--spacing-md);
+    }
+
+    .section-header {
+        flex-wrap: wrap;
+        gap: var(--spacing-sm);
+    }
+
+    .section table {
+        display: block;
+        overflow-x: auto;
+    }
+
+    .log-toggle {
+        flex-wrap: wrap;
+        max-width: 100%;
+    }
+
+    .log-toolbar-left,
+    .log-toolbar-right {
+        flex-wrap: wrap;
+        width: 100%;
+    }
+
+    .log-filter-input {
+        flex: 1 1 140px;
+    }
+}
