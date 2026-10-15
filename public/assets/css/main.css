@@ -143,9 +143,14 @@ body {
     cursor: pointer;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 768px), (max-height: 500px) {
     .navbar .container {
         gap: var(--spacing-md);
+    }
+
+    .navbar.open {
+        max-height: 100dvh;
+        overflow-y: auto;
     }
 
     .navbar-toggle {
