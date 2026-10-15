@@ -27,6 +27,40 @@
     flex-shrink: 0;
 }
 
+.guild-crest-img {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+}
+
+.guild-crest-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 5rem;
+}
+
+.guild-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+    width: 100%;
+}
+
+.guild-header-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-width: 0;
+}
+
+.guild-header-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
 .guild-tabs {
     display: flex;
     gap: 0;
@@ -405,6 +439,19 @@
     
     .guild-tabs {
         flex-wrap: nowrap;
+    }
+
+    .guild-crest-img {
+        width: 64px;
+        height: 64px;
+    }
+
+    .guild-crest-fallback {
+        font-size: 3rem;
+    }
+
+    .guild-title {
+        font-size: 1.35rem;
     }
 }
 

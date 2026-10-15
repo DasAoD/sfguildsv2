@@ -127,17 +127,17 @@ $currentUser = getCurrentUsername();
             <?php if ($selectedGuild): ?>
                 <!-- Guild Header -->
                 <div class="page-header">
-                    <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
-                        <div style="display:flex;align-items:center;gap:1rem">
+                    <div class="guild-header-row">
+                        <div class="guild-header-info">
                             <div class="guild-crest">
                                 <?php $crestSrc = $selectedGuild['crest_file'] ?: ($selectedGuild['coa_image'] ?? null); ?>
                                 <?php $crestV = !empty($selectedGuild['updated_at']) ? '?v=' . urlencode($selectedGuild['updated_at']) : ''; ?>
                                 <?php if (!empty($crestSrc)): ?>
                                     <img src="/assets/images/<?= e($crestSrc . $crestV) ?>"
                                          alt="<?= e($selectedGuild['name']) ?> Wappen"
-                                         style="width:100px;height:100px;object-fit:contain">
+                                         class="guild-crest-img">
                                 <?php else: ?>
-                                    <div style="width:100px;height:100px;display:flex;align-items:center;justify-content:center;font-size:5rem">
+                                    <div class="guild-crest-img guild-crest-fallback">
                                         🛡️
                                     </div>
                                 <?php endif; ?>
@@ -151,7 +151,7 @@ $currentUser = getCurrentUsername();
                                 </div>
                             </div>
                         </div>
-                        <div style="display: flex; gap: 0.5rem;">
+                        <div class="guild-header-actions">
                             <button onclick="openImportModal()" class="btn btn-primary">+ Kämpfe importieren</button>
                         </div>
                     </div>
