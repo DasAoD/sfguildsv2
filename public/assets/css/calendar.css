@@ -431,6 +431,12 @@
     .modal-content {
         width: 95%;
         max-height: 90vh;
+        padding: 0;
+    }
+
+    .modal-header,
+    .modal-body {
+        padding: var(--spacing-md);
     }
     
     .btn-small {
@@ -455,10 +461,6 @@
         padding: var(--spacing-sm) 0.25rem;
         font-size: 0.8rem;
         letter-spacing: 0;
-    }
-
-    #battleModal .modal-body {
-        padding: 0.75rem;
     }
 
     #battleList .btn-small,
