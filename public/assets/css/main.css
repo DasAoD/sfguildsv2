@@ -455,6 +455,7 @@ select:focus {
     padding: var(--spacing-md);
     border-radius: var(--radius-md);
     margin-bottom: var(--spacing-lg);
+    overflow-wrap: anywhere;
 }
 
 .alert-success {
