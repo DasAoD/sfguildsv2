@@ -756,6 +756,27 @@ input[type="file"].form-input {
     text-align: right;
 }
 
+@media (max-width: 480px) {
+    .char-attrs-row {
+        flex-wrap: nowrap;
+    }
+
+    .char-attr {
+        flex: 1 1 0;
+        min-width: 0;
+        padding: var(--spacing-sm) 2px;
+    }
+
+    .char-attr-label {
+        font-size: 0.6rem;
+    }
+
+    .char-attr-value {
+        font-size: 0.9rem;
+        overflow-wrap: anywhere;
+    }
+}
+
 @media (max-width: 767px) {
     .guild-head {
         flex-wrap: wrap;
