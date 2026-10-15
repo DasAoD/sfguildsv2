@@ -34,8 +34,8 @@ $embed = !empty($_GET['embed']);
     <div class="container hellevator-container">
 
         <div class="lang-toggle">
-            <button class="lang-btn active" onclick="setLang('de')" id="btn-de">🇩🇪 Deutsch</button>
-            <button class="lang-btn" onclick="setLang('en')" id="btn-en">🇬🇧 English</button>
+            <button class="lang-btn active" onclick="setLang('de')" id="btn-de"><img class="flag" src="/assets/images/flags/de.svg" alt="" width="20" height="12"> Deutsch</button>
+            <button class="lang-btn" onclick="setLang('en')" id="btn-en"><img class="flag" src="/assets/images/flags/gb.svg" alt="" width="20" height="12"> English</button>
         </div>
 
         <!-- Content Layout: 3 columns -->
