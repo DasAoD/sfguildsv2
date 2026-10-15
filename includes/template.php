@@ -10,7 +10,7 @@ require_once __DIR__ . '/site_settings.php';
  * Render HTML head with CSS links
  */
 function renderHead($title, $additionalCSS = []) {
-    $version = '20261015g'; // Update this when CSS changes
+    $version = '20261015h'; // Update this when CSS changes
     $cssFiles = array_merge(['/assets/css/main.css', '/assets/css/overlay.css'], $additionalCSS);
     ?>
     <meta charset="UTF-8">
@@ -80,7 +80,8 @@ function renderNavbar($activePage = '', $options = []) {
                 </div>
                 <span class="brand-text">S&F Guilds</span>
             </a>
-            <div class="navbar-menu">
+            <button type="button" class="navbar-toggle" id="navToggle" aria-label="Menü" aria-expanded="false" aria-controls="navMenu navUser"><span aria-hidden="true">☰</span></button>
+            <div class="navbar-menu" id="navMenu">
                 <?php if (empty($options['hide_dashboard'])): ?>
                 <a href="/" class="nav-item <?php echo $activePage === 'dashboard' ? 'active' : ''; ?>">Dashboard</a>
                 <?php endif; ?>
@@ -100,7 +101,7 @@ function renderNavbar($activePage = '', $options = []) {
                 <?php endif; ?>
                 <?php endif; ?>
             </div>
-            <div class="user-menu">
+            <div class="user-menu" id="navUser">
                 <?php if ($isLoggedIn): ?>
                 <span class="user-name">Angemeldet als: <strong><?php echo e($currentUser); ?></strong></span>
                 <span class="session-timer" id="sessionTimer" title="Verbleibende Sitzungszeit – wird bei jeder Aktion zurückgesetzt" hidden></span>
@@ -112,6 +113,13 @@ function renderNavbar($activePage = '', $options = []) {
             </div>
         </div>
     </nav>
+    <script>
+    document.getElementById('navToggle').addEventListener('click', function () {
+        var open = this.closest('.navbar').classList.toggle('open');
+        this.setAttribute('aria-expanded', open ? 'true' : 'false');
+        this.firstElementChild.textContent = open ? '✕' : '☰';
+    });
+    </script>
     <?php
     // Session-Idle-Timer: Config + Loader auf JEDER Seite mit Navbar –
     // auch fights/hellevator/inbox/settings, die renderScripts() nicht aufrufen.

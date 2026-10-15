@@ -33,6 +33,11 @@ $embed = !empty($_GET['embed']);
 
     <div class="container hellevator-container">
 
+        <div class="lang-toggle">
+            <button class="lang-btn active" onclick="setLang('de')" id="btn-de">🇩🇪 Deutsch</button>
+            <button class="lang-btn" onclick="setLang('en')" id="btn-en">🇬🇧 English</button>
+        </div>
+
         <!-- Content Layout: 3 columns -->
         <div class="hellevator-layout">
 
@@ -79,12 +84,8 @@ $embed = !empty($_GET['embed']);
                 </table>
             </div>
 
-            <!-- Right: Lang Toggle + Image + Help Link -->
+            <!-- Right: Image + Help Link -->
             <div class="hellevator-right">
-                <div class="lang-toggle">
-                    <button class="lang-btn active" onclick="setLang('de')" id="btn-de">🇩🇪 Deutsch</button>
-                    <button class="lang-btn" onclick="setLang('en')" id="btn-en">🇬🇧 English</button>
-                </div>
                 <div class="hellevator-side-image">
                     <img src="/assets/hellevator/helle_side.webp" alt="Hellevator Szene">
                 </div>
