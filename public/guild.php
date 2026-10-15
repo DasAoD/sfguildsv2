@@ -30,16 +30,16 @@ $guildId = isset($_GET['id']) ? (int)$_GET['id'] : (int)($firstGuild['id'] ?? 1)
             </div>
 
             <div class="page-header">
-                <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
-                    <div style="display:flex;align-items:center;gap:1.5rem">
-                        <div id="guildCrest" style="width:100px;height:100px;display:flex;align-items:center;justify-content:center;font-size:5rem"></div>
+                <div class="guild-head">
+                    <div class="guild-head-main">
+                        <div id="guildCrest"></div>
                         <div>
                             <h1 class="guild-title" id="guildName">Lädt...</h1>
                             <div class="guild-server" id="guildServer"></div>
                             <div class="guild-notes" id="guildNotes" style="display:none;color:var(--color-text-secondary);font-size:0.875rem;margin-top:0.25rem"></div>
                         </div>
                     </div>
-                    <div style="display:flex;gap:0.75rem">
+                    <div class="guild-head-actions">
                         <button onclick="syncMembers()" class="btn btn-secondary" id="syncBtn" style="display:none">⟳ Mitglieder synchronisieren</button>
                         <button onclick="openImportModal()" class="btn btn-primary" id="importBtn" style="display:none">+ Mitglieder importieren</button>
                     </div>
