@@ -449,8 +449,7 @@ select:focus {
     text-decoration: underline;
 }
 
-/* Keyboard focus for clickable cards */
-.guild-card:focus-visible,
+/* Keyboard focus for clickable headers */
 .account-card-header:focus-visible {
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;

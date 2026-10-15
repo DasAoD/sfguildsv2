@@ -68,7 +68,7 @@ $pageTitle = 'Dashboard';
                     ? `<img src="/assets/images/${escapeHtml(crestSrc)}${crestV}" alt="${escapeHtml(guild.name)} Wappen" style="width:100%;height:100%;object-fit:contain">`
                     : '<img src="/assets/images/helmet.png" alt="Wappen" style="width:3rem;height:3rem;object-fit:contain">';
                 return `
-                <div class="guild-card" role="link" tabindex="0" onclick="location.href='/guild.php?id=${guild.id}'" onkeydown="if(event.key==='Enter'){location.href='/guild.php?id=${guild.id}'}">
+                <div class="guild-card" onclick="location.href='/guild.php?id=${guild.id}'">
                     <div class="guild-header">
                         <div class="guild-crest">${crestImg}</div>
                         <div class="guild-info">
