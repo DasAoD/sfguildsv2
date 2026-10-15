@@ -26,7 +26,6 @@
 - [x] **Mitglieder-Sortierung** – Aktive <7 Tage offline nach Rang/Level, Aktive ≥7 Tage als Block nach Offline-Tagen, Entlassene/Verlassene am Ende
 
 ### Daten-Import
-- [x] CSV-Import via SFTools-Export (Fallback)
 - [x] **sf-api Member-Sync** – Mitgliederdaten direkt via [sf-api](https://github.com/the-marenga/sf-api) abrufen
   - Neues Mitglied: joined_at = heute ("first seen"-Ansatz, da guild_joined seit v29.500 nicht mehr vom Server geliefert wird)
   - Wiederbeitritt: fired_at/left_at automatisch geleert, joined_at = heute

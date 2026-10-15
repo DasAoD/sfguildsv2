@@ -20,7 +20,7 @@ define('LOG_MAX_FILES', 5);
 /**
  * Log an activity (user actions, audit trail)
  * 
- * @param string $action  Short description (e.g. "member_deleted", "import_csv")
+ * @param string $action  Short description (e.g. "member_deleted")
  * @param array  $context Additional data (will be JSON-encoded)
  */
 function logActivity(string $action, array $context = []): void {

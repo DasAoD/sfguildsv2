@@ -14,7 +14,7 @@ Ein privates Guild-Management-System für das Browsergame [Shakes & Fidget](http
 - 📊 **Statistiken & Analysen** – Mitglieder-Entwicklung, Kampf-Performance
 - 📅 **Battle-Kalender** – Übersicht über vergangene Gildenkämpfe
 - 🔱 **Hellevator-Übersicht** – Etagen-Anforderungen und Spieler-Empfehlungen
-- 📄 **sf-api Member-Sync** – Mitgliederdaten direkt via sf-api abrufen (CSV als Fallback)
+- 📄 **sf-api Member-Sync** – Mitgliederdaten direkt via sf-api abrufen
 - ⏱️ **Cron-System** – Automatischer Fetch von Kampfberichten und Mitglieder-Sync
 - 📋 **Import-Log** – Letzter Import pro Gilde und Import-Aktivitäten im Admin-Bereich
 - 🛡️ **Wappen-Upload** – Gilden-Wappen hochladen und verwalten
@@ -59,7 +59,7 @@ Ein privates Guild-Management-System für das Browsergame [Shakes & Fidget](http
 │   ├── guild_battle_info.rs
 │   └── README.md           # Build- und Deploy-Anleitung
 └── storage/
-    ├── import/             # CSV-Import-Ordner (Fallback)
+    ├── import/             # ungenutzt (früher CSV-Import)
     └── sf_reports/         # Temporäre Kampfbericht-Dateien
 ```
 
@@ -139,9 +139,6 @@ Siehe `rust_examples/README.md` für Build- und Deploy-Anleitung.
 
 ### sf-api Member-Sync (primär)
 Mitgliederdaten direkt via [sf-api von The Marenga](https://github.com/the-marenga/sf-api) – manuell per Button auf der Gildenseite oder automatisch via Cron. Für den sf-api-Login werden ausschließlich Admin-Accounts verwendet (Compliance mit S&F-Spielregeln).
-
-### CSV-Import (Fallback)
-SFTools CSV-Export → manueller Upload oder automatisierter Import via `storage/import/`. Bleibt als Fallback erhalten für den Fall, dass sf-api nach einem S&F-Spielupdate vorübergehend nicht funktioniert.
 
 ### Kampfberichte
 Automatisch via sf-api aus dem S&F-Postkasten (Cron: 07:25 + 19:10 Uhr). Der Cron verwendet ausschließlich Admin-Accounts. Der Import der abgeholten Berichte in den Kalender ist für Benutzer ab Moderator-Rolle möglich – beschränkt auf Gildenleiter und Offiziere, die im Spiel Zugang zu Kampfberichten haben. Erkanntes Kampfergebnis (Gewonnen/Verloren) wird automatisch aus dem Combat Log ermittelt und gespeichert.
