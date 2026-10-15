@@ -268,8 +268,10 @@ $embed = !empty($_GET['embed']);
             document.removeEventListener('click', startMusicOnInteraction);
             document.removeEventListener('scroll', startMusicOnInteraction);
         }
-        document.addEventListener('click', startMusicOnInteraction);
-        document.addEventListener('scroll', startMusicOnInteraction);
+        if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            document.addEventListener('click', startMusicOnInteraction);
+            document.addEventListener('scroll', startMusicOnInteraction);
+        }
 
         // Init
         renderTable('de');
