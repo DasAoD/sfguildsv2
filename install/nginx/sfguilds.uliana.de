@@ -47,7 +47,7 @@ server {
 
     # Standard: try files, then index.php
     location / {
-        try_files $uri $uri/ /index.php?$query_string;
+        try_files $uri $uri/ =404;
     }
 
     # Deploy-Webhook (Forgejo Push auf main). Der Receiver liegt BEWUSST
