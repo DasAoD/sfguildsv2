@@ -142,7 +142,7 @@
     background-color: var(--color-primary);
     border: none;
     border-radius: var(--radius-md);
-    color: white;
+    color: var(--color-on-primary);
     font-weight: 600;
     font-size: 0.875rem;
     text-decoration: none;

@@ -126,7 +126,7 @@ input[type="file"] {
 
 .btn-toggle.active {
     background: var(--color-primary);
-    color: white;
+    color: var(--color-on-primary);
 }
 
 .btn-toggle:hover:not(.active) {

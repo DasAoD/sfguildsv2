@@ -345,7 +345,7 @@
 
 .btn-small:hover {
     background: var(--color-primary);
-    color: white;
+    color: var(--color-on-primary);
     border-color: var(--color-primary);
 }
 
@@ -491,7 +491,7 @@ input[type="time"]::-webkit-datetime-edit-minute-field {
 
 .btn-primary {
     background: var(--color-primary);
-    color: white;
+    color: var(--color-on-primary);
     border: none;
 }
 

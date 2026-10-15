@@ -7,6 +7,7 @@
 :root {
     /* Colors */
     --color-primary: #ff6b35;
+    --color-on-primary: #1a1a1a;
     --color-secondary: #4ecdc4;
     --color-success: #4ade80;
     --color-warning: #fbbf24;
@@ -21,7 +22,7 @@
     /* Text Colors */
     --color-text-primary: #ffffff;
     --color-text-secondary: #a0a0a0;
-    --color-text-muted: #666666;
+    --color-text-muted: #8c8c8c;
     
     /* Border */
     --color-border: #333333;
@@ -143,7 +144,7 @@ body {
 
 .nav-item.active {
     background-color: var(--color-primary);
-    color: white;
+    color: var(--color-on-primary);
 }
 
 .user-menu {
@@ -244,7 +245,7 @@ body {
 
 .btn-primary {
     background: var(--color-primary);
-    color: white;
+    color: var(--color-on-primary);
 }
 
 .btn-primary:hover {

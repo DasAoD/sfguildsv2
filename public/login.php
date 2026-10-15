@@ -26,7 +26,7 @@ if (isLoggedIn()) {
     <?php renderHead('Login', ['/assets/css/login.css']); ?>
 </head>
 <body>
-    <div class="login-container">
+    <main class="login-container">
         <div class="login-box">
             <div class="login-header">
                 <img src="/assets/images/sf-logo.png" alt="S&F Guilds Logo" class="login-logo">
@@ -60,7 +60,7 @@ if (isLoggedIn()) {
                 <a href="/" class="btn-dashboard">← Zurück zum Dashboard</a>
             </div>
         </div>
-    </div>
+    </main>
 
     <?php renderScripts(); ?>
     <script>

@@ -356,7 +356,7 @@ input[type="file"].form-input {
 
 .btn-small.btn-primary {
     background: var(--color-primary);
-    color: white;
+    color: var(--color-on-primary);
     border-color: var(--color-primary);
 }
 
@@ -368,7 +368,7 @@ input[type="file"].form-input {
 
 .btn-primary {
     background: var(--color-primary);
-    color: white;
+    color: var(--color-on-primary);
     border: none;
     padding: var(--spacing-sm) var(--spacing-md);
     border-radius: var(--radius);
@@ -566,7 +566,7 @@ input[type="file"].form-input {
 .char-level-badge {
     margin-top: 0.25rem;
     background: var(--color-primary);
-    color: white;
+    color: var(--color-on-primary);
     font-weight: 700;
     font-size: 0.8rem;
     padding: 0.15rem 0.6rem;
