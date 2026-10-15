@@ -23,7 +23,7 @@ $currentUserRole = getCurrentUserRole();
 <body>
     <?php renderNavbar('admin'); ?>
 
-    <div class="container">
+    <main class="container">
         <div class="page-header">
             <h1>Admin-Bereich</h1>
             <p class="subtitle">Verwaltung von Benutzern, Gilden und System</p>
@@ -306,7 +306,7 @@ $currentUserRole = getCurrentUserRole();
                 </div>
             </form>
         </div>
-    </div>
+    </main>
 
     <?php renderScripts(['/assets/js/admin.js']); ?>
     <script>

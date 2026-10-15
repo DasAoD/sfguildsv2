@@ -32,7 +32,7 @@ $guildId = isset($_GET['id']) ? (int)$_GET['id'] : 1;
                 <div style="display:flex;align-items:center;gap:1.5rem">
                     <div id="guildCrest" style="width:100px;height:100px;display:flex;align-items:center;justify-content:center;font-size:5rem"></div>
                     <div>
-                        <h1 class="guild-title" id="guildName">Lädt...</h1>
+                        <h1 class="guild-title" id="guildName">Report</h1>
                         <div class="guild-server" id="guildServer"></div>
                     </div>
                 </div>
@@ -43,7 +43,7 @@ $guildId = isset($_GET['id']) ? (int)$_GET['id'] : 1;
                     <div class="stats-grid" id="statsGrid"></div>
 
                     <div class="table-container">
-                        <h3>Spieler (kompakt)</h3>
+                        <h2>Spieler (kompakt)</h2>
                         <table id="statsTable">
                             <thead>
                                 <tr>
@@ -64,20 +64,20 @@ $guildId = isset($_GET['id']) ? (int)$_GET['id'] : 1;
 
                 <div class="report-sidebar">
                     <div class="sidebar-section">
-                        <h3>Auffälligkeiten</h3>
+                        <h2>Auffälligkeiten</h2>
                         
                         <div class="sidebar-card">
-                            <h4>Top Nicht teilgenommen</h4>
+                            <h3>Top Nicht teilgenommen</h3>
                             <div id="topMissing"></div>
                         </div>
 
                         <div class="sidebar-card">
-                            <h4>Verteilung</h4>
+                            <h3>Verteilung</h3>
                             <div id="distribution"></div>
                         </div>
 
                         <div class="sidebar-card">
-                            <h4>Inaktiv (ab 7 Tagen)</h4>
+                            <h3>Inaktiv (ab 7 Tagen)</h3>
                             <div id="inactive"></div>
                         </div>
                     </div>

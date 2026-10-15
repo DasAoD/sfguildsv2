@@ -387,8 +387,8 @@ unset($acc);
                 </div>
                 <div class="card-body">
                     <div class="form-group">
-                        <label>Benutzername</label>
-                        <input type="text" value="<?php echo htmlspecialchars($user['username']); ?>" disabled>
+                        <label for="account_username">Benutzername</label>
+                        <input type="text" id="account_username" value="<?php echo htmlspecialchars($user['username']); ?>" disabled>
                     </div>
                 </div>
             </div>
@@ -514,7 +514,7 @@ unset($acc);
             
             return `
                 <div class="account-card ${isDefault ? 'is-default' : ''} ${isExpanded}" data-id="${acc.id}">
-                    <div class="account-card-header" onclick="toggleAccount(${acc.id})">
+                    <div class="account-card-header" role="button" tabindex="0" aria-expanded="${acc._expanded ? 'true' : 'false'}" onclick="toggleAccount(${acc.id})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleAccount(${acc.id})}">
                         <div class="account-card-title">
                             <div>
                                 <h3>${escapeHtml(acc.account_name)}</h3>
@@ -604,6 +604,7 @@ unset($acc);
         if (acc) {
             acc._expanded = !acc._expanded;
             renderAccounts();
+            document.querySelector(`.account-card[data-id="${id}"] .account-card-header`)?.focus();
         }
     }
     
