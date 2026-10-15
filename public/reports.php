@@ -12,7 +12,11 @@ require_once __DIR__ . '/../includes/template.php';
 checkAuth();
 
 $isLoggedIn = isLoggedIn();
-$guildId = isset($_GET['id']) ? (int)$_GET['id'] : 1;
+require_once __DIR__ . '/../config/database.php';
+
+// Same order as the guild tabs (api/guilds.php), so the first tab is preselected
+$firstGuild = queryOne('SELECT id FROM guilds ORDER BY name LIMIT 1');
+$guildId = isset($_GET['id']) ? (int)$_GET['id'] : (int)($firstGuild['id'] ?? 1);
 ?>
 <!DOCTYPE html>
 <html lang="de">
