@@ -106,7 +106,7 @@ $pageTitle = 'Dashboard';
                         <div class="last-update">
                             ${guild.last_update ? 'Aktualisiert: ' + formatDateTime(guild.last_update) : 'Noch nie aktualisiert'}
                         </div>
-                        <a href="/guild.php?id=${guild.id}" class="btn-details" onclick="event.stopPropagation()">Details →</a>
+                        <a href="/guild.php?id=${guild.id}" class="btn-details" aria-label="Details zu ${escapeHtml(guild.name)}" onclick="event.stopPropagation()">Details →</a>
                     </div>
                 </div>
                 `;

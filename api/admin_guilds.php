@@ -4,6 +4,7 @@
  * Admin-only endpoint for guild CRUD operations
  */
 require_once __DIR__ . '/../includes/bootstrap_api.php';
+require_once __DIR__ . '/../includes/guild_crest.php';
 
 // Must be logged in
 requireAdminAPI();
@@ -93,6 +94,7 @@ try {
                                     // echtem RGBA) lässt imagewebp() sonst manchmal stillschweigend
                                     // als 0-Byte-Datei rausfallen, ohne Fehler zu werfen.
                                     imagepalettetotruecolor($image);
+                                    $image = limitCrestSize($image);
                                     if (imagewebp($image, $outputPath, 90) && filesize($outputPath) > 0) {
                                         imagedestroy($image);
                                         execute('UPDATE guilds SET crest_file = ? WHERE id = ?', [$crestFile, $guildId]);
@@ -193,6 +195,7 @@ try {
                                     // echtem RGBA) lässt imagewebp() sonst manchmal stillschweigend
                                     // als 0-Byte-Datei rausfallen, ohne Fehler zu werfen.
                                     imagepalettetotruecolor($image);
+                                    $image = limitCrestSize($image);
                                     if (imagewebp($image, $outputPath, 90) && filesize($outputPath) > 0) {
                                         imagedestroy($image);
                                         // Altes Wappen erst löschen, nachdem das neue erfolgreich geschrieben wurde
