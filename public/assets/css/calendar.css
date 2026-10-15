@@ -344,13 +344,13 @@
 }
 
 .btn-small:hover {
-    background: var(--color-primary);
+    background: var(--color-primary-solid);
     color: var(--color-on-primary);
     border-color: var(--color-primary);
 }
 
 .btn-small.btn-danger {
-    background: var(--color-danger);
+    background: var(--color-danger-solid);
     color: white;
     border-color: var(--color-danger);
 }
@@ -490,7 +490,7 @@ input[type="time"]::-webkit-datetime-edit-minute-field {
 }
 
 .btn-primary {
-    background: var(--color-primary);
+    background: var(--color-primary-solid);
     color: var(--color-on-primary);
     border: none;
 }
@@ -513,7 +513,7 @@ input[type="time"]::-webkit-datetime-edit-minute-field {
 
 .badge-lost {
     background: rgba(239, 68, 68, 0.2);
-    color: #ef4444;
+    color: var(--color-danger);
 }
 
 .badge-unknown {

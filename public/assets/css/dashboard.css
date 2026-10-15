@@ -140,7 +140,7 @@
 
 .btn-details {
     padding: 0.5rem var(--spacing-md);
-    background-color: var(--color-primary);
+    background-color: var(--color-primary-solid);
     border: none;
     border-radius: var(--radius-md);
     color: var(--color-on-primary);
@@ -151,5 +151,5 @@
 }
 
 .btn-details:hover {
-    background-color: #ff8c5a;
+    background-color: #9a3412;
 }

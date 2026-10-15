@@ -53,8 +53,8 @@
     transition: all 0.3s ease;
 }
 .lang-btn.active {
-    background: var(--color-primary, #ff6b35);
-    border-color: var(--color-primary, #ff6b35);
+    background: var(--color-primary-solid);
+    border-color: var(--color-primary-solid);
     color: var(--color-on-primary);
     font-weight: 600;
 }
@@ -135,7 +135,7 @@
 /* Floor Badge */
 .floor-badge {
     display: inline-block;
-    background: linear-gradient(135deg, var(--color-primary, #ff6b35), var(--color-primary-dark, #e85a2a));
+    background: linear-gradient(135deg, var(--color-primary-solid), #9a3412);
     color: var(--color-on-primary);
     font-weight: 700;
     font-size: 0.85rem;

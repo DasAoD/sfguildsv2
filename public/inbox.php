@@ -85,7 +85,7 @@ $totalPending = $stmt->fetchColumn();
     }
     
     .guild-tab .count {
-        background: var(--color-danger);
+        background: var(--color-danger-solid);
         color: white;
         padding: 0.125rem 0.5rem;
         border-radius: 1rem;

@@ -10,7 +10,7 @@ require_once __DIR__ . '/site_settings.php';
  * Render HTML head with CSS links
  */
 function renderHead($title, $additionalCSS = []) {
-    $version = '20261015f'; // Update this when CSS changes
+    $version = '20261015g'; // Update this when CSS changes
     $cssFiles = array_merge(['/assets/css/main.css', '/assets/css/overlay.css'], $additionalCSS);
     ?>
     <meta charset="UTF-8">
@@ -90,7 +90,7 @@ function renderNavbar($activePage = '', $options = []) {
                 <a href="/inbox.php" class="nav-item <?php echo $activePage === 'inbox' ? 'active' : ''; ?>">
                     Posteingang
                     <?php if ($inboxCount > 0): ?>
-                        <span style="background: var(--color-danger); color: white; padding: 0.125rem 0.5rem; border-radius: 1rem; font-size: 0.75rem; margin-left: 0.25rem;"><?php echo $inboxCount; ?></span>
+                        <span style="background: var(--color-danger-solid); color: white; padding: 0.125rem 0.5rem; border-radius: 1rem; font-size: 0.75rem; margin-left: 0.25rem;"><?php echo $inboxCount; ?></span>
                     <?php endif; ?>
                 </a>
                 <a href="/reports.php" class="nav-item <?php echo $activePage === 'reports' ? 'active' : ''; ?>">Reports</a>

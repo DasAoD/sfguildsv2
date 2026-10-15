@@ -50,7 +50,7 @@
 .btn-login-submit {
     width: 100%;
     padding: var(--spacing-md);
-    background: linear-gradient(135deg, var(--color-primary), #ff8c5a);
+    background: linear-gradient(135deg, var(--color-primary-solid), #9a3412);
     border: none;
     border-radius: var(--radius-md);
     color: var(--color-on-primary);
