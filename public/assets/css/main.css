@@ -437,6 +437,17 @@ select:focus {
     margin-top: auto;
 }
 
+.footer a,
+.footer a:visited,
+.footer a:hover {
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+.footer a:hover {
+    text-decoration: underline;
+}
+
 /* Utility Classes */
 .text-center {
     text-align: center;
