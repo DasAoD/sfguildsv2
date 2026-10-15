@@ -24,6 +24,8 @@ $embed = !empty($_GET['embed']);
         <source src="/assets/hellevator/hellevator_music.mp3" type="audio/mpeg">
     </audio>
 
+    <main>
+    <h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Hellevator</h1>
     <!-- Header Banner -->
     <div class="hellevator-banner">
         <img src="/assets/hellevator/helle_header.jpg" alt="Hellevator">
@@ -104,6 +106,7 @@ $embed = !empty($_GET['embed']);
 
         </div>
     </div>
+    </main>
 
     <!-- Music Toggle Button -->
     <button class="music-toggle" id="musicToggle" onclick="toggleMusic()" title="Musik an/aus">

@@ -55,7 +55,7 @@
 .lang-btn.active {
     background: var(--color-primary, #ff6b35);
     border-color: var(--color-primary, #ff6b35);
-    color: #fff;
+    color: var(--color-on-primary);
     font-weight: 600;
 }
 .lang-btn:hover:not(.active) {
@@ -136,7 +136,7 @@
 .floor-badge {
     display: inline-block;
     background: linear-gradient(135deg, var(--color-primary, #ff6b35), var(--color-primary-dark, #e85a2a));
-    color: #fff;
+    color: var(--color-on-primary);
     font-weight: 700;
     font-size: 0.85rem;
     padding: 0.25rem 0.65rem;

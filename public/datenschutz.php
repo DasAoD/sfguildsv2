@@ -22,7 +22,7 @@ $hasContact = $s['imprint_name'] !== '' && $s['imprint_email'] !== '';
 </head>
 <body>
     <?php renderNavbar(''); ?>
-    <div class="container">
+    <main class="container">
         <div class="page-header"><h1>Datenschutzerklärung</h1></div>
         <div class="section">
             <h2 class="section-title">Verantwortlicher</h2>
@@ -52,7 +52,7 @@ $hasContact = $s['imprint_name'] !== '' && $s['imprint_email'] !== '';
             <h2 class="section-title">Ihre Rechte</h2>
             <p>Sie haben das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch. Außerdem können Sie sich bei einer Datenschutz-Aufsichtsbehörde beschweren. Wenden Sie sich dafür an den oben genannten Verantwortlichen.</p>
         </div>
-    </div>
+    </main>
     <?php renderFooter(); ?>
 </body>
 </html>

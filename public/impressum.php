@@ -21,7 +21,7 @@ $s = getLegalSettings();
 </head>
 <body>
     <?php renderNavbar(''); ?>
-    <div class="container">
+    <main class="container">
         <div class="page-header"><h1>Impressum</h1></div>
         <div class="section">
             <h2 class="section-title">Angaben gemäß § 5 DDG</h2>
@@ -36,7 +36,7 @@ $s = getLegalSettings();
                 E-Mail: <?php echo e($s['imprint_email']); ?>
             </p>
         </div>
-    </div>
+    </main>
     <?php renderFooter(); ?>
 </body>
 </html>
