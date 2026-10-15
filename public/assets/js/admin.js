@@ -8,6 +8,7 @@ if(tab==='system')loadSystemInfo();
 if(tab==='logs')loadLogs();
 if(tab==='cron')loadCronJobs();
 if(tab==='stats')loadStats();
+if(tab==='legal')loadLegal();
 }
 
 // Stats
@@ -760,4 +761,32 @@ async function runCronJobNow(jobKey, label) {
         btn.disabled = false;
         hideOverlay();
     }
+}
+
+// Legal
+async function loadLegal(){
+const r=await fetch('/api/admin_legal.php');const d=await r.json();
+if(!d.success)return;
+const s=d.settings;
+document.getElementById('legalImprintEnabled').checked=s.imprint_enabled==='1';
+document.getElementById('legalPrivacyEnabled').checked=s.privacy_enabled==='1';
+document.getElementById('legalName').value=s.imprint_name;
+document.getElementById('legalStreet').value=s.imprint_street;
+document.getElementById('legalCity').value=s.imprint_city;
+document.getElementById('legalPhone').value=s.imprint_phone;
+document.getElementById('legalEmail').value=s.imprint_email;
+}
+async function saveLegal(){
+const body={
+imprint_enabled:document.getElementById('legalImprintEnabled').checked,
+privacy_enabled:document.getElementById('legalPrivacyEnabled').checked,
+imprint_name:document.getElementById('legalName').value,
+imprint_street:document.getElementById('legalStreet').value,
+imprint_city:document.getElementById('legalCity').value,
+imprint_phone:document.getElementById('legalPhone').value,
+imprint_email:document.getElementById('legalEmail').value};
+const r=await fetch('/api/admin_legal.php',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+const d=await r.json();
+const el=document.getElementById('legalResult');
+el.textContent=d.success?'Gespeichert':(d.error||'Fehler beim Speichern');
 }

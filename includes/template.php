@@ -4,11 +4,7 @@
  * Common HTML components for all pages
  */
 
-// Optionale Site-Konfiguration (Betreiber-Links für Impressum/Datenschutz).
-// Siehe config/site.example.php; ohne config/site.php werden keine Links gerendert.
-if (is_file(__DIR__ . '/../config/site.php')) {
-    require_once __DIR__ . '/../config/site.php';
-}
+require_once __DIR__ . '/site_settings.php';
 
 /**
  * Render HTML head with CSS links
@@ -138,16 +134,10 @@ function renderFooter() {
     <footer class="footer">
         <div class="container">
             &copy; <?php echo date('Y'); ?> S&F Guilds - Shakes & Fidget Gildenverwaltung
-            <?php
-            // Nur http(s)-URLs bzw. absolute Pfade zulassen
-            $legal = [
-                'Impressum'   => defined('SITE_IMPRINT_URL') ? SITE_IMPRINT_URL : '',
-                'Datenschutz' => defined('SITE_PRIVACY_URL') ? SITE_PRIVACY_URL : '',
-            ];
-            foreach ($legal as $label => $url):
-                if (is_string($url) && preg_match('#^(https?://|/)[^\s]*$#', $url)): ?>
-            &middot; <a href="<?php echo e($url); ?>"><?php echo e($label); ?></a>
-            <?php endif; endforeach; ?>
+            <?php try { foreach (["imprint" => ["/impressum.php", "Impressum"], "privacy" => ["/datenschutz.php", "Datenschutz"]] as $page => [$url, $label]):
+                if (legalPageActive($page)): ?>
+            &middot; <a href="<?php echo $url; ?>"><?php echo $label; ?></a>
+            <?php endif; endforeach; } catch (Throwable $e) { error_log('footer: ' . $e->getMessage()); } ?>
         </div>
     </footer>
     <?php
