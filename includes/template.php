@@ -4,6 +4,12 @@
  * Common HTML components for all pages
  */
 
+// Optionale Site-Konfiguration (Betreiber-Links für Impressum/Datenschutz).
+// Siehe config/site.example.php; ohne config/site.php werden keine Links gerendert.
+if (is_file(__DIR__ . '/../config/site.php')) {
+    require_once __DIR__ . '/../config/site.php';
+}
+
 /**
  * Render HTML head with CSS links
  */
@@ -14,6 +20,9 @@ function renderHead($title, $additionalCSS = []) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo e($title); ?> - S&F Guilds</title>
+    <meta name="description" content="Gildenverwaltung für Shakes &amp; Fidget">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" href="/favicon.ico">
     <?php foreach ($cssFiles as $css): ?>
     <link rel="stylesheet" href="<?php echo $css . '?v=' . $version; ?>">
     <?php endforeach; ?>
@@ -129,6 +138,16 @@ function renderFooter() {
     <footer class="footer">
         <div class="container">
             &copy; <?php echo date('Y'); ?> S&F Guilds - Shakes & Fidget Gildenverwaltung
+            <?php
+            // Nur http(s)-URLs bzw. absolute Pfade zulassen
+            $legal = [
+                'Impressum'   => defined('SITE_IMPRINT_URL') ? SITE_IMPRINT_URL : '',
+                'Datenschutz' => defined('SITE_PRIVACY_URL') ? SITE_PRIVACY_URL : '',
+            ];
+            foreach ($legal as $label => $url):
+                if (is_string($url) && preg_match('#^(https?://|/)[^\s]*$#', $url)): ?>
+            &middot; <a href="<?php echo e($url); ?>"><?php echo e($label); ?></a>
+            <?php endif; endforeach; ?>
         </div>
     </footer>
     <?php
