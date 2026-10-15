@@ -61,7 +61,7 @@ $user = queryOne('SELECT username, must_change_password FROM users WHERE id = ?'
 </head>
 <body>
     <?php if (empty($user['must_change_password'])): ?>
-        <?php renderHeader($user['username'] ?? '', $_SESSION['role'] ?? ''); ?>
+        <?php renderNavbar(); ?>
     <?php endif; ?>
 
     <div class="change-pw-container">
