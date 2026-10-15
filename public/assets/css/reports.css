@@ -353,6 +353,31 @@
     }
 }
 
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--spacing-sm);
+    }
+
+    .stats-grid .stat-card:last-child:nth-child(odd) {
+        grid-column: 1 / -1;
+    }
+
+    .table-container {
+        overflow-x: auto;
+    }
+
+    #statsTable th,
+    #statsTable td {
+        padding: var(--spacing-sm) 0.35rem;
+        font-size: 0.8rem;
+    }
+
+    #statsTable th {
+        letter-spacing: 0;
+    }
+}
+
 /* PNG Icon Styling */
 .rank-icon,
 .battle-icon {
