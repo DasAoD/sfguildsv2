@@ -110,7 +110,7 @@ $embed = !empty($_GET['embed']);
     </main>
 
     <!-- Music Toggle Button -->
-    <button class="music-toggle" id="musicToggle" onclick="toggleMusic()" title="Musik an/aus">
+    <button class="music-toggle" id="musicToggle" onclick="toggleMusic()" title="Musik an/aus" aria-label="Hintergrundmusik" aria-pressed="false">
         🔊
     </button>
 
@@ -245,6 +245,7 @@ $embed = !empty($_GET['embed']);
                     musicStarted = true;
                     isMuted = false;
                     toggleBtn.textContent = '🔊';
+                    toggleBtn.setAttribute('aria-pressed', 'true');
                 }).catch(() => {});
                 return;
             }
@@ -252,6 +253,7 @@ $embed = !empty($_GET['embed']);
             audio.muted = isMuted;
             toggleBtn.textContent = isMuted ? '🔇' : '🔊';
             toggleBtn.classList.toggle('muted', isMuted);
+            toggleBtn.setAttribute('aria-pressed', String(!isMuted));
         }
 
         // Auto-start music on first user interaction
@@ -260,6 +262,7 @@ $embed = !empty($_GET['embed']);
                 audio.play().then(() => {
                     musicStarted = true;
                     toggleBtn.textContent = '🔊';
+                    toggleBtn.setAttribute('aria-pressed', 'true');
                 }).catch(() => {});
             }
             document.removeEventListener('click', startMusicOnInteraction);
