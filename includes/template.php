@@ -10,7 +10,7 @@ require_once __DIR__ . '/site_settings.php';
  * Render HTML head with CSS links
  */
 function renderHead($title, $additionalCSS = []) {
-    $version = '20261015t'; // Update this when CSS changes
+    $version = '20261015u'; // Update this when CSS changes
     $cssFiles = array_merge(['/assets/css/main.css', '/assets/css/overlay.css'], $additionalCSS);
     ?>
     <meta charset="UTF-8">
