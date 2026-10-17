@@ -38,13 +38,29 @@ try {
         jsonResponse(['success' => false, 'message' => 'Mitglied nicht gefunden'], 404);
     }
     
-    // Delete the member
+    $normalize = fn($name) => trim(preg_replace('/\s*\([sw]\d+\w*\)/u', '', mb_strtolower(trim($name), 'UTF-8')));
+    $norm = $normalize($member['name']);
+
+    $db = getDB();
+    $db->beginTransaction();
     execute('DELETE FROM members WHERE id = ?', [$memberId]);
-    
-    // Also clean up any participant references (optional, keeps data clean)
-    // Note: sf_eval_participants uses player_name_norm, not member_id,
-    // so no foreign key cleanup needed there.
-    
+
+    // Participants are linked by normalized name only. Without this cleanup the
+    // player shows up in the reports as an orphan once the member row is gone.
+    // Skipped if another member of the guild still normalizes to the same name.
+    $dupes = array_filter(
+        query('SELECT name FROM members WHERE guild_id = ?', [$member['guild_id']]),
+        fn($m) => $normalize($m['name']) === $norm
+    );
+    if (!$dupes) {
+        execute(
+            'DELETE FROM sf_eval_participants WHERE player_name_norm = ?
+             AND battle_id IN (SELECT id FROM sf_eval_battles WHERE guild_id = ?)',
+            [$norm, $member['guild_id']]
+        );
+    }
+    $db->commit();
+
     logActivity('Mitglied gelöscht', [
         'Name'     => $member['name'],
         'ID'       => $memberId,
@@ -58,6 +74,9 @@ try {
     ]);
     
 } catch (Throwable $e) {
+    if (isset($db) && $db->inTransaction()) {
+        $db->rollBack();
+    }
     logError('Delete member failed', ['id' => $memberId, 'error' => $e->getMessage()]);
     jsonResponse([
         'success' => false,
