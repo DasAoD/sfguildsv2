@@ -152,6 +152,10 @@ try {
         $stmt = $db->prepare("SELECT id, name FROM members WHERE guild_id = ?");
         $stmt->execute([$guildId]);
         foreach ($stmt->fetchAll() as $member) {
+            // normalizeName() strips the server tag, so the entry with the new name matches too
+            if (mb_strtolower($member['name'], 'UTF-8') === mb_strtolower($newName, 'UTF-8')) {
+                continue;
+            }
             if (normalizeName($member['name']) === $oldNorm) {
                 if ($newMemberExists) {
                     // New name already exists as member → delete old entry
