@@ -492,8 +492,15 @@ input[type="file"].form-input {
     opacity: 0.4;
 }
 
-.char-slot-hit {
+.char-slot.char-slot-hit {
+    width: 48px;
+    min-width: 48px;
+    align-self: center;
     border-radius: 50%;
+}
+
+.char-slot-hit .char-slot-label {
+    display: none;
 }
 
 .char-slot-icon {
@@ -687,6 +694,11 @@ input[type="file"].form-input {
     .char-slot {
         width: 72px;
         min-width: 72px;
+    }
+
+    .char-slot.char-slot-hit {
+        width: 36px;
+        min-width: 36px;
     }
 
     .char-slot-label {
