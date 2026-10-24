@@ -16,13 +16,13 @@ const COA_CATEGORY_NUM = [
     'helmet' => 5, 'order' => 6, 'emblem' => 7,
 ];
 
-// Palette: Die Indizes 2, 3, 4, 8, 9 und 11 sind an echten Wappen gemessen
+// Palette: Die Indizes 0, 2, 3, 4, 6, 8, 9 und 11 sind an echten Wappen gemessen
 // (Anzeigefarbe der Schildzone bzw. Figur). Der Rest ist weiterhin eine
 // Näherung; unbekannte Indizes fallen auf ein neutrales Grau zurück
 // (COA_PALETTE_FALLBACK).
 const COA_PALETTE_GUESS = [
-    0 => [120, 120, 120], 1 => [200, 60, 60], 2 => [179, 2, 205], 3 => [25, 25, 25],
-    4 => [0, 153, 0], 5 => [230, 200, 40], 6 => [140, 80, 200], 7 => [230, 140, 30],
+    0 => [3, 42, 250], 1 => [200, 60, 60], 2 => [179, 2, 205], 3 => [25, 25, 25],
+    4 => [0, 153, 0], 5 => [230, 200, 40], 6 => [229, 229, 229], 7 => [230, 140, 30],
     8 => [127, 127, 127], 9 => [176, 0, 0], 11 => [251, 152, 4],
 ];
 const COA_PALETTE_FALLBACK = [150, 150, 150];
