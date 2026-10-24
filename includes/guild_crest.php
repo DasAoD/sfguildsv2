@@ -4,11 +4,7 @@
  *
  * Baut ein Gildenwappen-Bild automatisch aus dem /coa-Code, den der S&F-Server
  * in `owngroupsave.groupSave` mitschickt (siehe rust_examples/member_sync.rs),
- * statt einen manuellen Wappen-Upload zu verlangen.
- *
- * Manueller Upload (guilds.crest_file) hat immer Vorrang und bleibt
- * unverändert bestehen -- diese Funktion wird nur aufgerufen, wenn kein
- * crest_file gesetzt ist (Fallback/Backup bleibt manueller Upload).
+ * statt einen manuellen Wappen-Upload zu verlangen (den es nicht mehr gibt).
  *
  * Die rohen Wappen-Grafiken (aus den Spiel-Assets extrahiert) liegen NICHT
  * im Git-Repo, sondern nur lokal unter DATA_PATH . '/guildcrests/' auf dem

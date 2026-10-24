@@ -124,10 +124,8 @@ try {
         $guild['total_battles']      = $totalBattlesCount;
         $guild['participation_quote'] = $participationQuote;
 
-        // Auto-generiertes Wappen nur, wenn kein manueller Upload existiert
-        // (crest_file hat immer Vorrang -- Backup/Fallback bleibt der Upload).
-        $guild['coa_image'] = $guild['crest_file'] ? null : resolveGuildCrestImage((int) $id, $guild['coa_code'], $guild['name']);
-        unset($guild['coa_code']); // Frontend braucht nur den fertigen Bildnamen
+        $guild['coa_image'] = resolveGuildCrestImage((int) $id, $guild['coa_code'], $guild['name']);
+        unset($guild['coa_code'], $guild['crest_file']); // Frontend braucht nur den fertigen Bildnamen (coa_image)
     }
     
     jsonResponse([

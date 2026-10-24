@@ -62,7 +62,7 @@ $pageTitle = 'Dashboard';
             }
 
             grid.innerHTML = guilds.map(guild => {
-                const crestSrc = guild.crest_file || guild.coa_image;
+                const crestSrc = guild.coa_image;
                 const crestV = guild.updated_at ? `?v=${encodeURIComponent(guild.updated_at)}` : '';
                 const crestImg = crestSrc
                     ? `<img src="/assets/images/${escapeHtml(crestSrc)}${crestV}" alt="${escapeHtml(guild.name)} Wappen" style="width:100%;height:100%;object-fit:contain">`

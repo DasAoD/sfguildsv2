@@ -16,7 +16,7 @@ checkAuth();
 $db = getDB();
 
 // Get all guilds (sorted alphabetically)
-$stmt = $db->query("SELECT id, name, server, tag, crest_file, coa_code, updated_at FROM guilds ORDER BY name ASC");
+$stmt = $db->query("SELECT id, name, server, tag, coa_code, updated_at FROM guilds ORDER BY name ASC");
 $guilds = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Get selected guild (default to first guild)
@@ -30,12 +30,8 @@ foreach ($guilds as $guild) {
     }
 }
 
-// Auto-generiertes Wappen nur, wenn kein manueller Upload existiert
-// (crest_file hat immer Vorrang -- Backup/Fallback bleibt der Upload).
 if ($selectedGuild) {
-    $selectedGuild['coa_image'] = $selectedGuild['crest_file']
-        ? null
-        : resolveGuildCrestImage((int) $selectedGuild['id'], $selectedGuild['coa_code'], $selectedGuild['name']);
+    $selectedGuild['coa_image'] = resolveGuildCrestImage((int) $selectedGuild['id'], $selectedGuild['coa_code'], $selectedGuild['name']);
 }
 
 // Get current month/year
@@ -130,7 +126,7 @@ $currentUser = getCurrentUsername();
                     <div class="guild-header-row">
                         <div class="guild-header-info">
                             <div class="guild-crest">
-                                <?php $crestSrc = $selectedGuild['crest_file'] ?: ($selectedGuild['coa_image'] ?? null); ?>
+                                <?php $crestSrc = $selectedGuild['coa_image'] ?? null; ?>
                                 <?php $crestV = !empty($selectedGuild['updated_at']) ? '?v=' . urlencode($selectedGuild['updated_at']) : ''; ?>
                                 <?php if (!empty($crestSrc)): ?>
                                     <img src="/assets/images/<?= e($crestSrc . $crestV) ?>"

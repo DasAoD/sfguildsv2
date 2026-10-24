@@ -41,10 +41,7 @@ async function loadGuild() {
         const r = await fetch(`/api/members.php?guild_id=${guildId}`);
         const d = await r.json();
         if (d.success) {
-            const crestSrc = d.guild.crest_file || d.guild.coa_image;
-            // Cache-Buster: gleicher Dateiname (crest_file) bleibt nach Re-Upload
-            // gleich, ohne Versionsparameter zeigt der Browser sonst die alte
-            // (evtl. defekte) Version aus dem Cache weiter an.
+            const crestSrc = d.guild.coa_image;
             const crestV = d.guild.updated_at ? `?v=${encodeURIComponent(d.guild.updated_at)}` : '';
             const crestHtml = crestSrc
                 ? `<img src="/assets/images/${crestSrc}${crestV}" alt="Wappen" style="width:100%;height:100%;object-fit:contain">`

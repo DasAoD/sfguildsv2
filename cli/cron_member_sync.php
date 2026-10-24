@@ -117,9 +117,7 @@ foreach ($guilds as $guild) {
                 }
             }
             execute("UPDATE guilds SET last_import_at=:ts,updated_at=datetime('now') WHERE id=:id", [':ts'=>gmdate('c'),':id'=>$guild['id']]);
-            // Wappen-Code für die Auto-Generierung mitschreiben (nur wenn
-            // vorhanden -- greift bei manuellem crest_file-Upload ohnehin
-            // nicht, siehe includes/guild_crest.php).
+            // Wappen-Code für die Auto-Generierung mitschreiben (nur wenn vorhanden)
             if (!empty($data['coa_code'])) {
                 execute("UPDATE guilds SET coa_code=:coa WHERE id=:id", [':coa'=>$data['coa_code'], ':id'=>$guild['id']]);
             }
