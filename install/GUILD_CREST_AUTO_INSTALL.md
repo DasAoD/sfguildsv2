@@ -4,11 +4,11 @@ Rendert das Gildenwappen automatisch aus dem `/coa`-Code, den der S&F-Server
 mit jedem Login/Poll in `owngroupsave.groupSave` mitschickt -- statt dass ein
 Gildenleiter das Wappen manuell screenshotten/zuschneiden/hochladen muss.
 
-**Der manuelle Upload (`guilds.crest_file`) bleibt unverändert bestehen und
-hat immer Vorrang.** Diese Funktion ist reines Fallback/Zusatzfeature: sie
-greift nur, wenn `crest_file` NULL ist. Fällt die Auto-Generierung aus
-(Assets fehlen, Code ungültig, Rendering-Fehler), zeigt die UI einfach den
-bisherigen Platzhalter -- kein Breaking Change.
+Seit dem Entfernen des Uploads ist das gerenderte Wappen die einzige Quelle.
+Fällt die Auto-Generierung aus (Assets fehlen, Code ungültig, Rendering-Fehler),
+zeigt die UI den Platzhalter. Die Spalte `guilds.crest_file` ist ungenutzt und
+bleibt leer; die Lesestellen behandeln sie weiter als "kein Upload". Beim Löschen
+einer Gilde werden ihre gerenderten Bilder (`guild_coa_<id>_*.webp`) entfernt.
 
 ## 1. DB-Spalte anlegen
 
@@ -55,7 +55,7 @@ UI fällt automatisch auf den Platzhalter zurück, kein Fehler.
 
 ## 3. Sync erweitern (`coa_code` befüllen)
 
-**Umgesetzt** in `rust_examples/member_sync.rs` und `cli/cron_member_sync.php` (Beschreibung unten als Hintergrund). Der Sync befüllt `coa_code` (Cron und Button auf der Gildenseite); manuell hochgeladene Wappen haben Vorrang.
+**Umgesetzt** in `rust_examples/member_sync.rs` und `cli/cron_member_sync.php` (Beschreibung unten als Hintergrund). Der Sync befüllt `coa_code` (Cron und Button auf der Gildenseite); 
 
 Ursprünglich offen: einer der bestehenden `rust_examples/*.rs`-Sync-Binaries
 (vermutlich `member_sync.rs`, da dieser bereits pro Gilde mit dem
