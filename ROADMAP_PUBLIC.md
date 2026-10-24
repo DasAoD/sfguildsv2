@@ -23,6 +23,7 @@
 - [x] Wappen-Darstellung (der frühere Upload ist entfallen)
 - [x] **Wappen automatisch** aus dem Spiel-Code gerendert (Layout und Farben aus den Spiel-Daten, Gildenname auf dem Banner); ein hochgeladenes Wappen gibt es nicht mehr
 - [x] Tab-Navigation zwischen Gilden
+- [x] **Eingeladene Mitglieder** werden getrennt behandelt (nicht mitgezählt, eigenes Icon, Beitrittsdatum erst nach dem Annehmen); Rang-Icons mit Tooltip
 - [x] Öffentliche Gilden-Profilseiten (ohne Login einsehbar)
 - [x] **Mitglieder-Sortierung** – Aktive <7 Tage offline nach Rang/Level, Aktive ≥7 Tage als Block nach Offline-Tagen, Entlassene/Verlassene am Ende
 
@@ -120,6 +121,7 @@
 - Setup-Assistent für Erstinstallation
 - Mitglieder-Entwicklung über Zeit (Graphen)
 - Pfeil zwischen Waffe und Treffereffekt wie im Spiel
+- Verfallene Einladungen automatisch aus der DB entfernen
 - Icon-Updates nach Spiel-Updates vollständig automatisieren (Zuschneiden; Erkennen und Laden ist schon automatisch)
 - Export-Funktionen (CSV, PDF) für Gilden-Reports
 

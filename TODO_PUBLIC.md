@@ -29,6 +29,9 @@ Konkrete anstehende Aufgaben. Sicherheitsrelevante Details sind in der privaten 
 ### UI-Verbesserungen
 - [ ] Pfeil zwischen Waffe und Treffereffekt im Charakter-Modal (wie im Spiel)
 
+### Gildenliste
+- [ ] Verfallene Einladungen (nach 7 Tagen) automatisch aus der DB entfernen; der Sync behält sie bisher und sie müssen von Hand gelöscht werden
+
 ### Asset-Pflege
 - [ ] Neue Item-Icons nach einer Meldung des Asset-Checks zuschneiden und einpflegen (bisher manuell mit AssetRipper)
 - [ ] Zuordnung Waffe -> Treffereffekt bei weiteren Waffenmodellen stichprobenartig gegen das Spiel prüfen
@@ -37,6 +40,8 @@ Konkrete anstehende Aufgaben. Sicherheitsrelevante Details sind in der privaten 
 
 ## ✅ Zuletzt erledigt (Oktober 2026)
 
+- [x] **Eingeladene Mitglieder** — zählen nicht mehr als aktiv (Mitgliederzahl, Durchschnitt, Summen, Dashboard, Beteiligung), stehen hinter allen Mitgliedern und vor Entlassenen/Verlassenen, eigenes Icon und gedämpfte Zeile, Beitrittsdatum erst nach dem Annehmen (der Sync setzt es dann); behebt außerdem das "undefined" vor dem Namen
+- [x] **Tooltips an den Rang-Icons** (Gildenleitung, Offizier, Mitglied, Eingeladen) auf Gildenseite und in den Reports
 - [x] **Wappen automatisch rendern** — Layout aus den Pivot-Daten der Spiel-Assets, Ebenen-Reihenfolge und Farben an Spiel-Screenshots abgeglichen, Gildenname auf dem Banner; Gilden ohne hochgeladenes Wappen zeigen es automatisch
 - [x] **Wappen-Palette vollständig** — alle 13 Farben stammen aus den Spiel-Daten (`COAData`), der Gildenname sitzt wie im Spiel auf dem Banner; Löschen einer Gilde räumt auch ihr gerendertes Wappen auf (an einer Test-Gilde geprüft)
 - [x] **Wappen-Upload entfernt** — das gerenderte Wappen ist die einzige Quelle (Admin-Liste zeigt es); beim Löschen einer Gilde werden auch die gerenderten Bilder entfernt
