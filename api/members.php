@@ -20,7 +20,7 @@ $isLoggedIn = isLoggedIn();
 
 try {
     // Get guild info
-    $guild = queryOne('SELECT id, name, server, notes, tag, crest_file, coa_code, last_import_at, created_at, updated_at FROM guilds WHERE id = ?', [$guildId]);
+    $guild = queryOne('SELECT id, name, server, notes, tag, crest_file, coa_code, hof_rank, last_import_at, created_at, updated_at FROM guilds WHERE id = ?', [$guildId]);
 
     if (!$guild) {
         jsonResponse(['success' => false, 'message' => 'Gilde nicht gefunden'], 404);
@@ -192,6 +192,7 @@ try {
         'id'             => $guild['id'],
         'name'           => $guild['name'],
         'server'         => $guild['server'],
+        'hof_rank'       => $guild['hof_rank'],
         'crest_file'     => $guild['crest_file'],
         'coa_image'      => $guild['coa_image'],
         'last_import_at' => $guild['last_import_at'] ?? null,
