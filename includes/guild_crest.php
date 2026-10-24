@@ -169,7 +169,7 @@ function coaApplyShieldZones(\GdImage $shield, \GdImage $mask, array $zone1Rgb, 
 const COA_NAME_REF_TEXT = 'SchattendrachenA';
 const COA_NAME_REF_WIDTH = 188;
 const COA_NAME_MAX_WIDTH = 0.9;
-const COA_NAME_OFFSET_Y = 0.07;
+const COA_NAME_OFFSET_Y = 0.13;
 
 // Vergrößerung gegenüber den nativen Sprite-Pixeln
 const COA_RENDER_SCALE = 2;
