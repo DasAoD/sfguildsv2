@@ -68,3 +68,7 @@ CLAUDE.md
 .claude/worktrees/
 *.bak
 /data/*.sqlite3
+
+# --- Spiel-Assets (Staging und Zustand von cli/check_game_assets.php) ---
+/storage/game_assets/*
+!/storage/game_assets/.gitkeep
