@@ -55,7 +55,7 @@ UI fällt automatisch auf den Platzhalter zurück, kein Fehler.
 
 ## 3. Sync erweitern (`coa_code` befüllen)
 
-**Umgesetzt** in `rust_examples/member_sync.rs` und `cli/cron_member_sync.php` (Beschreibung unten als Hintergrund). Der Sync befüllt `coa_code`; das Rendering ist aber zurückgestellt (siehe Einschränkungen), manuell hochgeladene Wappen haben Vorrang.
+**Umgesetzt** in `rust_examples/member_sync.rs` und `cli/cron_member_sync.php` (Beschreibung unten als Hintergrund). Der Sync befüllt `coa_code` (Cron und Button auf der Gildenseite); manuell hochgeladene Wappen haben Vorrang.
 
 Ursprünglich offen: einer der bestehenden `rust_examples/*.rs`-Sync-Binaries
 (vermutlich `member_sync.rs`, da dieser bereits pro Gilde mit dem
@@ -69,15 +69,31 @@ Admin-Account einloggt) musste erweitert werden:
 3. `UPDATE guilds SET coa_code = ? WHERE id = ?`.
 
 
-## Bekannte Einschränkungen (Stand 2026-09-04)
+## 4. Schrift für den Gildennamen (optional)
 
-- **Farb-Palette ist eine Näherung** (`COA_PALETTE_GUESS` in
-  `includes/guild_crest.php`) -- nur Index 4 ist an einem echten
-  Screenshot verifiziert (`#009900`). Alle anderen Werte sind Platzhalter.
-- **Layout/Skalierung/Reihenfolge der Ebenen** basiert auf Augenmaß
-  gegen einen einzigen Referenz-Screenshot (Gilde "Gurkistan"), keine
-  Positionsdaten aus den Spiel-Assets verfügbar.
-- **Gildenname wird nicht auf's Banner gerendert** (im Original ist das
-  clientseitiger Text, keine Grafik-Ebene).
-- Details, offene Fragen und der komplette Recherche-Stand: siehe Memory
-  `sfguildsv2-guild-crest-reverse-engineering`.
+Der Gildenname auf dem Banner ist im Spiel Client-Text und wird mit einer
+TrueType-Schrift auf das Banner gezeichnet. Die Schrift liegt wie die
+Wappen-Grafiken nur auf dem Server (Lizenz), nicht im Repo:
+
+```
+data/guildcrests/name_font.ttf
+```
+
+Ohne diese Datei bleibt das Banner leer. Die Schriftgröße ist im Spiel für
+alle Namen gleich (`COA_NAME_REF_*` in `includes/guild_crest.php`, geeicht
+an "SchattendrachenA"), nur zu lange Namen werden verkleinert. Eine runde
+Fettschrift passt am besten. Die bereits gerenderten Wappen enthalten die
+Schrift in ihrem Cache-Namen, nach dem Installieren der Datei entstehen sie
+beim nächsten Aufruf neu.
+
+## Layout und Farben
+
+- **Layout:** Die Position aller Ebenen kommt aus den Pivot-Offsets der
+  Sprites (`public/assets/data/coa_offsets.json`, `m_Offset` aus den
+  Spiel-Assets), die Reihenfolge ist aus den Spiel-Screenshots abgeleitet:
+  Helm, Schildhalter, Schild, Figur, Helmzier, Banner, Zusatz, Name.
+- **Farben:** `COA_PALETTE_GUESS` enthält gemessene Werte für die Indizes
+  2, 3, 4, 8, 9 und 11. Alle anderen Indizes sind Näherungen und müssen
+  ergänzt werden, sobald ein Wappen mit der Farbe vorliegt.
+- Schildzonen werden flach mit der Palettenfarbe gefüllt, die Zonen-Maske
+  trägt auch in transparenten Bereichen Farbwerte (Alpha mit einrechnen).

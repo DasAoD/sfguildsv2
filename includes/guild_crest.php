@@ -20,21 +20,14 @@ const COA_CATEGORY_NUM = [
     'helmet' => 5, 'order' => 6, 'emblem' => 7,
 ];
 
-// Palette -- Indizes 4 (#009900, Gurkistan-Screenshot), 8 (#7f7f7f) und
-// 9 (#b00000, beide Avadhuta-Gita-Screenshot) sind an echten Screenshots
-// verifiziert. Der Rest ist weiterhin eine Näherung und muss verfeinert
-// werden, sobald mehr reale Vergleichsdaten vorliegen (siehe Memory
-// sfguildsv2-guild-crest-reverse-engineering). Unbekannte Indizes fallen
-// auf ein neutrales Grau zurück (COA_PALETTE_FALLBACK), nicht mehr auf
-// Grün -- das hatte Index 8/9 vor der Verifizierung falsch grün eingefärbt.
-// Index 3 war ursprünglich blind von Index 4 übernommen (beide "grünlich"
-// geraten) -- an Avadhuta Gitas Schild (wo Index 3 die dominante Zone-2-
-// Fläche ist, nicht nur ungetestet wie bei Gurkistan) als ~#191919 (fast
-// schwarz) verifiziert.
+// Palette: Die Indizes 2, 3, 4, 8, 9 und 11 sind an echten Wappen gemessen
+// (Anzeigefarbe der Schildzone bzw. Figur). Der Rest ist weiterhin eine
+// Näherung; unbekannte Indizes fallen auf ein neutrales Grau zurück
+// (COA_PALETTE_FALLBACK).
 const COA_PALETTE_GUESS = [
-    0 => [120, 120, 120], 1 => [200, 60, 60], 2 => [60, 100, 200], 3 => [25, 25, 25],
+    0 => [120, 120, 120], 1 => [200, 60, 60], 2 => [179, 2, 205], 3 => [25, 25, 25],
     4 => [0, 153, 0], 5 => [230, 200, 40], 6 => [140, 80, 200], 7 => [230, 140, 30],
-    8 => [127, 127, 127], 9 => [176, 0, 0],
+    8 => [127, 127, 127], 9 => [176, 0, 0], 11 => [251, 152, 4],
 ];
 const COA_PALETTE_FALLBACK = [150, 150, 150];
 
@@ -70,6 +63,7 @@ function coaLoadLayer(string $assetsDir, string $cat, int $variant, string $suff
     if (!$im) {
         return null;
     }
+    imagepalettetotruecolor($im);
     imagealphablending($im, false);
     imagesavealpha($im, true);
     return $im;
@@ -88,27 +82,6 @@ function coaResize(\GdImage $src, int $w, int $h): \GdImage {
     $dst = coaNewCanvas($w, $h);
     imagecopyresampled($dst, $src, 0, 0, 0, 0, $w, $h, imagesx($src), imagesy($src));
     return $dst;
-}
-
-function coaPasteCentered(\GdImage $canvas, \GdImage $layer, float $cx, float $cy, float $scale = 1.0): void {
-    if ($scale !== 1.0) {
-        $layer = coaResize($layer, max(1, (int) round(imagesx($layer) * $scale)), max(1, (int) round(imagesy($layer) * $scale)));
-    }
-    $w = imagesx($layer);
-    $h = imagesy($layer);
-    $x = (int) round($cx - $w / 2);
-    $y = (int) round($cy - $h / 2);
-    imagealphablending($canvas, true);
-    imagecopy($canvas, $layer, $x, $y, 0, 0, $w, $h);
-    imagealphablending($canvas, false);
-}
-
-/** Skaliert anhand einer Ziel-Breite (die Höhe ergibt sich aus dem nativen
- * Seitenverhältnis) und platziert zentriert -- gibt den verwendeten Skalierungsfaktor zurück. */
-function coaPasteByWidth(\GdImage $canvas, \GdImage $layer, float $cx, float $cy, float $targetWidth): float {
-    $scale = $targetWidth / imagesx($layer);
-    coaPasteCentered($canvas, $layer, $cx, $cy, $scale);
-    return $scale;
 }
 
 /**
@@ -141,13 +114,20 @@ function coaTintColorReplace(\GdImage $img, array $rgb): \GdImage {
     return $out;
 }
 
-/** Schild-Zonenfärbung: Multiply-Blend, gewichtet über G/B-Kanal der _color-Maske. */
+/**
+ * Schild-Zonenfärbung: Die Zonen der Maske werden flach mit der Palettenfarbe
+ * gefüllt (die Helligkeitsverläufe des Schild-Sprites zeigt das Spiel dort
+ * nicht), Randpixel mischen sich über das Maskengewicht mit dem Sprite. Die
+ * Maske trägt auch in transparenten Bereichen Farbwerte und wird deshalb über
+ * ihren Alpha-Wert gewichtet.
+ */
 function coaApplyShieldZones(\GdImage $shield, \GdImage $mask, array $zone1Rgb, array $zone2Rgb): \GdImage {
     $w = imagesx($shield);
     $h = imagesy($shield);
     if (imagesx($mask) !== $w || imagesy($mask) !== $h) {
         $mask = coaResize($mask, $w, $h);
     }
+
     $out = coaNewCanvas($w, $h);
     for ($y = 0; $y < $h; $y++) {
         for ($x = 0; $x < $w; $x++) {
@@ -161,102 +141,195 @@ function coaApplyShieldZones(\GdImage $shield, \GdImage $mask, array $zone1Rgb, 
             $bb = $base & 0xFF;
 
             $m = imagecolorat($mask, $x, $y);
-            $mg = ($m >> 8) & 0xFF;
-            $mb = $m & 0xFF;
-
-            if ($mg === 0 && $mb === 0) {
+            $opacity = (127 - (($m >> 24) & 0x7F)) / 127;
+            $zone1 = (($m >> 8) & 0xFF) / 255 * $opacity;
+            $zone2 = ($m & 0xFF) / 255 * $opacity;
+            if ($zone1 <= 0 && $zone2 <= 0) {
                 imagesetpixel($out, $x, $y, imagecolorallocatealpha($out, $br, $bg, $bb, $ba));
                 continue;
             }
-            if ($mg >= $mb) {
-                $weight = $mg / 255;
-                $tint = $zone1Rgb;
-            } else {
-                $weight = $mb / 255;
-                $tint = $zone2Rgb;
+            // An der Naht zweier Zonen haben beide nur Teilgewicht: die Farben untereinander mischen
+            $weight = min(1.0, $zone1 + $zone2);
+            $share = $zone1 / ($zone1 + $zone2);
+            $tint = [];
+            for ($c = 0; $c < 3; $c++) {
+                $tint[$c] = $zone1Rgb[$c] * $share + $zone2Rgb[$c] * (1 - $share);
             }
-            $mr = intdiv($br * $tint[0], 255);
-            $mgc = intdiv($bg * $tint[1], 255);
-            $mbc = intdiv($bb * $tint[2], 255);
-            $nr = (int) round($br * (1 - $weight) + $mr * $weight);
-            $ng = (int) round($bg * (1 - $weight) + $mgc * $weight);
-            $nb = (int) round($bb * (1 - $weight) + $mbc * $weight);
-            imagesetpixel($out, $x, $y, imagecolorallocatealpha($out, $nr, $ng, $nb, $ba));
+            imagesetpixel($out, $x, $y, imagecolorallocatealpha(
+                $out,
+                (int) round($br * (1 - $weight) + $tint[0] * $weight),
+                (int) round($bg * (1 - $weight) + $tint[1] * $weight),
+                (int) round($bb * (1 - $weight) + $tint[2] * $weight),
+                $ba
+            ));
         }
     }
     return $out;
 }
 
-// Canvas im echten Seitenverhältnis eines Wappen-Screenshots (215x262,
-// 2x hochskaliert) -- eine quadratische Canvas hatte alles vertikal gestaucht.
-const COA_CANVAS_W = 430;
-const COA_CANVAS_H = 524;
+// Gildenname auf dem Banner: im Spiel gemessen hat "SchattendrachenA" 188 Pixel
+// Breite (bei nativer Sprite-Größe), maximal 90 % der Bannerbreite, Versatz nach unten
+const COA_NAME_REF_TEXT = 'SchattendrachenA';
+const COA_NAME_REF_WIDTH = 188;
+const COA_NAME_MAX_WIDTH = 0.9;
+const COA_NAME_OFFSET_Y = 0.07;
 
-// Aus einem echten Screenshot (Avadhuta Gita) gemessene Ziel-Mittelpunkte/
-// -Breiten in doubled-real-Pixel-Koordinaten. Höhe ergibt sich pro Layer aus
-// dem nativen Seitenverhältnis -- Breite ist auch bei teilverdeckten Layern
-// (Helmdecke) meist noch einigermaßen zuverlässig sichtbar, Höhe nicht.
-const COA_TARGETS = [
-    'shield'    => [215, 270, 170],
-    'supporter' => [215, 255, 390],
-    'helmet'    => [215, 140, 150], // Helm-Aufsatz -- überlappt den Schildkragen
-    'order'     => [215, 380, 90],
-    'banner'    => [215, 425, 370],
-    'helm'      => [215, 165, 230], // Helmdecke -- sichtbare Spitzen überschätzen die Kernbreite
-];
+// Vergrößerung gegenüber den nativen Sprite-Pixeln
+const COA_RENDER_SCALE = 2;
 
 /**
- * Rendert das komplette Wappen-Bild. Gibt null zurück, wenn Assets fehlen
- * oder der Code ungültig ist (Aufrufer soll dann auf Platzhalter zurückfallen).
+ * Pivot-Offsets aller Wappen-Sprites aus den Spiel-Assets (m_Offset): alle
+ * Ebenen teilen denselben Nullpunkt, der Offset ist seine Lage relativ zur
+ * Sprite-Mitte (y nach oben, in Pixeln). Siehe public/assets/data/coa_offsets.json.
  */
-function renderGuildCrestImage(string $coaCode, string $assetsDir): ?\GdImage {
+function coaOffsets(): array {
+    static $map = null;
+    if ($map === null) {
+        $file = __DIR__ . '/../public/assets/data/coa_offsets.json';
+        if (!is_file($file)) {
+            throw new RuntimeException('coa_offsets.json fehlt');
+        }
+        $map = json_decode(file_get_contents($file), true, 512, JSON_THROW_ON_ERROR);
+    }
+    return $map;
+}
+
+/** Linke obere Ecke eines Sprites relativ zum gemeinsamen Nullpunkt (y nach unten). */
+function coaTopLeft(string $sprite, int $w, int $h): ?array {
+    $off = coaOffsets()[$sprite] ?? null;
+    return is_array($off) && count($off) === 2 ? [-$off[0] - $w / 2, $off[1] - $h / 2] : null;
+}
+
+// Schrift für den Gildennamen auf dem Banner: liegt wie die Wappen-Grafiken nur auf
+// dem Server (Lizenz), nicht im Repo; ohne Datei bleibt das Banner leer.
+if (!defined('COA_FONT_FILE')) {
+    define('COA_FONT_FILE', (defined('DATA_PATH') ? DATA_PATH : __DIR__ . '/../data') . '/guildcrests/name_font.ttf');
+}
+
+/**
+ * Schreibt den Gildennamen weiß mit dunklem Rand und Schatten mittig auf das
+ * Banner (im Spiel ist das Client-Text). Die Schriftgröße ist im Spiel für alle
+ * Namen gleich und nur die Länge ändert sich; sie wird deshalb an der Breite von
+ * COA_NAME_REF_TEXT geeicht und nur bei zu langen Namen verkleinert. Ohne
+ * Schriftdatei bleibt das Banner leer.
+ */
+function coaDrawBannerName(\GdImage $canvas, string $name, float $cx, float $cy, float $maxW, float $unit): void {
+    if ($name === '' || !is_file(COA_FONT_FILE)) {
+        return;
+    }
+    // imagettftext deutet HTML-Entities, ein "&" im Namen soll als Zeichen erscheinen
+    $name = str_replace('&', '&#38;', $name);
+    $ref = @imagettfbbox(100, 0, COA_FONT_FILE, COA_NAME_REF_TEXT);
+    if ($ref === false || $ref[2] - $ref[0] <= 0) {
+        return; // Schriftdatei defekt: Wappen lieber ohne Namen als gar nicht
+    }
+    $size = 100 * COA_NAME_REF_WIDTH * $unit / ($ref[2] - $ref[0]);
+    $box = imagettfbbox($size, 0, COA_FONT_FILE, $name);
+    if ($box === false || $box[2] - $box[0] <= 0) {
+        return;
+    }
+    if (($box[2] - $box[0]) > $maxW) {
+        $size *= $maxW / ($box[2] - $box[0]);
+        $box = imagettfbbox($size, 0, COA_FONT_FILE, $name);
+    }
+    $cap = imagettfbbox($size, 0, COA_FONT_FILE, 'H');
+    $x = (int) round($cx - ($box[2] + $box[0]) / 2);
+    $y = (int) round($cy + ($cap[1] - $cap[7]) / 2);
+
+    $outline = max(1, (int) round($size / 12));
+    imagealphablending($canvas, true);
+    $shadow = imagecolorallocatealpha($canvas, 0, 0, 0, 80);
+    imagettftext($canvas, $size, 0, $x, $y + $outline * 2, $shadow, COA_FONT_FILE, $name);
+    $dark = imagecolorallocate($canvas, 40, 30, 40);
+    for ($dx = -$outline; $dx <= $outline; $dx++) {
+        for ($dy = -$outline; $dy <= $outline; $dy++) {
+            if ($dx !== 0 || $dy !== 0) {
+                imagettftext($canvas, $size, 0, $x + $dx, $y + $dy, $dark, COA_FONT_FILE, $name);
+            }
+        }
+    }
+    $white = imagecolorallocate($canvas, 255, 255, 255);
+    $bold = max(1, (int) round($size / 40));
+    for ($dx = 0; $dx <= $bold; $dx++) {
+        for ($dy = 0; $dy <= $bold; $dy++) {
+            imagettftext($canvas, $size, 0, $x + $dx, $y + $dy, $white, COA_FONT_FILE, $name);
+        }
+    }
+    imagealphablending($canvas, false);
+}
+
+function coaPasteAt(\GdImage $canvas, \GdImage $layer, int $x, int $y, int $w, int $h): void {
+    imagealphablending($canvas, true);
+    imagecopyresampled($canvas, $layer, $x, $y, 0, 0, $w, $h, imagesx($layer), imagesy($layer));
+    imagealphablending($canvas, false);
+}
+
+/**
+ * Rendert das komplette Wappen-Bild. Gibt null zurück, wenn Assets oder
+ * Offsets fehlen oder der Code ungültig ist (Aufrufer soll dann auf
+ * Platzhalter zurückfallen).
+ */
+function renderGuildCrestImage(string $coaCode, string $assetsDir, ?string $guildName = null): ?\GdImage {
     $d = decodeCoaCode($coaCode);
     if ($d === null) {
         return null;
     }
 
-    $canvas = coaNewCanvas(COA_CANVAS_W, COA_CANVAS_H);
-
-    $helmdecke = coaLoadLayer($assetsDir, 'helm', $d['helm']);
-    if (!$helmdecke) return null;
-    [$cx, $cy, $w] = COA_TARGETS['helm'];
-    coaPasteByWidth($canvas, $helmdecke, $cx, $cy, $w);
-
-    $shield = coaLoadLayer($assetsDir, 'shield', $d['shield']);
+    $layers = [];
+    foreach (['helm', 'supporter', 'shield', 'emblem', 'helmet', 'banner', 'order'] as $cat) {
+        $img = coaLoadLayer($assetsDir, $cat, $d[$cat]);
+        if (!$img) return null;
+        $layers[$cat] = $img;
+    }
     $mask = coaLoadLayer($assetsDir, 'shield', $d['shield'], '_color');
-    if (!$shield || !$mask) return null;
+    if (!$mask) return null;
+
+    $names = [];
+    foreach (COA_CATEGORY_NUM as $cat => $num) {
+        $names[$cat] = "coa_{$num}_{$d[$cat]}";
+    }
+    $pos = [];
+    foreach ($layers as $cat => $img) {
+        $pos[$cat] = coaTopLeft($names[$cat], imagesx($img), imagesy($img));
+        if ($pos[$cat] === null) return null;
+    }
+    $maskPos = coaTopLeft($names['shield'] . '_color', imagesx($mask), imagesy($mask));
+    if ($maskPos === null) return null;
+
+    // Die Zonen-Maske hat eine eigene Größe und Lage: im Schild-Raster ausrichten
+    $maskAligned = coaNewCanvas(imagesx($layers['shield']), imagesy($layers['shield']));
+    imagecopy($maskAligned, $mask, (int) round($maskPos[0] - $pos['shield'][0]), (int) round($maskPos[1] - $pos['shield'][1]), 0, 0, imagesx($mask), imagesy($mask));
     $zone1Rgb = COA_PALETTE_GUESS[$d['zone1']] ?? COA_PALETTE_FALLBACK;
     $zone2Rgb = COA_PALETTE_GUESS[$d['zone2']] ?? COA_PALETTE_FALLBACK;
-    $shieldTinted = coaApplyShieldZones($shield, $mask, $zone1Rgb, $zone2Rgb);
-    [$shieldCx, $shieldCy, $shieldW] = COA_TARGETS['shield'];
-    $shieldScale = coaPasteByWidth($canvas, $shieldTinted, $shieldCx, $shieldCy, $shieldW);
+    $layers['shield'] = coaApplyShieldZones($layers['shield'], $maskAligned, $zone1Rgb, $zone2Rgb);
+    $layers['emblem'] = coaTintColorReplace($layers['emblem'], COA_PALETTE_GUESS[$d['figure_color']] ?? COA_PALETTE_FALLBACK);
 
-    $emblem = coaLoadLayer($assetsDir, 'emblem', $d['emblem']);
-    if (!$emblem) return null;
-    $figureRgb = COA_PALETTE_GUESS[$d['figure_color']] ?? COA_PALETTE_FALLBACK;
-    $emblemTinted = coaTintColorReplace($emblem, $figureRgb);
-    // gleicher Skalierungsfaktor wie der Schild, damit die Figur proportional passt
-    coaPasteCentered($canvas, $emblemTinted, $shieldCx, $shieldCy - (int) round(0.02 * COA_CANVAS_H), $shieldScale);
-
-    $supporter = coaLoadLayer($assetsDir, 'supporter', $d['supporter']);
-    if (!$supporter) return null;
-    [$cx, $cy, $w] = COA_TARGETS['supporter'];
-    coaPasteByWidth($canvas, $supporter, $cx, $cy, $w);
-
-    $helmet = coaLoadLayer($assetsDir, 'helmet', $d['helmet']);
-    if (!$helmet) return null;
-    [$cx, $cy, $w] = COA_TARGETS['helmet'];
-    coaPasteByWidth($canvas, $helmet, $cx, $cy, $w);
-
-    $order = coaLoadLayer($assetsDir, 'order', $d['order']);
-    if (!$order) return null;
-    [$cx, $cy, $w] = COA_TARGETS['order'];
-    coaPasteByWidth($canvas, $order, $cx, $cy, $w);
-
-    $banner = coaLoadLayer($assetsDir, 'banner', $d['banner']);
-    if (!$banner) return null;
-    [$cx, $cy, $w] = COA_TARGETS['banner'];
-    coaPasteByWidth($canvas, $banner, $cx, $cy, $w);
+    $margin = 3;
+    $minX = $minY = PHP_INT_MAX;
+    $maxX = $maxY = PHP_INT_MIN;
+    foreach ($layers as $cat => $img) {
+        $minX = min($minX, $pos[$cat][0]);
+        $minY = min($minY, $pos[$cat][1]);
+        $maxX = max($maxX, $pos[$cat][0] + imagesx($img));
+        $maxY = max($maxY, $pos[$cat][1] + imagesy($img));
+    }
+    $s = COA_RENDER_SCALE;
+    $canvas = coaNewCanvas((int) ceil(($maxX - $minX + 2 * $margin) * $s), (int) ceil(($maxY - $minY + 2 * $margin) * $s));
+    foreach ($layers as $cat => $img) {
+        coaPasteAt(
+            $canvas, $img,
+            (int) round(($pos[$cat][0] - $minX + $margin) * $s), (int) round(($pos[$cat][1] - $minY + $margin) * $s),
+            (int) round(imagesx($img) * $s), (int) round(imagesy($img) * $s)
+        );
+    }
+    if ($guildName !== null) {
+        coaDrawBannerName(
+            $canvas, $guildName,
+            ($pos['banner'][0] - $minX + $margin + imagesx($layers['banner']) / 2) * $s,
+            ($pos['banner'][1] - $minY + $margin + imagesy($layers['banner']) / 2) * $s + COA_NAME_OFFSET_Y * imagesy($layers['banner']) * $s,
+            imagesx($layers['banner']) * $s * COA_NAME_MAX_WIDTH, $s
+        );
+    }
 
     return $canvas;
 }
@@ -272,11 +345,13 @@ function renderGuildCrestImage(string $coaCode, string $assetsDir): ?\GdImage {
  * entsteht automatisch ein neuer Dateiname; alte Datei bleibt liegen (wird
  * nicht aktiv aufgeräumt -- analog zu den seltenen manuellen Crest-Uploads).
  */
-function resolveGuildCrestImage(int $guildId, ?string $coaCode): ?string {
+function resolveGuildCrestImage(int $guildId, ?string $coaCode, ?string $guildName = null): ?string {
     if (empty($coaCode)) {
         return null;
     }
-    $hash = substr(md5($coaCode), 0, 8);
+    // Schriftdatei (Änderungszeit) im Schlüssel: Wird sie installiert oder getauscht, entsteht ein neues Bild
+    $font = is_file(COA_FONT_FILE) ? filemtime(COA_FONT_FILE) : 0;
+    $hash = substr(md5($coaCode . '|' . $guildName . '|' . $font), 0, 8);
     $filename = "guild_coa_{$guildId}_{$hash}.webp";
     $outputPath = __DIR__ . '/../public/assets/images/' . $filename;
 
@@ -290,12 +365,20 @@ function resolveGuildCrestImage(int $guildId, ?string $coaCode): ?string {
     }
 
     try {
-        $canvas = renderGuildCrestImage($coaCode, $assetsDir);
+        $canvas = renderGuildCrestImage($coaCode, $assetsDir, $guildName);
         if (!$canvas) {
             return null;
         }
         $ok = imagewebp($canvas, $outputPath, 90);
         imagedestroy($canvas);
+        if ($ok) {
+            // Bilder früherer Stände dieser Gilde (anderer Name, Code oder Schrift) entfernen
+            foreach (glob(__DIR__ . "/../public/assets/images/guild_coa_{$guildId}_*.webp") ?: [] as $old) {
+                if ($old !== $outputPath && realpath($old) !== realpath($outputPath)) {
+                    unlink($old);
+                }
+            }
+        }
         return $ok ? $filename : null;
     } catch (Throwable $e) {
         if (function_exists('logError')) {

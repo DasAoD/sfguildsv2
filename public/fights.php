@@ -35,7 +35,7 @@ foreach ($guilds as $guild) {
 if ($selectedGuild) {
     $selectedGuild['coa_image'] = $selectedGuild['crest_file']
         ? null
-        : resolveGuildCrestImage((int) $selectedGuild['id'], $selectedGuild['coa_code']);
+        : resolveGuildCrestImage((int) $selectedGuild['id'], $selectedGuild['coa_code'], $selectedGuild['name']);
 }
 
 // Get current month/year

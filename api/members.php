@@ -28,7 +28,7 @@ try {
 
     // Auto-generiertes Wappen nur, wenn kein manueller Upload existiert
     // (crest_file hat immer Vorrang -- Backup/Fallback bleibt der Upload).
-    $guild['coa_image'] = $guild['crest_file'] ? null : resolveGuildCrestImage((int) $guild['id'], $guild['coa_code']);
+    $guild['coa_image'] = $guild['crest_file'] ? null : resolveGuildCrestImage((int) $guild['id'], $guild['coa_code'], $guild['name']);
     
     // Get all members with complex sorting
     // Filter fired/left members if not logged in

@@ -5,12 +5,12 @@
  *
  * Rendert ein Wappen direkt aus einem /coa-Hex-Code in eine lokale PNG-Datei
  * -- OHNE die Datenbank oder die Live-Seite anzufassen. Zum Verfeinern von
- * Palette (COA_PALETTE_GUESS) und Layout (COA_TARGETS) in
+ * Palette (COA_PALETTE_GUESS) und Layout in
  * includes/guild_crest.php, ohne jedes Mal einen echten Upload/Sync/Cache-
  * Zyklus durchlaufen zu müssen.
  *
  * Aufruf:
- *   php cli/coa_render_test.php <hex-code> [output.png] [assets-dir]
+ *   php cli/coa_render_test.php <hex-code> [output.png] [assets-dir] [gildenname]
  *
  * Beispiel (Avadhuta Gita):
  *   php cli/coa_render_test.php 12030A040D0F4109090308 /tmp/test.png
@@ -41,7 +41,7 @@ if ($decoded === null) {
 }
 fwrite(STDERR, "Decodiert: " . json_encode($decoded) . "\n");
 
-$canvas = renderGuildCrestImage($code, $assetsDir);
+$canvas = renderGuildCrestImage($code, $assetsDir, $argv[4] ?? null);
 if (!$canvas) {
     fwrite(STDERR, "Render fehlgeschlagen -- Assets fehlen unter $assetsDir?\n");
     exit(1);

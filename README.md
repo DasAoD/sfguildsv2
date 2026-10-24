@@ -173,6 +173,10 @@ Der øberwiegende Teil des Codes, der Architektur und der Dokumentation wurde du
 | Projektidee, Anforderungen & Tests | [DasAoD](https://git.uliana.de/DasAoD) |
 | Code, Architektur, Dokumentation | [Claude](https://git.uliana.de/Claude) (Anthropic) |
 
+## Drittinhalte
+
+- Schrift **Tobi** (Gildennamen auf den automatisch erzeugten Wappen) von Rodrigo Araya Salas ([rodrigotypo.com](https://www.rodrigotypo.com)), bezogen über [onlinewebfonts.com](https://www.onlinewebfonts.com), laut Anbieter unter CC BY 4.0. Die Schriftdatei liegt nicht im Repo, sondern nur auf dem Server.
+
 ## Lizenz
 
 Privates Projekt – keine öffentliche Lizenz.
