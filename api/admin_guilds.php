@@ -5,6 +5,7 @@
  */
 require_once __DIR__ . '/../includes/bootstrap_api.php';
 require_once __DIR__ . '/../includes/guild_crest.php';
+require_once __DIR__ . '/../includes/sf_helpers.php';
 
 // Must be logged in
 requireAdminAPI();
@@ -269,33 +270,8 @@ try {
                 jsonResponse(['success' => false, 'message' => 'Gilde nicht gefunden'], 404);
             }
             
-            // Check member count for logging and deletion
             $memberCount = queryOne('SELECT COUNT(*) as count FROM members WHERE guild_id = ?', [$guildId]);
-            
-            // Delete crest file if exists
-            if ($guild['crest_file']) {
-                $uploadDir = __DIR__ . '/../public/assets/images/';
-                $crestPath = $uploadDir . $guild['crest_file'];
-                
-                if (file_exists($crestPath)) {
-                    @unlink($crestPath);
-                }
-                
-                // Also clean up any other guild crest files with this ID
-                foreach (glob($uploadDir . 'guild_' . $guildId . '.*') as $file) {
-                    if (file_exists($file)) {
-                        @unlink($file);
-                    }
-                }
-            }
-            
-            // Delete associated battle data
-            $battleCount = queryOne('SELECT COUNT(*) as count FROM sf_eval_battles WHERE guild_id = ?', [$guildId]);
-            if ($battleCount && $battleCount['count'] > 0) {
-                execute('DELETE FROM sf_eval_battles WHERE guild_id = ?', [$guildId]);
-            }
-            
-            // Block delete if members exist and force is not set
+
             if (!$force && $memberCount['count'] > 0) {
                 jsonResponse([
                     'success' => false,
@@ -304,14 +280,44 @@ try {
                 ], 409);
             }
 
-            // Delete members if force is enabled
-            if ($force && $memberCount['count'] > 0) {
-                execute('DELETE FROM members WHERE guild_id = ?', [$guildId]);
+            $battleCount = queryOne('SELECT COUNT(*) as count FROM sf_eval_battles WHERE guild_id = ?', [$guildId]);
+
+            // Battles take their participants along, the guild its inbox entries (FK cascade)
+            $db = getDB();
+            $db->beginTransaction();
+            execute('DELETE FROM sf_eval_battles WHERE guild_id = ?', [$guildId]);
+            execute('DELETE FROM members WHERE guild_id = ?', [$guildId]);
+            execute('DELETE FROM guilds WHERE id = ?', [$guildId]);
+            $db->commit();
+
+            // Files only after the commit, so a failed delete leaves them intact
+            if ($guild['crest_file']) {
+                $uploadDir = __DIR__ . '/../public/assets/images/';
+                @unlink($uploadDir . basename($guild['crest_file']));
+                foreach (glob($uploadDir . 'guild_' . $guildId . '.*') as $file) {
+                    @unlink($file);
+                }
             }
 
-            // Delete guild
-            execute('DELETE FROM guilds WHERE id = ?', [$guildId]);
-            
+            // Report folder is named after the guild; skip if another guild maps to the same slug
+            $reportsBase = realpath(__DIR__ . '/../storage/sf_reports');
+            $slug = sanitizeGuildName($guild['name']);
+            $slugTaken = false;
+            foreach (query('SELECT name FROM guilds') as $other) {
+                if (sanitizeGuildName($other['name']) === $slug) {
+                    $slugTaken = true;
+                }
+            }
+            $reportsDir = $reportsBase !== false && $slug !== '' && $slug !== 'temp' && !$slugTaken
+                ? realpath($reportsBase . '/' . $slug)
+                : false;
+            if ($reportsDir !== false && dirname($reportsDir) === $reportsBase) {
+                foreach (glob($reportsDir . '/*') ?: [] as $file) {
+                    @unlink($file);
+                }
+                @rmdir($reportsDir);
+            }
+
             logActivity('Gilde gelöscht', [
                 'ID' => $guildId, 
                 'Name' => $guild['name'],
@@ -347,6 +353,9 @@ try {
     }
     
 } catch (Throwable $e) {
+    if (isset($db) && $db->inTransaction()) {
+        $db->rollBack();
+    }
     logError("Guild management failed", ["error" => $e->getMessage()]);
     jsonResponse([
         'success' => false,
