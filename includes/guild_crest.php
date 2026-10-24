@@ -167,6 +167,13 @@ function coaApplyShieldZones(\GdImage $shield, \GdImage $mask, array $zone1Rgb, 
     return $out;
 }
 
+// Gildenname auf dem Banner: im Spiel gemessen hat "SchattendrachenA" 188 Pixel
+// Breite (bei nativer Sprite-Größe), maximal 90 % der Bannerbreite, Versatz nach unten
+const COA_NAME_REF_TEXT = 'SchattendrachenA';
+const COA_NAME_REF_WIDTH = 188;
+const COA_NAME_MAX_WIDTH = 0.9;
+const COA_NAME_OFFSET_Y = 0.07;
+
 // Vergrößerung gegenüber den nativen Sprite-Pixeln
 const COA_RENDER_SCALE = 2;
 
@@ -193,6 +200,64 @@ function coaTopLeft(string $sprite, int $w, int $h): ?array {
     return is_array($off) && count($off) === 2 ? [-$off[0] - $w / 2, $off[1] - $h / 2] : null;
 }
 
+// Schrift für den Gildennamen auf dem Banner: liegt wie die Wappen-Grafiken nur auf
+// dem Server (Lizenz), nicht im Repo; ohne Datei bleibt das Banner leer.
+if (!defined('COA_FONT_FILE')) {
+    define('COA_FONT_FILE', (defined('DATA_PATH') ? DATA_PATH : __DIR__ . '/../data') . '/guildcrests/name_font.ttf');
+}
+
+/**
+ * Schreibt den Gildennamen weiß mit dunklem Rand und Schatten mittig auf das
+ * Banner (im Spiel ist das Client-Text). Die Schriftgröße ist im Spiel für alle
+ * Namen gleich und nur die Länge ändert sich; sie wird deshalb an der Breite von
+ * COA_NAME_REF_TEXT geeicht und nur bei zu langen Namen verkleinert. Ohne
+ * Schriftdatei bleibt das Banner leer.
+ */
+function coaDrawBannerName(\GdImage $canvas, string $name, float $cx, float $cy, float $maxW, float $unit): void {
+    if ($name === '' || !is_file(COA_FONT_FILE)) {
+        return;
+    }
+    // imagettftext deutet HTML-Entities, ein "&" im Namen soll als Zeichen erscheinen
+    $name = str_replace('&', '&#38;', $name);
+    $ref = @imagettfbbox(100, 0, COA_FONT_FILE, COA_NAME_REF_TEXT);
+    if ($ref === false || $ref[2] - $ref[0] <= 0) {
+        return; // Schriftdatei defekt: Wappen lieber ohne Namen als gar nicht
+    }
+    $size = 100 * COA_NAME_REF_WIDTH * $unit / ($ref[2] - $ref[0]);
+    $box = imagettfbbox($size, 0, COA_FONT_FILE, $name);
+    if ($box === false || $box[2] - $box[0] <= 0) {
+        return;
+    }
+    if (($box[2] - $box[0]) > $maxW) {
+        $size *= $maxW / ($box[2] - $box[0]);
+        $box = imagettfbbox($size, 0, COA_FONT_FILE, $name);
+    }
+    $cap = imagettfbbox($size, 0, COA_FONT_FILE, 'H');
+    $x = (int) round($cx - ($box[2] + $box[0]) / 2);
+    $y = (int) round($cy + ($cap[1] - $cap[7]) / 2);
+
+    $outline = max(1, (int) round($size / 12));
+    imagealphablending($canvas, true);
+    $shadow = imagecolorallocatealpha($canvas, 0, 0, 0, 80);
+    imagettftext($canvas, $size, 0, $x, $y + $outline * 2, $shadow, COA_FONT_FILE, $name);
+    $dark = imagecolorallocate($canvas, 40, 30, 40);
+    for ($dx = -$outline; $dx <= $outline; $dx++) {
+        for ($dy = -$outline; $dy <= $outline; $dy++) {
+            if ($dx !== 0 || $dy !== 0) {
+                imagettftext($canvas, $size, 0, $x + $dx, $y + $dy, $dark, COA_FONT_FILE, $name);
+            }
+        }
+    }
+    $white = imagecolorallocate($canvas, 255, 255, 255);
+    $bold = max(1, (int) round($size / 40));
+    for ($dx = 0; $dx <= $bold; $dx++) {
+        for ($dy = 0; $dy <= $bold; $dy++) {
+            imagettftext($canvas, $size, 0, $x + $dx, $y + $dy, $white, COA_FONT_FILE, $name);
+        }
+    }
+    imagealphablending($canvas, false);
+}
+
 function coaPasteAt(\GdImage $canvas, \GdImage $layer, int $x, int $y, int $w, int $h): void {
     imagealphablending($canvas, true);
     imagecopyresampled($canvas, $layer, $x, $y, 0, 0, $w, $h, imagesx($layer), imagesy($layer));
@@ -204,7 +269,7 @@ function coaPasteAt(\GdImage $canvas, \GdImage $layer, int $x, int $y, int $w, i
  * Offsets fehlen oder der Code ungültig ist (Aufrufer soll dann auf
  * Platzhalter zurückfallen).
  */
-function renderGuildCrestImage(string $coaCode, string $assetsDir): ?\GdImage {
+function renderGuildCrestImage(string $coaCode, string $assetsDir, ?string $guildName = null): ?\GdImage {
     $d = decodeCoaCode($coaCode);
     if ($d === null) {
         return null;
@@ -257,6 +322,14 @@ function renderGuildCrestImage(string $coaCode, string $assetsDir): ?\GdImage {
             (int) round(imagesx($img) * $s), (int) round(imagesy($img) * $s)
         );
     }
+    if ($guildName !== null) {
+        coaDrawBannerName(
+            $canvas, $guildName,
+            ($pos['banner'][0] - $minX + $margin + imagesx($layers['banner']) / 2) * $s,
+            ($pos['banner'][1] - $minY + $margin + imagesy($layers['banner']) / 2) * $s + COA_NAME_OFFSET_Y * imagesy($layers['banner']) * $s,
+            imagesx($layers['banner']) * $s * COA_NAME_MAX_WIDTH, $s
+        );
+    }
 
     return $canvas;
 }
@@ -272,11 +345,13 @@ function renderGuildCrestImage(string $coaCode, string $assetsDir): ?\GdImage {
  * entsteht automatisch ein neuer Dateiname; alte Datei bleibt liegen (wird
  * nicht aktiv aufgeräumt -- analog zu den seltenen manuellen Crest-Uploads).
  */
-function resolveGuildCrestImage(int $guildId, ?string $coaCode): ?string {
+function resolveGuildCrestImage(int $guildId, ?string $coaCode, ?string $guildName = null): ?string {
     if (empty($coaCode)) {
         return null;
     }
-    $hash = substr(md5($coaCode), 0, 8);
+    // Schriftdatei (Änderungszeit) im Schlüssel: Wird sie installiert oder getauscht, entsteht ein neues Bild
+    $font = is_file(COA_FONT_FILE) ? filemtime(COA_FONT_FILE) : 0;
+    $hash = substr(md5($coaCode . '|' . $guildName . '|' . $font), 0, 8);
     $filename = "guild_coa_{$guildId}_{$hash}.webp";
     $outputPath = __DIR__ . '/../public/assets/images/' . $filename;
 
@@ -290,12 +365,20 @@ function resolveGuildCrestImage(int $guildId, ?string $coaCode): ?string {
     }
 
     try {
-        $canvas = renderGuildCrestImage($coaCode, $assetsDir);
+        $canvas = renderGuildCrestImage($coaCode, $assetsDir, $guildName);
         if (!$canvas) {
             return null;
         }
         $ok = imagewebp($canvas, $outputPath, 90);
         imagedestroy($canvas);
+        if ($ok) {
+            // Bilder früherer Stände dieser Gilde (anderer Name, Code oder Schrift) entfernen
+            foreach (glob(__DIR__ . "/../public/assets/images/guild_coa_{$guildId}_*.webp") ?: [] as $old) {
+                if ($old !== $outputPath && realpath($old) !== realpath($outputPath)) {
+                    unlink($old);
+                }
+            }
+        }
         return $ok ? $filename : null;
     } catch (Throwable $e) {
         if (function_exists('logError')) {

@@ -126,7 +126,7 @@ try {
 
         // Auto-generiertes Wappen nur, wenn kein manueller Upload existiert
         // (crest_file hat immer Vorrang -- Backup/Fallback bleibt der Upload).
-        $guild['coa_image'] = $guild['crest_file'] ? null : resolveGuildCrestImage((int) $id, $guild['coa_code']);
+        $guild['coa_image'] = $guild['crest_file'] ? null : resolveGuildCrestImage((int) $id, $guild['coa_code'], $guild['name']);
         unset($guild['coa_code']); // Frontend braucht nur den fertigen Bildnamen
     }
     

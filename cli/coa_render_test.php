@@ -10,7 +10,7 @@
  * Zyklus durchlaufen zu müssen.
  *
  * Aufruf:
- *   php cli/coa_render_test.php <hex-code> [output.png] [assets-dir]
+ *   php cli/coa_render_test.php <hex-code> [output.png] [assets-dir] [gildenname]
  *
  * Beispiel (Avadhuta Gita):
  *   php cli/coa_render_test.php 12030A040D0F4109090308 /tmp/test.png
@@ -41,7 +41,7 @@ if ($decoded === null) {
 }
 fwrite(STDERR, "Decodiert: " . json_encode($decoded) . "\n");
 
-$canvas = renderGuildCrestImage($code, $assetsDir);
+$canvas = renderGuildCrestImage($code, $assetsDir, $argv[4] ?? null);
 if (!$canvas) {
     fwrite(STDERR, "Render fehlgeschlagen -- Assets fehlen unter $assetsDir?\n");
     exit(1);
