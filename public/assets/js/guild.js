@@ -141,7 +141,7 @@ function renderTable(members, logged) {
                 <td><span class="player-name" data-player="${escapeHtml(m.name)}">${rank}<span class="player-name-text">${escapeHtml(m.name)}</span></span></td>
                 <td class="center">${m.level}</td>
                 <td>${formatDate(m.last_online)}</td>
-                <td class="editable" data-idx="${idx}" data-field="joined_at">${m.rank === 'Eingeladen' ? '—' : formatDate(m.joined_at)}</td>
+                <td class="editable" data-idx="${idx}" data-field="joined_at">${m.rank === 'Eingeladen' ? '-' : formatDate(m.joined_at)}</td>
                 <td class="center">${m.gold?.toLocaleString('de-DE') || 0}</td>
                 <td class="center">${m.mentor || 0}</td>
                 <td class="center">${m.knight_hall?.toLocaleString('de-DE') || 0}</td>
