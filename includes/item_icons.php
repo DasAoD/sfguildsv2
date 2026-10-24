@@ -121,6 +121,35 @@ function resolveItemIconPath(string $slot, array $item): ?string
     return "/assets/images/items/{$bundle}/" . basename($matches[0]);
 }
 
+// Warrior-Waffen haben nie einen Treffereffekt; Scout-Modelle 1-10 haben
+// zusätzlich eine Variante pro Farbe.
+function resolveHitEffectPath(array $weapon): ?string
+{
+    $modelId = $weapon['model_id'] ?? null;
+    if (!is_int($modelId)) {
+        return null;
+    }
+
+    switch ($weapon['class'] ?? null) {
+        case 'Mage':
+            $bundle = 'magehits';
+            $name = "hit_2_{$modelId}";
+            break;
+        case 'Scout':
+            $bundle = 'scoutshots';
+            $name = $modelId <= 10 ? "shot_3_{$modelId}_" . (int)($weapon['color'] ?? 1) : "shot_3_{$modelId}";
+            break;
+        default:
+            return null;
+    }
+
+    if (!is_file(__DIR__ . "/../public/assets/images/items/{$bundle}/{$name}.png")) {
+        return null;
+    }
+
+    return "/assets/images/items/{$bundle}/{$name}.png";
+}
+
 // Trank-Typ -> Position innerhalb eines 5er-Blocks (eine Größenstufe),
 // gemäß sf-api PotionType::parse (id % 5: 0=>Luck, 1=>Strength, 2=>Dexterity,
 // 3=>Intelligence, 4=>Constitution — als Blockposition 1..5 ausgedrückt)

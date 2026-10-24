@@ -388,7 +388,6 @@ const slotIcons = {
 };
 const slotColumns = {
     armor: ['Hat', 'BreastPlate', 'Gloves', 'FootWear'],
-    weapons: ['Weapon', 'Shield'],
     jewelry: ['Amulet', 'Belt', 'Ring', 'Talisman']
 };
 const gemColors = {
@@ -447,6 +446,13 @@ function buildEquipTile(slot, item) {
         ${iconHtml}
         ${badges.join('')}
         <div class="char-slot-label">${escapeHtml(label)}</div>
+    </div>`;
+}
+
+function buildHitEffectTile(src) {
+    return `<div class="char-slot char-slot-hit" title="Treffereffekt">
+        <img class="char-slot-icon-img" src="${escapeHtml(src)}" alt="" onerror="this.parentNode.style.display='none'">
+        <div class="char-slot-label">Effekt</div>
     </div>`;
 }
 
@@ -512,7 +518,10 @@ function renderCharacterModal(data, fetchedAt, playerName) {
     `;
 
     const armorHtml = slotColumns.armor.map(slot => buildEquipTile(slot, data.equipment?.[slot])).join('');
-    const weaponHtml = slotColumns.weapons.map(slot => buildEquipTile(slot, data.equipment?.[slot])).join('');
+    const secondWeapon = data.equipment?.Shield;
+    const hitEffect = data.equipment?.Weapon?.hit_effect;
+    const extraTile = secondWeapon ? buildEquipTile('Shield', secondWeapon) : (hitEffect ? buildHitEffectTile(hitEffect) : '');
+    const weaponHtml = buildEquipTile('Weapon', data.equipment?.Weapon) + extraTile;
     const jewelryHtml = slotColumns.jewelry.map(slot => buildEquipTile(slot, data.equipment?.[slot])).join('');
 
     // Immer genau 3 Kacheln rendern (auch bei fehlenden Tränken als Platzhalter),
