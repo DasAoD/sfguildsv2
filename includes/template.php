@@ -155,7 +155,7 @@ function renderFooter() {
  * Render script tags
  */
 function renderScripts($additionalJS = []) {
-    $version = '20261024a'; // Update this when JS changes
+    $version = '20261024b'; // Update this when JS changes
     // Hinweis: der Session-Idle-Timer wird in renderNavbar() geladen, damit er
     // auch auf Seiten ohne renderScripts() (fights/hellevator/inbox) greift.
     $jsFiles = array_merge(['/assets/js/overlay.js', '/assets/js/main.js'], $additionalJS);
