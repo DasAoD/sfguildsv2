@@ -16,14 +16,15 @@ const COA_CATEGORY_NUM = [
     'helmet' => 5, 'order' => 6, 'emblem' => 7,
 ];
 
-// Palette: Die Indizes 0, 2, 3, 4, 6, 8, 9 und 11 sind an echten Wappen gemessen
-// (Anzeigefarbe der Schildzone bzw. Figur). Der Rest ist weiterhin eine
-// Näherung; unbekannte Indizes fallen auf ein neutrales Grau zurück
-// (COA_PALETTE_FALLBACK).
-const COA_PALETTE_GUESS = [
-    0 => [3, 42, 250], 1 => [200, 60, 60], 2 => [179, 2, 205], 3 => [25, 25, 25],
-    4 => [0, 153, 0], 5 => [230, 200, 40], 6 => [229, 229, 229], 7 => [230, 140, 30],
-    8 => [127, 127, 127], 9 => [176, 0, 0], 11 => [251, 152, 4],
+// Palette (Farbnummer 0-12): die 13 Farben der Spiel-Daten (ScriptableObject COAData,
+// RGBA als Fließkommazahlen, auf 0-255 gerundet). Die Werte der Nummern 2, 3, 4, 6, 8,
+// 9 und 11 wurden zusätzlich an Spiel-Screenshots nachgemessen und stimmen überein.
+// Unbekannte Nummern fallen auf ein neutrales Grau zurück (COA_PALETTE_FALLBACK).
+const COA_PALETTE = [
+    0 => [0, 0, 255], 1 => [255, 0, 0], 2 => [178, 0, 204], 3 => [26, 26, 26],
+    4 => [0, 153, 0], 5 => [255, 204, 0], 6 => [229, 229, 229], 7 => [178, 102, 51],
+    8 => [128, 128, 128], 9 => [178, 0, 0], 10 => [128, 0, 77], 11 => [255, 153, 0],
+    12 => [255, 204, 204],
 ];
 const COA_PALETTE_FALLBACK = [150, 150, 150];
 
@@ -295,10 +296,10 @@ function renderGuildCrestImage(string $coaCode, string $assetsDir, ?string $guil
     // Die Zonen-Maske hat eine eigene Größe und Lage: im Schild-Raster ausrichten
     $maskAligned = coaNewCanvas(imagesx($layers['shield']), imagesy($layers['shield']));
     imagecopy($maskAligned, $mask, (int) round($maskPos[0] - $pos['shield'][0]), (int) round($maskPos[1] - $pos['shield'][1]), 0, 0, imagesx($mask), imagesy($mask));
-    $zone1Rgb = COA_PALETTE_GUESS[$d['zone1']] ?? COA_PALETTE_FALLBACK;
-    $zone2Rgb = COA_PALETTE_GUESS[$d['zone2']] ?? COA_PALETTE_FALLBACK;
+    $zone1Rgb = COA_PALETTE[$d['zone1']] ?? COA_PALETTE_FALLBACK;
+    $zone2Rgb = COA_PALETTE[$d['zone2']] ?? COA_PALETTE_FALLBACK;
     $layers['shield'] = coaApplyShieldZones($layers['shield'], $maskAligned, $zone1Rgb, $zone2Rgb);
-    $layers['emblem'] = coaTintColorReplace($layers['emblem'], COA_PALETTE_GUESS[$d['figure_color']] ?? COA_PALETTE_FALLBACK);
+    $layers['emblem'] = coaTintColorReplace($layers['emblem'], COA_PALETTE[$d['figure_color']] ?? COA_PALETTE_FALLBACK);
 
     $margin = 3;
     $minX = $minY = PHP_INT_MAX;
