@@ -20,21 +20,14 @@ const COA_CATEGORY_NUM = [
     'helmet' => 5, 'order' => 6, 'emblem' => 7,
 ];
 
-// Palette -- Indizes 4 (#009900, Gurkistan-Screenshot), 8 (#7f7f7f) und
-// 9 (#b00000, beide Avadhuta-Gita-Screenshot) sind an echten Screenshots
-// verifiziert. Der Rest ist weiterhin eine Näherung und muss verfeinert
-// werden, sobald mehr reale Vergleichsdaten vorliegen (siehe Memory
-// sfguildsv2-guild-crest-reverse-engineering). Unbekannte Indizes fallen
-// auf ein neutrales Grau zurück (COA_PALETTE_FALLBACK), nicht mehr auf
-// Grün -- das hatte Index 8/9 vor der Verifizierung falsch grün eingefärbt.
-// Index 3 war ursprünglich blind von Index 4 übernommen (beide "grünlich"
-// geraten) -- an Avadhuta Gitas Schild (wo Index 3 die dominante Zone-2-
-// Fläche ist, nicht nur ungetestet wie bei Gurkistan) als ~#191919 (fast
-// schwarz) verifiziert.
+// Palette: Die Indizes 2, 3, 4, 8, 9 und 11 sind an echten Wappen gemessen
+// (Anzeigefarbe der Schildzone bzw. Figur). Der Rest ist weiterhin eine
+// Näherung; unbekannte Indizes fallen auf ein neutrales Grau zurück
+// (COA_PALETTE_FALLBACK).
 const COA_PALETTE_GUESS = [
-    0 => [120, 120, 120], 1 => [200, 60, 60], 2 => [60, 100, 200], 3 => [25, 25, 25],
+    0 => [120, 120, 120], 1 => [200, 60, 60], 2 => [179, 2, 205], 3 => [25, 25, 25],
     4 => [0, 153, 0], 5 => [230, 200, 40], 6 => [140, 80, 200], 7 => [230, 140, 30],
-    8 => [127, 127, 127], 9 => [176, 0, 0],
+    8 => [127, 127, 127], 9 => [176, 0, 0], 11 => [251, 152, 4],
 ];
 const COA_PALETTE_FALLBACK = [150, 150, 150];
 
@@ -70,6 +63,7 @@ function coaLoadLayer(string $assetsDir, string $cat, int $variant, string $suff
     if (!$im) {
         return null;
     }
+    imagepalettetotruecolor($im);
     imagealphablending($im, false);
     imagesavealpha($im, true);
     return $im;
@@ -120,13 +114,49 @@ function coaTintColorReplace(\GdImage $img, array $rgb): \GdImage {
     return $out;
 }
 
-/** Schild-Zonenfärbung: Multiply-Blend, gewichtet über G/B-Kanal der _color-Maske. */
+/**
+ * Schild-Zonenfärbung: Die Helligkeit des Schilds wird je Zone auf den
+ * Zielton normiert (mittlere Helligkeit der Zone = Palettenfarbe), die
+ * Schattierung bleibt erhalten. Die Maske trägt auch in transparenten
+ * Bereichen Farbwerte und wird deshalb über ihren Alpha-Wert gewichtet.
+ */
 function coaApplyShieldZones(\GdImage $shield, \GdImage $mask, array $zone1Rgb, array $zone2Rgb): \GdImage {
     $w = imagesx($shield);
     $h = imagesy($shield);
     if (imagesx($mask) !== $w || imagesy($mask) !== $h) {
         $mask = coaResize($mask, $w, $h);
     }
+
+    $weights = [];
+    $lumSum = [1 => 0.0, 2 => 0.0];
+    $lumCount = [1 => 0, 2 => 0];
+    for ($y = 0; $y < $h; $y++) {
+        for ($x = 0; $x < $w; $x++) {
+            $base = imagecolorat($shield, $x, $y);
+            if ((($base >> 24) & 0x7F) === 127) {
+                continue;
+            }
+            $m = imagecolorat($mask, $x, $y);
+            $opacity = (127 - (($m >> 24) & 0x7F)) / 127;
+            $g = (($m >> 8) & 0xFF) / 255 * $opacity;
+            $b = ($m & 0xFF) / 255 * $opacity;
+            if ($g <= 0 && $b <= 0) {
+                continue;
+            }
+            $zone = $g >= $b ? 1 : 2;
+            $weights[$y * $w + $x] = [$zone, $zone === 1 ? $g : $b];
+            if (($zone === 1 ? $g : $b) > 0.5) {
+                $lumSum[$zone] += 0.299 * (($base >> 16) & 0xFF) + 0.587 * (($base >> 8) & 0xFF) + 0.114 * ($base & 0xFF);
+                $lumCount[$zone]++;
+            }
+        }
+    }
+    $zoneLum = [];
+    foreach ([1, 2] as $zone) {
+        $zoneLum[$zone] = $lumCount[$zone] > 0 ? max(1.0, $lumSum[$zone] / $lumCount[$zone]) : 255.0;
+    }
+    $tints = [1 => $zone1Rgb, 2 => $zone2Rgb];
+
     $out = coaNewCanvas($w, $h);
     for ($y = 0; $y < $h; $y++) {
         for ($x = 0; $x < $w; $x++) {
@@ -139,27 +169,17 @@ function coaApplyShieldZones(\GdImage $shield, \GdImage $mask, array $zone1Rgb, 
             $bg = ($base >> 8) & 0xFF;
             $bb = $base & 0xFF;
 
-            $m = imagecolorat($mask, $x, $y);
-            $mg = ($m >> 8) & 0xFF;
-            $mb = $m & 0xFF;
-
-            if ($mg === 0 && $mb === 0) {
+            $entry = $weights[$y * $w + $x] ?? null;
+            if ($entry === null) {
                 imagesetpixel($out, $x, $y, imagecolorallocatealpha($out, $br, $bg, $bb, $ba));
                 continue;
             }
-            if ($mg >= $mb) {
-                $weight = $mg / 255;
-                $tint = $zone1Rgb;
-            } else {
-                $weight = $mb / 255;
-                $tint = $zone2Rgb;
-            }
-            $mr = intdiv($br * $tint[0], 255);
-            $mgc = intdiv($bg * $tint[1], 255);
-            $mbc = intdiv($bb * $tint[2], 255);
-            $nr = (int) round($br * (1 - $weight) + $mr * $weight);
-            $ng = (int) round($bg * (1 - $weight) + $mgc * $weight);
-            $nb = (int) round($bb * (1 - $weight) + $mbc * $weight);
+            [$zone, $weight] = $entry;
+            $ratio = (0.299 * $br + 0.587 * $bg + 0.114 * $bb) / $zoneLum[$zone];
+            $tint = $tints[$zone];
+            $nr = (int) round($br * (1 - $weight) + min(255, $tint[0] * $ratio) * $weight);
+            $ng = (int) round($bg * (1 - $weight) + min(255, $tint[1] * $ratio) * $weight);
+            $nb = (int) round($bb * (1 - $weight) + min(255, $tint[2] * $ratio) * $weight);
             imagesetpixel($out, $x, $y, imagecolorallocatealpha($out, $nr, $ng, $nb, $ba));
         }
     }
@@ -210,7 +230,7 @@ function renderGuildCrestImage(string $coaCode, string $assetsDir): ?\GdImage {
     }
 
     $layers = [];
-    foreach (['helm', 'shield', 'emblem', 'supporter', 'helmet', 'order', 'banner'] as $cat) {
+    foreach (['helm', 'shield', 'emblem', 'supporter', 'helmet', 'banner', 'order'] as $cat) {
         $img = coaLoadLayer($assetsDir, $cat, $d[$cat]);
         if (!$img) return null;
         $layers[$cat] = $img;
