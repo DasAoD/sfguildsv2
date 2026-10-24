@@ -93,8 +93,12 @@ beim nächsten Aufruf neu.
   Sprites (`public/assets/data/coa_offsets.json`, `m_Offset` aus den
   Spiel-Assets), die Reihenfolge ist aus den Spiel-Screenshots abgeleitet:
   Helm, Schildhalter, Schild, Figur, Helmzier, Banner, Zusatz, Name.
-- **Farben:** `COA_PALETTE_GUESS` enthält gemessene Werte für die Indizes
-  2, 3, 4, 8, 9 und 11. Alle anderen Indizes sind Näherungen und müssen
-  ergänzt werden, sobald ein Wappen mit der Farbe vorliegt.
+- **Farben:** `COA_PALETTE` enthält die 13 Farben (Nummern 0-12) aus den
+  Spiel-Daten (ScriptableObject `COAData` in `data.unity3d`, RGBA als Float).
+  Quelle: die `data`-Datei des Clients (`build.json` -> `dataUrl`), daraus
+  `data.unity3d` lösen und mit UnityPy das Objekt `COAData` roh auslesen
+  (die Felder sind ohne IL2CPP-Metadaten für AssetRipper nicht lesbar). Mehr
+  als 13 Farben gibt es nicht; kommt eine Nummer darüber im Code vor, fällt
+  sie auf Grau zurück.
 - Schildzonen werden flach mit der Palettenfarbe gefüllt, die Zonen-Maske
   trägt auch in transparenten Bereichen Farbwerte (Alpha mit einrechnen).
