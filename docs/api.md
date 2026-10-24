@@ -577,7 +577,7 @@ Alle Gilden (Admin-Ansicht).
 ---
 
 ### `POST /api/admin_guilds.php`
-Gilde anlegen (inkl. optionalem Wappen-Upload).
+Gilde anlegen (das Wappen wird automatisch aus dem Spiel-Code gerendert, es gibt keinen Upload).
 
 **Auth:** admin
 
@@ -588,7 +588,6 @@ Gilde anlegen (inkl. optionalem Wappen-Upload).
 | `server` | string | Servername, z. B. `fX` (max. 20 Zeichen) |
 | `tag` | string | Kürzel (max. 10 Zeichen, optional) |
 | `notes` | string | Notizen (max. 1000 Zeichen, optional) |
-| `crest` | file | Wappen-Bild (max. 2,5 MB, max. 4096x4096, optional) |
 
 **Response:**
 
@@ -600,7 +599,7 @@ Gilde anlegen (inkl. optionalem Wappen-Upload).
 Gilde bearbeiten.
 
 **Auth:** admin
-**Request:** `multipart/form-data` (gleiche Felder wie POST, zusätzlich `guild_id`)
+**Request:** `multipart/form-data` (gleiche Felder wie POST, zusätzlich `_method=PUT` und `guild_id`)
 
 ---
 

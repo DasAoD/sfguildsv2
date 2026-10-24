@@ -23,8 +23,7 @@ try {
             // List all guilds
             $guilds = query('SELECT * FROM guilds ORDER BY name');
             foreach ($guilds as &$guild) {
-                // Ohne hochgeladenes Wappen das automatisch gerenderte zeigen
-                $guild['coa_image'] = $guild['crest_file'] ? null : resolveGuildCrestImage((int) $guild['id'], $guild['coa_code'], $guild['name']);
+                $guild['coa_image'] = resolveGuildCrestImage((int) $guild['id'], $guild['coa_code'], $guild['name']);
                 unset($guild['coa_code']);
             }
             unset($guild);
@@ -40,10 +39,7 @@ try {
             $server = mb_substr(trim($_POST['server'] ?? ''), 0, 20);
             $tag    = mb_substr(trim($_POST['tag']    ?? ''), 0, 10);
             $notes  = mb_substr(trim($_POST['notes']  ?? ''), 0, 1000);
-            $crestFile = null;
-            $crestUploaded = false;
-            $crestError = null;
-            
+
             if (empty($name) || empty($server)) {
                 jsonResponse(['success' => false, 'message' => 'Name und Server erforderlich'], 400);
             }
@@ -54,89 +50,11 @@ try {
                 [$name, $server, $tag, $notes]
             );
             
-            // Handle file upload with guild ID
-            if (isset($_FILES['crest']) && $_FILES['crest']['error'] === UPLOAD_ERR_OK) {
-                $uploadDir = __DIR__ . '/../public/assets/images/';
-                if (!is_dir($uploadDir)) {
-                    mkdir($uploadDir, 0755, true);
-                }
-                // Dateigröße-Limit: 2.5MB (non-fatal: Gilde wird trotzdem angelegt)
-                if ($_FILES['crest']['size'] > 2.5 * 1024 * 1024) {
-                    $crestError = 'Wappen-Datei zu groß (max. 2.5MB)';
-                } else {
-                    $fileExt = strtolower(pathinfo($_FILES['crest']['name'], PATHINFO_EXTENSION));
-                    $allowedExts = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
-
-                    if (!in_array($fileExt, $allowedExts)) {
-                        $crestError = 'Ungültiges Dateiformat (erlaubt: jpg, png, gif, bmp, webp)';
-                    } else {
-                        $tmpFile  = $_FILES['crest']['tmp_name'];
-                        $crestFile = 'guild_' . $guildId . '.webp';
-                        $outputPath = $uploadDir . $crestFile;
-
-                        // Dimensionen prüfen bevor GD lädt
-                        $imgInfo = @getimagesize($tmpFile);
-                        if ($imgInfo === false) {
-                            $crestError = 'Bilddatei konnte nicht gelesen werden';
-                        } elseif ($imgInfo[0] > 4096 || $imgInfo[1] > 4096
-                               || ($imgInfo[0] * $imgInfo[1]) > 16_777_216) { // max 16 Megapixel
-                            $crestError = 'Bild zu groß (max. 4096×4096 Pixel oder 16 MP)';
-                        } else {
-                            try {
-                                // finfo_file() prüft echten MIME-Typ der Datei, nicht den Client-Input
-                                $finfo    = new finfo(FILEINFO_MIME_TYPE);
-                                $mimeType = $finfo->file($tmpFile);
-                                $mimeToLoader = [
-                                    'image/jpeg' => 'imagecreatefromjpeg',
-                                    'image/png'  => 'imagecreatefrompng',
-                                    'image/gif'  => 'imagecreatefromgif',
-                                    'image/bmp'  => 'imagecreatefrombmp',
-                                    'image/x-bmp'=> 'imagecreatefrombmp',
-                                    'image/webp' => 'imagecreatefromwebp',
-                                ];
-                                $loader = $mimeToLoader[$mimeType] ?? null;
-                                $image  = $loader ? @$loader($tmpFile) : null;
-                                if ($image) {
-                                    // Palette-PNGs (indizierte Farben + Transparenz-Chunk statt
-                                    // echtem RGBA) lässt imagewebp() sonst manchmal stillschweigend
-                                    // als 0-Byte-Datei rausfallen, ohne Fehler zu werfen.
-                                    imagepalettetotruecolor($image);
-                                    $image = limitCrestSize($image);
-                                    if (imagewebp($image, $outputPath, 90) && filesize($outputPath) > 0) {
-                                        imagedestroy($image);
-                                        execute('UPDATE guilds SET crest_file = ? WHERE id = ?', [$crestFile, $guildId]);
-                                        $crestUploaded = true;
-                                    } else {
-                                        @unlink($outputPath);
-                                        $crestError = 'Konvertierung zu WEBP fehlgeschlagen';
-                                        logError("WEBP conversion failed (create guild)", ["guild_id" => $guildId]);
-                                    }
-                                } else {
-                                    $crestError = 'Bildformat nicht unterstützt oder Datei beschädigt';
-                                    logError("Image load failed (create guild)", ["mime" => $mimeType, "guild_id" => $guildId]);
-                                }
-                            } catch (Throwable $e) {
-                                logError('Bildverarbeitung fehlgeschlagen (create)', ['error' => $e->getMessage()]);
-                                $crestError = 'Fehler bei der Bildverarbeitung';
-                            }
-                        }
-                    }
-                }
-            }
-            
             logActivity('Gilde erstellt', ['Name' => $name, 'Server' => $server]);
-            
-            $message = 'Gilde erfolgreich angelegt';
-            if ($crestUploaded) {
-                $message .= ' (mit Wappen)';
-            } elseif ($crestError) {
-                $message .= ' (Wappen konnte nicht hochgeladen werden: ' . $crestError . ')';
-            }
             
             jsonResponse([
                 'success' => true,
-                'message' => $message,
-                'crest_uploaded' => $crestUploaded
+                'message' => 'Gilde erfolgreich angelegt'
             ]);
             break;
             
@@ -152,101 +70,10 @@ try {
                 jsonResponse(['success' => false, 'message' => 'Guild ID, Name und Server erforderlich'], 400);
             }
             
-            // Handle file upload
-            $crestFile = null;
-            if (isset($_FILES['crest']) && $_FILES['crest']['error'] === UPLOAD_ERR_OK) {
-                $uploadDir = __DIR__ . '/../public/assets/images/';
-                if (!is_dir($uploadDir)) {
-                    mkdir($uploadDir, 0755, true);
-                }
-                // Dateigröße-Limit: 2.5MB (non-fatal: Update wird trotzdem durchgeführt)
-                if ($_FILES['crest']['size'] > 2.5 * 1024 * 1024) {
-                    $crestError = 'Wappen-Datei zu groß (max. 2.5MB)';
-                } else {
-                    $fileExt = strtolower(pathinfo($_FILES['crest']['name'], PATHINFO_EXTENSION));
-                    $allowedExts = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
-
-                    if (!in_array($fileExt, $allowedExts)) {
-                        $crestError = 'Ungültiges Dateiformat (erlaubt: jpg, png, gif, bmp, webp)';
-                    } else {
-                        $tmpFile   = $_FILES['crest']['tmp_name'];
-                        $crestFile = 'guild_' . $guildId . '.webp';
-                        $outputPath = $uploadDir . $crestFile;
-
-                        // Dimensionen prüfen bevor GD lädt
-                        $imgInfo = @getimagesize($tmpFile);
-                        if ($imgInfo === false) {
-                            $crestError = 'Bilddatei konnte nicht gelesen werden';
-                            $crestFile = null;
-                        } elseif ($imgInfo[0] > 4096 || $imgInfo[1] > 4096
-                               || ($imgInfo[0] * $imgInfo[1]) > 16_777_216) { // max 16 Megapixel
-                            $crestError = 'Bild zu groß (max. 4096×4096 Pixel oder 16 MP)';
-                            $crestFile = null;
-                        } else {
-                            try {
-                                // finfo_file() prüft echten MIME-Typ der Datei, nicht den Client-Input
-                                $finfo    = new finfo(FILEINFO_MIME_TYPE);
-                                $mimeType = $finfo->file($tmpFile);
-                                $mimeToLoader = [
-                                    'image/jpeg' => 'imagecreatefromjpeg',
-                                    'image/png'  => 'imagecreatefrompng',
-                                    'image/gif'  => 'imagecreatefromgif',
-                                    'image/bmp'  => 'imagecreatefrombmp',
-                                    'image/x-bmp'=> 'imagecreatefrombmp',
-                                    'image/webp' => 'imagecreatefromwebp',
-                                ];
-                                $loader = $mimeToLoader[$mimeType] ?? null;
-                                $image  = $loader ? @$loader($tmpFile) : null;
-                                if ($image) {
-                                    // Palette-PNGs (indizierte Farben + Transparenz-Chunk statt
-                                    // echtem RGBA) lässt imagewebp() sonst manchmal stillschweigend
-                                    // als 0-Byte-Datei rausfallen, ohne Fehler zu werfen.
-                                    imagepalettetotruecolor($image);
-                                    $image = limitCrestSize($image);
-                                    if (imagewebp($image, $outputPath, 90) && filesize($outputPath) > 0) {
-                                        imagedestroy($image);
-                                        // Altes Wappen erst löschen, nachdem das neue erfolgreich geschrieben wurde
-                                        $oldGuild = queryOne('SELECT crest_file FROM guilds WHERE id = ?', [$guildId]);
-                                        if ($oldGuild && $oldGuild['crest_file']) {
-                                            $oldFile = $uploadDir . $oldGuild['crest_file'];
-                                            if (file_exists($oldFile) && $oldFile !== $outputPath) {
-                                                unlink($oldFile);
-                                            }
-                                        }
-                                        foreach (glob($uploadDir . 'guild_' . $guildId . '.*') as $f) {
-                                            if ($f !== $outputPath && file_exists($f)) { unlink($f); }
-                                        }
-                                    } else {
-                                        imagedestroy($image);
-                                        @unlink($outputPath);
-                                        $crestFile = null;
-                                        logError("WEBP conversion failed (update guild)", ["guild_id" => $guildId]);
-                                    }
-                                } else {
-                                    $crestFile = null;
-                                    logError("Image load failed (update guild)", ["mime" => $mimeType, "guild_id" => $guildId]);
-                                }
-                            } catch (Throwable $e) {
-                                logError("Image conversion failed (update guild)", ["error" => $e->getMessage()]);
-                                $crestFile = null;
-                            }
-                        }
-                    }
-                }
-            }
-            
-            // Update guild
-            if ($crestFile) {
-                execute(
-                    'UPDATE guilds SET name = ?, server = ?, tag = ?, notes = ?, crest_file = ?, updated_at = datetime("now") WHERE id = ?',
-                    [$name, $server, $tag, $notes, $crestFile, $guildId]
-                );
-            } else {
-                execute(
-                    'UPDATE guilds SET name = ?, server = ?, tag = ?, notes = ?, updated_at = datetime("now") WHERE id = ?',
-                    [$name, $server, $tag, $notes, $guildId]
-                );
-            }
+            execute(
+                'UPDATE guilds SET name = ?, server = ?, tag = ?, notes = ?, updated_at = datetime("now") WHERE id = ?',
+                [$name, $server, $tag, $notes, $guildId]
+            );
             
             logActivity('Gilde aktualisiert', ['ID' => $guildId, 'Name' => $name]);
             
@@ -256,28 +83,6 @@ try {
             ]);
             break;
             
-        case 'DELETE_CREST':
-            // Danach greift das automatisch gerenderte Wappen, sofern ein coa_code vorliegt
-            $guildId = isset($_POST['guild_id']) ? (int)$_POST['guild_id'] : 0;
-            $guild = queryOne('SELECT name, crest_file FROM guilds WHERE id = ?', [$guildId]);
-            if (!$guild) {
-                jsonResponse(['success' => false, 'message' => 'Gilde nicht gefunden'], 404);
-            }
-            if (!$guild['crest_file']) {
-                jsonResponse(['success' => false, 'message' => 'Kein hochgeladenes Wappen vorhanden'], 400);
-            }
-
-            execute('UPDATE guilds SET crest_file = NULL, updated_at = datetime("now") WHERE id = ?', [$guildId]);
-            $uploadDir = __DIR__ . '/../public/assets/images/';
-            @unlink($uploadDir . basename($guild['crest_file']));
-            foreach (glob($uploadDir . 'guild_' . $guildId . '.*') as $file) {
-                @unlink($file);
-            }
-
-            logActivity('Gildenwappen gelöscht', ['ID' => $guildId, 'Name' => $guild['name']]);
-            jsonResponse(['success' => true, 'message' => 'Wappen gelöscht']);
-            break;
-
         case 'DELETE':
             // Delete guild
             try {
@@ -293,7 +98,7 @@ try {
             }
             
             // Get guild info before deletion
-            $guild = queryOne('SELECT name, crest_file FROM guilds WHERE id = ?', [$guildId]);
+            $guild = queryOne('SELECT name FROM guilds WHERE id = ?', [$guildId]);
             if (!$guild) {
                 jsonResponse(['success' => false, 'message' => 'Gilde nicht gefunden'], 404);
             }
@@ -319,12 +124,13 @@ try {
             $db->commit();
 
             // Files only after the commit, so a failed delete leaves them intact
-            if ($guild['crest_file']) {
-                $uploadDir = __DIR__ . '/../public/assets/images/';
-                @unlink($uploadDir . basename($guild['crest_file']));
-                foreach (glob($uploadDir . 'guild_' . $guildId . '.*') as $file) {
-                    @unlink($file);
-                }
+            $imageDir = __DIR__ . '/../public/assets/images/';
+            $crestFiles = array_merge(
+                glob($imageDir . 'guild_' . $guildId . '.*') ?: [],
+                glob($imageDir . 'guild_coa_' . $guildId . '_*.webp') ?: []
+            );
+            foreach ($crestFiles as $file) {
+                @unlink($file);
             }
 
             // Report folder is named after the guild; skip if another guild maps to the same slug
@@ -361,9 +167,6 @@ try {
             }
             if ($battleCount && $battleCount['count'] > 0) {
                 $details[] = $battleCount['count'] . ' Kampfdaten';
-            }
-            if ($guild['crest_file']) {
-                $details[] = 'Wappen';
             }
             
             if (!empty($details)) {

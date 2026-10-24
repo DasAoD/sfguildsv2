@@ -274,9 +274,8 @@ $currentUserRole = getCurrentUserRole();
                 <h3 class="modal-title" id="guildModalTitle">Neue Gilde</h3>
                 <button class="btn-close" onclick="closeGuildModal()">×</button>
             </div>
-            <form id="guildForm" enctype="multipart/form-data">
+            <form id="guildForm">
                 <input type="hidden" id="guildId">
-                <input type="hidden" id="currentCrest">
                 <div class="form-group">
                     <label>Gildenname</label>
                     <input type="text" id="guildName" required>
@@ -292,13 +291,6 @@ $currentUserRole = getCurrentUserRole();
                 <div class="form-group">
                     <label>Notizen (optional)</label>
                     <input type="text" id="guildNotes">
-                </div>
-                <div class="form-group">
-                    <label>Wappen (optional)</label>
-                    <div id="currentCrestPreview" style="margin-bottom:0.5rem"></div>
-                    <input type="file" id="guildCrest" accept="image/*">
-                    <small style="color:var(--color-text-secondary);display:block;margin-top:0.5rem">Unterstützte Formate: PNG, JPG, GIF, BMP, WEBP · max. 2.5MB (wird zu WEBP konvertiert)</small>
-                    <div id="guildCrestError" style="display:none;color:var(--color-error);font-size:0.875rem;margin-top:0.4rem"></div>
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeGuildModal()">Abbrechen</button>

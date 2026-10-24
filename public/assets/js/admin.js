@@ -133,7 +133,7 @@ const d=await r.json();
 if(d.success){
 const tbody=document.getElementById('guildsTable');
 tbody.innerHTML=d.guilds.map(g=>{
-const crestSrc=g.crest_file||g.coa_image;
+const crestSrc=g.coa_image;
 const crestImg=crestSrc?`<img src="/assets/images/${crestSrc}?v=${encodeURIComponent(g.updated_at||'')}" alt="Wappen" style="width:32px;height:32px;object-fit:contain">`:'—';
 return`
 <tr>
@@ -143,7 +143,7 @@ return`
 <td>${escapeHtml(g.tag)||'-'}</td>
 <td>${escapeHtml(g.notes)||'-'}</td>
 <td class="actions">
-<button class="btn btn-secondary" onclick="editGuild(${g.id},'${escapeHtml(g.name)}','${escapeHtml(g.server)}','${escapeHtml(g.tag)||''}','${escapeHtml(g.notes)||''}','${escapeHtml(g.crest_file)||''}')">Bearbeiten</button>
+<button class="btn btn-secondary" onclick="editGuild(${g.id},'${escapeHtml(g.name)}','${escapeHtml(g.server)}','${escapeHtml(g.tag)||''}','${escapeHtml(g.notes)||''}')">Bearbeiten</button>
 <button class="btn btn-danger" onclick="deleteGuild(${g.id},'${escapeHtml(g.name)}')">Löschen</button>
 </td>
 </tr>
@@ -158,9 +158,6 @@ document.getElementById('guildName').value='';
 document.getElementById('guildServer').value='';
 document.getElementById('guildTag').value='';
 document.getElementById('guildNotes').value='';
-document.getElementById('currentCrest').value='';
-document.getElementById('guildCrest').value='';
-document.getElementById('currentCrestPreview').innerHTML='';
 document.getElementById('guildModal').classList.add('active');
 }
 
@@ -168,20 +165,13 @@ function closeGuildModal(){
 document.getElementById('guildModal').classList.remove('active');
 }
 
-function editGuild(id,name,server,tag,notes,crest){
+function editGuild(id,name,server,tag,notes){
 document.getElementById('guildModalTitle').textContent='Gilde bearbeiten';
 document.getElementById('guildId').value=id;
 document.getElementById('guildName').value=name;
 document.getElementById('guildServer').value=server;
 document.getElementById('guildTag').value=tag;
 document.getElementById('guildNotes').value=notes;
-document.getElementById('currentCrest').value=crest;
-document.getElementById('guildCrest').value='';
-if(crest){
-document.getElementById('currentCrestPreview').innerHTML=`<div style="display:flex;align-items:center;gap:0.5rem"><img src="/assets/images/${crest}" alt="" style="width:32px;height:32px;object-fit:contain"><span style="color:var(--color-text-secondary);font-size:0.875rem">${crest}</span><button type="button" class="btn btn-danger" onclick="deleteGuildCrest(${id})">Wappen löschen</button></div>`;
-}else{
-document.getElementById('currentCrestPreview').innerHTML='';
-}
 document.getElementById('guildModal').classList.add('active');
 }
 
@@ -192,17 +182,6 @@ const name=document.getElementById('guildName').value;
 const server=document.getElementById('guildServer').value;
 const tag=document.getElementById('guildTag').value;
 const notes=document.getElementById('guildNotes').value;
-const crestFile=document.getElementById('guildCrest').files[0];
-const crestError=document.getElementById('guildCrestError');
-
-// Client-side Größencheck
-crestError.style.display='none';
-if(crestFile && crestFile.size > 2.5*1024*1024){
-    crestError.textContent='Wappen-Datei zu groß (max. 2.5MB)';
-    crestError.style.display='block';
-    return;
-}
-
 const formData=new FormData();
 formData.append('name',name);
 formData.append('server',server);
@@ -212,9 +191,6 @@ if(guildId){
 formData.append('_method','PUT');
 formData.append('guild_id',guildId);
 }
-if(crestFile){
-formData.append('crest',crestFile);
-}
 const r=await fetch('/api/admin_guilds.php',{method:'POST',body:formData});
 const d=await r.json();
 if(d.success){
@@ -222,27 +198,9 @@ showAlert(d.message,'success');
 closeGuildModal();
 loadGuilds();
 }else{
-// Wappen-Fehler direkt im Modal anzeigen, andere als Toast
-if(d.message && d.message.toLowerCase().includes('wappen')){
-    crestError.textContent=d.message;
-    crestError.style.display='block';
-}else{
-    showAlert(d.message,'error');
-}
+showAlert(d.message,'error');
 }
 });
-
-async function deleteGuildCrest(guildId){
-confirmDialog('Hochgeladenes Wappen wirklich löschen?\n\nDanach wird das Wappen automatisch aus dem Spielcode erzeugt, sobald dieser synchronisiert ist.', async () => {
-const formData=new FormData();
-formData.append('_method','DELETE_CREST');
-formData.append('guild_id',guildId);
-const r=await fetch('/api/admin_guilds.php',{method:'POST',body:formData});
-const d=await r.json();
-showAlert(d.message,d.success?'success':'error');
-if(d.success){closeGuildModal();loadGuilds();}
-});
-}
 
 async function deleteGuild(guildId,name){
 confirmDialog(`Gilde "${name}" wirklich löschen?\n\nAlle Mitglieder, Kampfdaten und das Wappen werden ebenfalls gelöscht!\n\nDiese Aktion kann nicht rückgängig gemacht werden.`, async () => {

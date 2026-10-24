@@ -17,7 +17,7 @@ Ein privates Guild-Management-System für das Browsergame [Shakes & Fidget](http
 - 📄 **sf-api Member-Sync** – Mitgliederdaten direkt via sf-api abrufen
 - ⏱️ **Cron-System** – Automatischer Fetch von Kampfberichten und Mitglieder-Sync
 - 📋 **Import-Log** – Letzter Import pro Gilde und Import-Aktivitäten im Admin-Bereich
-- 🛡️ **Wappen-Upload** – Gilden-Wappen hochladen und verwalten
+- 🛡️ **Gildenwappen** – automatisch aus dem Spiel-Code gerendert, inkl. Gildenname
 - 👤 **Benutzerverwaltung** – Login, Sessions, Passwort-Reset (inkl. CLI-Admin-Tool)
 
 ## Technischer Stack
