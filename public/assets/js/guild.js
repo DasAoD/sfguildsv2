@@ -51,7 +51,7 @@ async function loadGuild() {
                 : '<img src="/assets/images/helmet.png" alt="Wappen" style="width:100%;height:100%;object-fit:contain">';
             document.getElementById('guildCrest').innerHTML = crestHtml;
             document.getElementById('guildName').textContent = d.guild.name;
-            document.getElementById('guildServer').textContent = `Server: ${d.guild.server}`;
+            document.getElementById('guildServer').textContent = `Server: ${d.guild.server}` + (d.guild.hof_rank > 0 ? ` · Gildenrang: ${Number(d.guild.hof_rank).toLocaleString('de-DE')}` : '');
             const notesEl = document.getElementById('guildNotes');
             if (notesEl) {
                 if (d.guild.notes && d.guild.notes.trim()) {
