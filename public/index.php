@@ -73,7 +73,7 @@ $pageTitle = 'Dashboard';
                         <div class="guild-crest">${crestImg}</div>
                         <div class="guild-info">
                             <div class="guild-name">${escapeHtml(guild.name)}</div>
-                            <div class="guild-server">${escapeHtml(guild.server)}</div>
+                            <div class="guild-server">${escapeHtml(guild.server)}${guild.hof_rank > 0 ? ` · Platz ${Number(guild.hof_rank).toLocaleString('de-DE')}` : ''}</div>
                         </div>
                     </div>
 
