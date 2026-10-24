@@ -115,10 +115,11 @@ function coaTintColorReplace(\GdImage $img, array $rgb): \GdImage {
 }
 
 /**
- * Schild-Zonenfärbung: Die Helligkeit des Schilds wird je Zone auf den
- * Zielton normiert (mittlere Helligkeit der Zone = Palettenfarbe), die
- * Schattierung bleibt erhalten. Die Maske trägt auch in transparenten
- * Bereichen Farbwerte und wird deshalb über ihren Alpha-Wert gewichtet.
+ * Schild-Zonenfärbung: Die Zonen der Maske werden flach mit der Palettenfarbe
+ * gefüllt (die Helligkeitsverläufe des Schild-Sprites zeigt das Spiel dort
+ * nicht), Randpixel mischen sich über das Maskengewicht mit dem Sprite. Die
+ * Maske trägt auch in transparenten Bereichen Farbwerte und wird deshalb über
+ * ihren Alpha-Wert gewichtet.
  */
 function coaApplyShieldZones(\GdImage $shield, \GdImage $mask, array $zone1Rgb, array $zone2Rgb): \GdImage {
     $w = imagesx($shield);
@@ -126,36 +127,6 @@ function coaApplyShieldZones(\GdImage $shield, \GdImage $mask, array $zone1Rgb, 
     if (imagesx($mask) !== $w || imagesy($mask) !== $h) {
         $mask = coaResize($mask, $w, $h);
     }
-
-    $weights = [];
-    $lumSum = [1 => 0.0, 2 => 0.0];
-    $lumCount = [1 => 0, 2 => 0];
-    for ($y = 0; $y < $h; $y++) {
-        for ($x = 0; $x < $w; $x++) {
-            $base = imagecolorat($shield, $x, $y);
-            if ((($base >> 24) & 0x7F) === 127) {
-                continue;
-            }
-            $m = imagecolorat($mask, $x, $y);
-            $opacity = (127 - (($m >> 24) & 0x7F)) / 127;
-            $g = (($m >> 8) & 0xFF) / 255 * $opacity;
-            $b = ($m & 0xFF) / 255 * $opacity;
-            if ($g <= 0 && $b <= 0) {
-                continue;
-            }
-            $zone = $g >= $b ? 1 : 2;
-            $weights[$y * $w + $x] = [$zone, $zone === 1 ? $g : $b];
-            if (($zone === 1 ? $g : $b) > 0.5) {
-                $lumSum[$zone] += 0.299 * (($base >> 16) & 0xFF) + 0.587 * (($base >> 8) & 0xFF) + 0.114 * ($base & 0xFF);
-                $lumCount[$zone]++;
-            }
-        }
-    }
-    $zoneLum = [];
-    foreach ([1, 2] as $zone) {
-        $zoneLum[$zone] = $lumCount[$zone] > 0 ? max(1.0, $lumSum[$zone] / $lumCount[$zone]) : 255.0;
-    }
-    $tints = [1 => $zone1Rgb, 2 => $zone2Rgb];
 
     $out = coaNewCanvas($w, $h);
     for ($y = 0; $y < $h; $y++) {
@@ -169,18 +140,28 @@ function coaApplyShieldZones(\GdImage $shield, \GdImage $mask, array $zone1Rgb, 
             $bg = ($base >> 8) & 0xFF;
             $bb = $base & 0xFF;
 
-            $entry = $weights[$y * $w + $x] ?? null;
-            if ($entry === null) {
+            $m = imagecolorat($mask, $x, $y);
+            $opacity = (127 - (($m >> 24) & 0x7F)) / 127;
+            $zone1 = (($m >> 8) & 0xFF) / 255 * $opacity;
+            $zone2 = ($m & 0xFF) / 255 * $opacity;
+            if ($zone1 <= 0 && $zone2 <= 0) {
                 imagesetpixel($out, $x, $y, imagecolorallocatealpha($out, $br, $bg, $bb, $ba));
                 continue;
             }
-            [$zone, $weight] = $entry;
-            $ratio = (0.299 * $br + 0.587 * $bg + 0.114 * $bb) / $zoneLum[$zone];
-            $tint = $tints[$zone];
-            $nr = (int) round($br * (1 - $weight) + min(255, $tint[0] * $ratio) * $weight);
-            $ng = (int) round($bg * (1 - $weight) + min(255, $tint[1] * $ratio) * $weight);
-            $nb = (int) round($bb * (1 - $weight) + min(255, $tint[2] * $ratio) * $weight);
-            imagesetpixel($out, $x, $y, imagecolorallocatealpha($out, $nr, $ng, $nb, $ba));
+            // An der Naht zweier Zonen haben beide nur Teilgewicht: die Farben untereinander mischen
+            $weight = min(1.0, $zone1 + $zone2);
+            $share = $zone1 / ($zone1 + $zone2);
+            $tint = [];
+            for ($c = 0; $c < 3; $c++) {
+                $tint[$c] = $zone1Rgb[$c] * $share + $zone2Rgb[$c] * (1 - $share);
+            }
+            imagesetpixel($out, $x, $y, imagecolorallocatealpha(
+                $out,
+                (int) round($br * (1 - $weight) + $tint[0] * $weight),
+                (int) round($bg * (1 - $weight) + $tint[1] * $weight),
+                (int) round($bb * (1 - $weight) + $tint[2] * $weight),
+                $ba
+            ));
         }
     }
     return $out;
