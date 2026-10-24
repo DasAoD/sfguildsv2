@@ -30,7 +30,7 @@ Konkrete anstehende Aufgaben. Sicherheitsrelevante Details sind in der privaten 
 - [ ] Pfeil zwischen Waffe und Treffereffekt im Charakter-Modal (wie im Spiel)
 
 ### Gildenwappen
-- [ ] Automatisches Wappen-Rendering verbessern (Farbpalette und Layout weichen vom Original ab; bisher zurückgestellt, manuell hochgeladene Wappen haben Vorrang)
+- [ ] Restliche Farbnummern der Wappen-Palette messen (gemessen sind 2, 3, 4, 8, 9 und 11, der Rest ist geschätzt)
 
 ### Asset-Pflege
 - [ ] Neue Item-Icons nach einer Meldung des Asset-Checks zuschneiden und einpflegen (bisher manuell mit AssetRipper)
@@ -40,6 +40,8 @@ Konkrete anstehende Aufgaben. Sicherheitsrelevante Details sind in der privaten 
 
 ## ✅ Zuletzt erledigt (Oktober 2026)
 
+- [x] **Wappen automatisch rendern** — Layout aus den Pivot-Daten der Spiel-Assets, Ebenen-Reihenfolge und Farben an Spiel-Screenshots abgeglichen, Gildenname auf dem Banner; Gilden ohne hochgeladenes Wappen zeigen es automatisch
+- [x] **Gildenseite**: Button "Charakterdaten aktualisieren" (eine Gilde) und Wappen-Code beim Mitglieder-Sync
 - [x] **Treffereffekt im Charakter-Modal** — Effekt-Kreis neben der Waffe bei Mage-/Scout-Waffen (Zuordnung über Waffenklasse und Modell), Größe auf 75 % des Slots abgestimmt; kein leerer zweiter Slot mehr bei Nahkampfwaffen
 - [x] **Icons für neue Item-Modelle** (73, 113) und Schlüssel ergänzt; Waffen neuer Modelle zeigen kein Platzhalter-Icon mehr
 - [x] **Asset-Check** (`cli/check_game_assets.php`) — täglich per Cron, legt geänderte Bundles in `storage/game_assets/staging/` ab und meldet per Telegram und Mail; Anleitung in `install/GAME_ASSETS_CHECK.md`
