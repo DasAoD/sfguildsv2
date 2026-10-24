@@ -120,9 +120,9 @@ function renderTable(players) {
         
         // Rank icon (same as guild.php)
         let rankIcon = '';
-        if (p.current_rank === 'Anführer') rankIcon = '<img src="/assets/images/crown.png" alt="Anführer" class="rank-icon">';
-        else if (p.current_rank === 'Offizier') rankIcon = '<img src="/assets/images/medal.png" alt="Offizier" class="rank-icon">';
-        else if (p.current_rank === 'Mitglied') rankIcon = '<img src="/assets/images/helmet.png" alt="Mitglied" class="rank-icon">';
+        if (p.current_rank === 'Anführer') rankIcon = '<img src="/assets/images/crown.png" alt="Anführer" title="Gildenleitung" class="rank-icon">';
+        else if (p.current_rank === 'Offizier') rankIcon = '<img src="/assets/images/medal.png" alt="Offizier" title="Offizier" class="rank-icon">';
+        else if (p.current_rank === 'Mitglied') rankIcon = '<img src="/assets/images/helmet.png" alt="Mitglied" title="Mitglied" class="rank-icon">';
         
         // Build player display name - make it clickable!
         let playerDisplay = rankIcon ? `${rankIcon} ` : '';
@@ -281,9 +281,9 @@ async function showPlayerDetailsModal(playerName) {
         
         // Player info header
         let rankIcon = '';
-        if (player.rank === 'Anführer') rankIcon = '<img src="/assets/images/crown.png" alt="Anführer" class="rank-icon">';
-        else if (player.rank === 'Offizier') rankIcon = '<img src="/assets/images/medal.png" alt="Offizier" class="rank-icon">';
-        else if (player.rank === 'Mitglied') rankIcon = '<img src="/assets/images/helmet.png" alt="Mitglied" class="rank-icon">';
+        if (player.rank === 'Anführer') rankIcon = '<img src="/assets/images/crown.png" alt="Anführer" title="Gildenleitung" class="rank-icon">';
+        else if (player.rank === 'Offizier') rankIcon = '<img src="/assets/images/medal.png" alt="Offizier" title="Offizier" class="rank-icon">';
+        else if (player.rank === 'Mitglied') rankIcon = '<img src="/assets/images/helmet.png" alt="Mitglied" title="Mitglied" class="rank-icon">';
         
         const pct = stats.participation_pct;
         

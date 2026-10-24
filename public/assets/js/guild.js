@@ -4,12 +4,12 @@
  */
 
 const rankIcons = {
-    'Anführer': '<img src="/assets/images/crown.png" alt="Anführer" class="rank-icon">',
-    'Offizier': '<img src="/assets/images/medal.png" alt="Offizier" class="rank-icon">',
-    'Mitglied': '<img src="/assets/images/helmet.png" alt="Mitglied" class="rank-icon">',
+    'Anführer': '<img src="/assets/images/crown.png" alt="Anführer" title="Gildenleitung" class="rank-icon">',
+    'Offizier': '<img src="/assets/images/medal.png" alt="Offizier" title="Offizier" class="rank-icon">',
+    'Mitglied': '<img src="/assets/images/helmet.png" alt="Mitglied" title="Mitglied" class="rank-icon">',
     'Eingeladen': '<img src="/assets/images/invited.svg" alt="Eingeladen" title="Eingeladen (noch nicht angenommen)" class="rank-icon">',
-    '': '<img src="/assets/images/helmet.png" alt="Mitglied" class="rank-icon">',
-    null: '<img src="/assets/images/helmet.png" alt="Mitglied" class="rank-icon">'
+    '': '<img src="/assets/images/helmet.png" alt="Mitglied" title="Mitglied" class="rank-icon">',
+    null: '<img src="/assets/images/helmet.png" alt="Mitglied" title="Mitglied" class="rank-icon">'
 };
 
 let allGuilds = [];
