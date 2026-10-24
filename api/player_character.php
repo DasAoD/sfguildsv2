@@ -37,6 +37,10 @@ if ($data && !empty($data['equipment'])) {
         $item['icon'] = resolveItemIconPath($slot, $item);
     }
     unset($item);
+
+    if (!empty($data['equipment']['Weapon'])) {
+        $data['equipment']['Weapon']['hit_effect'] = resolveHitEffectPath($data['equipment']['Weapon']);
+    }
 }
 
 if ($data && !empty($data['potions'])) {
