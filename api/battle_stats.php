@@ -69,6 +69,7 @@ try {
         GROUP BY p.player_name_norm
         HAVING (MAX(m.fired_at) IS NULL OR MAX(m.fired_at) = '')
             AND (MAX(m.left_at) IS NULL OR MAX(m.left_at) = '')
+            AND (MAX(m.rank) IS NULL OR MAX(m.rank) != 'Eingeladen')
         ORDER BY 
             CASE 
                 WHEN MAX(m.rank) = 'Anführer' THEN 1
@@ -121,6 +122,7 @@ try {
         WHERE guild_id = ? 
             AND fired_at IS NULL 
             AND left_at IS NULL
+            AND rank IS NOT 'Eingeladen'
             AND (
                 last_online IS NULL 
                 OR last_online = ''

@@ -130,6 +130,7 @@ $updStmt = $db->prepare("
         mentor      = :mentor,
         knight_hall = :knight_hall,
         guild_pet   = :guild_pet,
+        joined_at   = CASE WHEN rank = 'Eingeladen' AND :rank != 'Eingeladen' THEN :today ELSE joined_at END,
         updated_at  = :updated_at
     WHERE id = :id
 ");
@@ -183,7 +184,7 @@ try {
                 ]));
                 $rejoined++;
             } else {
-                $updStmt->execute(array_merge($params, ['id' => $existing['id']]));
+                $updStmt->execute(array_merge($params, ['id' => $existing['id'], ':today' => $today]));
                 $updated++;
             }
         } else {
