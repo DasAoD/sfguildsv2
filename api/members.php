@@ -41,6 +41,7 @@ try {
             WHEN (fired_at IS NOT NULL AND fired_at != "") OR (left_at IS NOT NULL AND left_at != "") THEN 1 
             ELSE 0 
          END as is_departed,
+         CASE WHEN rank = "Eingeladen" AND NOT ((fired_at IS NOT NULL AND fired_at != "") OR (left_at IS NOT NULL AND left_at != "")) THEN 1 ELSE 0 END as is_invited,
          CASE 
             WHEN last_online IS NULL OR last_online = "" THEN 9999
             ELSE julianday(date("now","localtime")) - julianday(date(last_online,"localtime"))
@@ -49,6 +50,8 @@ try {
          WHERE ' . $whereClause . ' 
          ORDER BY 
          is_departed ASC,
+         -- Eingeladene stehen hinter allen Mitgliedern, aber vor den Entlassenen/Verlassenen
+         is_invited ASC,
          -- Aktive mit >=7 Tagen offline kommen als Block ans Ende der Aktiven-Liste
          CASE
             WHEN (fired_at IS NOT NULL AND fired_at != "") OR (left_at IS NOT NULL AND left_at != "") THEN 0
@@ -128,8 +131,8 @@ try {
     $lehrmeisterTotal = 0;
     
     foreach ($members as $member) {
-        // Only count active members (not fired, not left)
-        if ((!$member['fired_at'] || $member['fired_at'] === '') && (!$member['left_at'] || $member['left_at'] === '')) {
+        // Only count active members (not fired, not left, invitation accepted)
+        if ((!$member['fired_at'] || $member['fired_at'] === '') && (!$member['left_at'] || $member['left_at'] === '') && $member['rank'] !== 'Eingeladen') {
             $activeMembers++;
             $totalLevel += $member['level'];
             $knightHallTotal  += $member['knight_hall'] ?? 0;

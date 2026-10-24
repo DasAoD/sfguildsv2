@@ -93,7 +93,7 @@ foreach ($guilds as $guild) {
         $today    = gmdate('Y-m-d');
 
         $selStmt = $db->prepare("SELECT id, fired_at, left_at FROM members WHERE guild_id = ? AND name = ? LIMIT 1");
-        $updStmt = $db->prepare("UPDATE members SET level=:level,rank=:rank,last_online=:last_online,gold=:gold,mentor=:mentor,knight_hall=:knight_hall,guild_pet=:guild_pet,updated_at=:updated_at WHERE id=:id");
+        $updStmt = $db->prepare("UPDATE members SET level=:level,rank=:rank,last_online=:last_online,gold=:gold,mentor=:mentor,knight_hall=:knight_hall,guild_pet=:guild_pet,joined_at=CASE WHEN rank='Eingeladen' AND :rank!='Eingeladen' THEN :today ELSE joined_at END,updated_at=:updated_at WHERE id=:id");
         $rejStmt = $db->prepare("UPDATE members SET level=:level,rank=:rank,last_online=:last_online,gold=:gold,mentor=:mentor,knight_hall=:knight_hall,guild_pet=:guild_pet,fired_at=NULL,left_at=NULL,joined_at=:joined_at,updated_at=:updated_at WHERE id=:id");
         $insStmt = $db->prepare("INSERT INTO members (guild_id,name,level,rank,last_online,gold,mentor,knight_hall,guild_pet,joined_at,updated_at) VALUES (:guild_id,:name,:level,:rank,:last_online,:gold,:mentor,:knight_hall,:guild_pet,:joined_at,:updated_at)");
 
@@ -108,7 +108,7 @@ foreach ($guilds as $guild) {
                         $rejStmt->execute(array_merge($params, [':joined_at'=>$today,':id'=>$existing['id']]));
                         $rejoined++;
                     } else {
-                        $updStmt->execute(array_merge($params, [':id'=>$existing['id']]));
+                        $updStmt->execute(array_merge($params, [':id'=>$existing['id'],':today'=>$today]));
                         $updated++;
                     }
                 } else {

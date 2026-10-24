@@ -29,7 +29,7 @@ try {
             SUM(mentor)       AS lehrmeister_total,
             MAX(updated_at)   AS last_update
          FROM members
-         WHERE fired_at IS NULL AND left_at IS NULL
+         WHERE fired_at IS NULL AND left_at IS NULL AND rank IS NOT 'Eingeladen'
          GROUP BY guild_id"
     );
     $memberStatsMap = array_column($memberStats, null, 'guild_id');

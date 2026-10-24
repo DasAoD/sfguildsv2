@@ -7,6 +7,7 @@ const rankIcons = {
     'Anführer': '<img src="/assets/images/crown.png" alt="Anführer" class="rank-icon">',
     'Offizier': '<img src="/assets/images/medal.png" alt="Offizier" class="rank-icon">',
     'Mitglied': '<img src="/assets/images/helmet.png" alt="Mitglied" class="rank-icon">',
+    'Eingeladen': '<img src="/assets/images/invited.svg" alt="Eingeladen" title="Eingeladen (noch nicht angenommen)" class="rank-icon">',
     '': '<img src="/assets/images/helmet.png" alt="Mitglied" class="rank-icon">',
     null: '<img src="/assets/images/helmet.png" alt="Mitglied" class="rank-icon">'
 };
@@ -116,7 +117,7 @@ function renderTable(members, logged) {
     }
 
     body.innerHTML = members.map((m, idx) => {
-        const rank = rankIcons[m.rank] || rankIcons['member'];
+        const rank = rankIcons[m.rank] || rankIcons['Mitglied'];
         let rowClass = '';
 
         if (m.fired_at) {
@@ -125,6 +126,10 @@ function renderTable(members, logged) {
             rowClass = 'left';
         } else if (m.notes && m.notes.trim()) {
             rowClass = 'has-notes';
+        }
+
+        if (m.rank === 'Eingeladen' && !m.fired_at && !m.left_at) {
+            rowClass += ' invited';
         }
 
         if (m.days_offline >= 14) {
@@ -136,7 +141,7 @@ function renderTable(members, logged) {
                 <td><span class="player-name" data-player="${escapeHtml(m.name)}">${rank}<span class="player-name-text">${escapeHtml(m.name)}</span></span></td>
                 <td class="center">${m.level}</td>
                 <td>${formatDate(m.last_online)}</td>
-                <td class="editable" data-idx="${idx}" data-field="joined_at">${formatDate(m.joined_at)}</td>
+                <td class="editable" data-idx="${idx}" data-field="joined_at">${m.rank === 'Eingeladen' ? '—' : formatDate(m.joined_at)}</td>
                 <td class="center">${m.gold?.toLocaleString('de-DE') || 0}</td>
                 <td class="center">${m.mentor || 0}</td>
                 <td class="center">${m.knight_hall?.toLocaleString('de-DE') || 0}</td>
