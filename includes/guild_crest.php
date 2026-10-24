@@ -90,27 +90,6 @@ function coaResize(\GdImage $src, int $w, int $h): \GdImage {
     return $dst;
 }
 
-function coaPasteCentered(\GdImage $canvas, \GdImage $layer, float $cx, float $cy, float $scale = 1.0): void {
-    if ($scale !== 1.0) {
-        $layer = coaResize($layer, max(1, (int) round(imagesx($layer) * $scale)), max(1, (int) round(imagesy($layer) * $scale)));
-    }
-    $w = imagesx($layer);
-    $h = imagesy($layer);
-    $x = (int) round($cx - $w / 2);
-    $y = (int) round($cy - $h / 2);
-    imagealphablending($canvas, true);
-    imagecopy($canvas, $layer, $x, $y, 0, 0, $w, $h);
-    imagealphablending($canvas, false);
-}
-
-/** Skaliert anhand einer Ziel-Breite (die Höhe ergibt sich aus dem nativen
- * Seitenverhältnis) und platziert zentriert -- gibt den verwendeten Skalierungsfaktor zurück. */
-function coaPasteByWidth(\GdImage $canvas, \GdImage $layer, float $cx, float $cy, float $targetWidth): float {
-    $scale = $targetWidth / imagesx($layer);
-    coaPasteCentered($canvas, $layer, $cx, $cy, $scale);
-    return $scale;
-}
-
 /**
  * Wappenbild-Tönung: die coa_7_*-Sprites sind alle eine reine Flach-Schablone
  * in (255,0,0) mit variierendem Alpha (verifiziert: Apfel- und Drachen-Sprite
@@ -187,27 +166,42 @@ function coaApplyShieldZones(\GdImage $shield, \GdImage $mask, array $zone1Rgb, 
     return $out;
 }
 
-// Canvas im echten Seitenverhältnis eines Wappen-Screenshots (215x262,
-// 2x hochskaliert) -- eine quadratische Canvas hatte alles vertikal gestaucht.
-const COA_CANVAS_W = 430;
-const COA_CANVAS_H = 524;
-
-// Aus einem echten Screenshot (Avadhuta Gita) gemessene Ziel-Mittelpunkte/
-// -Breiten in doubled-real-Pixel-Koordinaten. Höhe ergibt sich pro Layer aus
-// dem nativen Seitenverhältnis -- Breite ist auch bei teilverdeckten Layern
-// (Helmdecke) meist noch einigermaßen zuverlässig sichtbar, Höhe nicht.
-const COA_TARGETS = [
-    'shield'    => [215, 270, 170],
-    'supporter' => [215, 255, 390],
-    'helmet'    => [215, 140, 150], // Helm-Aufsatz -- überlappt den Schildkragen
-    'order'     => [215, 380, 90],
-    'banner'    => [215, 425, 370],
-    'helm'      => [215, 165, 230], // Helmdecke -- sichtbare Spitzen überschätzen die Kernbreite
-];
+// Vergrößerung gegenüber den nativen Sprite-Pixeln
+const COA_RENDER_SCALE = 2;
 
 /**
- * Rendert das komplette Wappen-Bild. Gibt null zurück, wenn Assets fehlen
- * oder der Code ungültig ist (Aufrufer soll dann auf Platzhalter zurückfallen).
+ * Pivot-Offsets aller Wappen-Sprites aus den Spiel-Assets (m_Offset): alle
+ * Ebenen teilen denselben Nullpunkt, der Offset ist seine Lage relativ zur
+ * Sprite-Mitte (y nach oben, in Pixeln). Siehe public/assets/data/coa_offsets.json.
+ */
+function coaOffsets(): array {
+    static $map = null;
+    if ($map === null) {
+        $file = __DIR__ . '/../public/assets/data/coa_offsets.json';
+        if (!is_file($file)) {
+            throw new RuntimeException('coa_offsets.json fehlt');
+        }
+        $map = json_decode(file_get_contents($file), true, 512, JSON_THROW_ON_ERROR);
+    }
+    return $map;
+}
+
+/** Linke obere Ecke eines Sprites relativ zum gemeinsamen Nullpunkt (y nach unten). */
+function coaTopLeft(string $sprite, int $w, int $h): ?array {
+    $off = coaOffsets()[$sprite] ?? null;
+    return is_array($off) && count($off) === 2 ? [-$off[0] - $w / 2, $off[1] - $h / 2] : null;
+}
+
+function coaPasteAt(\GdImage $canvas, \GdImage $layer, int $x, int $y, int $w, int $h): void {
+    imagealphablending($canvas, true);
+    imagecopyresampled($canvas, $layer, $x, $y, 0, 0, $w, $h, imagesx($layer), imagesy($layer));
+    imagealphablending($canvas, false);
+}
+
+/**
+ * Rendert das komplette Wappen-Bild. Gibt null zurück, wenn Assets oder
+ * Offsets fehlen oder der Code ungültig ist (Aufrufer soll dann auf
+ * Platzhalter zurückfallen).
  */
 function renderGuildCrestImage(string $coaCode, string $assetsDir): ?\GdImage {
     $d = decodeCoaCode($coaCode);
@@ -215,48 +209,53 @@ function renderGuildCrestImage(string $coaCode, string $assetsDir): ?\GdImage {
         return null;
     }
 
-    $canvas = coaNewCanvas(COA_CANVAS_W, COA_CANVAS_H);
-
-    $helmdecke = coaLoadLayer($assetsDir, 'helm', $d['helm']);
-    if (!$helmdecke) return null;
-    [$cx, $cy, $w] = COA_TARGETS['helm'];
-    coaPasteByWidth($canvas, $helmdecke, $cx, $cy, $w);
-
-    $shield = coaLoadLayer($assetsDir, 'shield', $d['shield']);
+    $layers = [];
+    foreach (['helm', 'shield', 'emblem', 'supporter', 'helmet', 'order', 'banner'] as $cat) {
+        $img = coaLoadLayer($assetsDir, $cat, $d[$cat]);
+        if (!$img) return null;
+        $layers[$cat] = $img;
+    }
     $mask = coaLoadLayer($assetsDir, 'shield', $d['shield'], '_color');
-    if (!$shield || !$mask) return null;
+    if (!$mask) return null;
+
+    $names = [];
+    foreach (COA_CATEGORY_NUM as $cat => $num) {
+        $names[$cat] = "coa_{$num}_{$d[$cat]}";
+    }
+    $pos = [];
+    foreach ($layers as $cat => $img) {
+        $pos[$cat] = coaTopLeft($names[$cat], imagesx($img), imagesy($img));
+        if ($pos[$cat] === null) return null;
+    }
+    $maskPos = coaTopLeft($names['shield'] . '_color', imagesx($mask), imagesy($mask));
+    if ($maskPos === null) return null;
+
+    // Die Zonen-Maske hat eine eigene Größe und Lage: im Schild-Raster ausrichten
+    $maskAligned = coaNewCanvas(imagesx($layers['shield']), imagesy($layers['shield']));
+    imagecopy($maskAligned, $mask, (int) round($maskPos[0] - $pos['shield'][0]), (int) round($maskPos[1] - $pos['shield'][1]), 0, 0, imagesx($mask), imagesy($mask));
     $zone1Rgb = COA_PALETTE_GUESS[$d['zone1']] ?? COA_PALETTE_FALLBACK;
     $zone2Rgb = COA_PALETTE_GUESS[$d['zone2']] ?? COA_PALETTE_FALLBACK;
-    $shieldTinted = coaApplyShieldZones($shield, $mask, $zone1Rgb, $zone2Rgb);
-    [$shieldCx, $shieldCy, $shieldW] = COA_TARGETS['shield'];
-    $shieldScale = coaPasteByWidth($canvas, $shieldTinted, $shieldCx, $shieldCy, $shieldW);
+    $layers['shield'] = coaApplyShieldZones($layers['shield'], $maskAligned, $zone1Rgb, $zone2Rgb);
+    $layers['emblem'] = coaTintColorReplace($layers['emblem'], COA_PALETTE_GUESS[$d['figure_color']] ?? COA_PALETTE_FALLBACK);
 
-    $emblem = coaLoadLayer($assetsDir, 'emblem', $d['emblem']);
-    if (!$emblem) return null;
-    $figureRgb = COA_PALETTE_GUESS[$d['figure_color']] ?? COA_PALETTE_FALLBACK;
-    $emblemTinted = coaTintColorReplace($emblem, $figureRgb);
-    // gleicher Skalierungsfaktor wie der Schild, damit die Figur proportional passt
-    coaPasteCentered($canvas, $emblemTinted, $shieldCx, $shieldCy - (int) round(0.02 * COA_CANVAS_H), $shieldScale);
-
-    $supporter = coaLoadLayer($assetsDir, 'supporter', $d['supporter']);
-    if (!$supporter) return null;
-    [$cx, $cy, $w] = COA_TARGETS['supporter'];
-    coaPasteByWidth($canvas, $supporter, $cx, $cy, $w);
-
-    $helmet = coaLoadLayer($assetsDir, 'helmet', $d['helmet']);
-    if (!$helmet) return null;
-    [$cx, $cy, $w] = COA_TARGETS['helmet'];
-    coaPasteByWidth($canvas, $helmet, $cx, $cy, $w);
-
-    $order = coaLoadLayer($assetsDir, 'order', $d['order']);
-    if (!$order) return null;
-    [$cx, $cy, $w] = COA_TARGETS['order'];
-    coaPasteByWidth($canvas, $order, $cx, $cy, $w);
-
-    $banner = coaLoadLayer($assetsDir, 'banner', $d['banner']);
-    if (!$banner) return null;
-    [$cx, $cy, $w] = COA_TARGETS['banner'];
-    coaPasteByWidth($canvas, $banner, $cx, $cy, $w);
+    $margin = 3;
+    $minX = $minY = PHP_INT_MAX;
+    $maxX = $maxY = PHP_INT_MIN;
+    foreach ($layers as $cat => $img) {
+        $minX = min($minX, $pos[$cat][0]);
+        $minY = min($minY, $pos[$cat][1]);
+        $maxX = max($maxX, $pos[$cat][0] + imagesx($img));
+        $maxY = max($maxY, $pos[$cat][1] + imagesy($img));
+    }
+    $s = COA_RENDER_SCALE;
+    $canvas = coaNewCanvas((int) ceil(($maxX - $minX + 2 * $margin) * $s), (int) ceil(($maxY - $minY + 2 * $margin) * $s));
+    foreach ($layers as $cat => $img) {
+        coaPasteAt(
+            $canvas, $img,
+            (int) round(($pos[$cat][0] - $minX + $margin) * $s), (int) round(($pos[$cat][1] - $minY + $margin) * $s),
+            (int) round(imagesx($img) * $s), (int) round(imagesy($img) * $s)
+        );
+    }
 
     return $canvas;
 }

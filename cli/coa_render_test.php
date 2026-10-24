@@ -5,7 +5,7 @@
  *
  * Rendert ein Wappen direkt aus einem /coa-Hex-Code in eine lokale PNG-Datei
  * -- OHNE die Datenbank oder die Live-Seite anzufassen. Zum Verfeinern von
- * Palette (COA_PALETTE_GUESS) und Layout (COA_TARGETS) in
+ * Palette (COA_PALETTE_GUESS) und Layout in
  * includes/guild_crest.php, ohne jedes Mal einen echten Upload/Sync/Cache-
  * Zyklus durchlaufen zu müssen.
  *
