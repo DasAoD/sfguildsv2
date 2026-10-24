@@ -20,15 +20,13 @@ $isLoggedIn = isLoggedIn();
 
 try {
     // Get guild info
-    $guild = queryOne('SELECT id, name, server, notes, tag, crest_file, coa_code, hof_rank, last_import_at, created_at, updated_at FROM guilds WHERE id = ?', [$guildId]);
+    $guild = queryOne('SELECT id, name, server, notes, tag, coa_code, hof_rank, last_import_at, created_at, updated_at FROM guilds WHERE id = ?', [$guildId]);
 
     if (!$guild) {
         jsonResponse(['success' => false, 'message' => 'Gilde nicht gefunden'], 404);
     }
 
-    // Auto-generiertes Wappen nur, wenn kein manueller Upload existiert
-    // (crest_file hat immer Vorrang -- Backup/Fallback bleibt der Upload).
-    $guild['coa_image'] = $guild['crest_file'] ? null : resolveGuildCrestImage((int) $guild['id'], $guild['coa_code'], $guild['name']);
+    $guild['coa_image'] = resolveGuildCrestImage((int) $guild['id'], $guild['coa_code'], $guild['name']);
     
     // Get all members with complex sorting
     // Filter fired/left members if not logged in
@@ -193,7 +191,6 @@ try {
         'name'           => $guild['name'],
         'server'         => $guild['server'],
         'hof_rank'       => $guild['hof_rank'],
-        'crest_file'     => $guild['crest_file'],
         'coa_image'      => $guild['coa_image'],
         'last_import_at' => $guild['last_import_at'] ?? null,
         'notes'          => $guild['notes'] ?? null,

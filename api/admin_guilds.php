@@ -24,7 +24,7 @@ try {
             $guilds = query('SELECT * FROM guilds ORDER BY name');
             foreach ($guilds as &$guild) {
                 $guild['coa_image'] = resolveGuildCrestImage((int) $guild['id'], $guild['coa_code'], $guild['name']);
-                unset($guild['coa_code']);
+                unset($guild['coa_code'], $guild['crest_file']);
             }
             unset($guild);
             jsonResponse([

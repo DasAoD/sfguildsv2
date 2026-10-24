@@ -14,7 +14,7 @@ if ($guildId <= 0) {
 
 try {
     // Get guild info
-    $stmt = $db->prepare("SELECT id, name, server, crest_file, coa_code, updated_at FROM guilds WHERE id = ?");
+    $stmt = $db->prepare("SELECT id, name, server, coa_code, updated_at FROM guilds WHERE id = ?");
     $stmt->execute([$guildId]);
     $guild = $stmt->fetch();
 
@@ -22,9 +22,7 @@ try {
         jsonError('Guild not found', 404);
     }
 
-    // Auto-generiertes Wappen nur, wenn kein manueller Upload existiert
-    // (crest_file hat immer Vorrang -- Backup/Fallback bleibt der Upload).
-    $guild['coa_image'] = $guild['crest_file'] ? null : resolveGuildCrestImage((int) $guild['id'], $guild['coa_code'], $guild['name']);
+    $guild['coa_image'] = resolveGuildCrestImage((int) $guild['id'], $guild['coa_code'], $guild['name']);
     unset($guild['coa_code']); // Frontend braucht nur den fertigen Bildnamen
     
     // Get battle counts

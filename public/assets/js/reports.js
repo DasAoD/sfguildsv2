@@ -38,7 +38,7 @@ async function loadStats() {
             currentStats = d;
             
             // Render guild info
-            const crestSrc = d.guild.crest_file || d.guild.coa_image;
+            const crestSrc = d.guild.coa_image;
             const crestV = d.guild.updated_at ? `?v=${encodeURIComponent(d.guild.updated_at)}` : '';
             const crestHtml = crestSrc
                 ? `<img src="/assets/images/${crestSrc}${crestV}" alt="Wappen" style="width:100%;height:100%;object-fit:contain">`

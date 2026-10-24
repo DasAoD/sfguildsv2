@@ -64,7 +64,7 @@ Alle Gilden mit Statistiken.
           "name": "Gildenname",
           "server": "fX",
           "tag": "TAG",
-          "crest_file": "guild_1.webp",
+          "coa_image": "guild_coa_1_ab12cd34.webp",
           "active_members": 25,
           "avg_level": 400,
           "total_battles": 50,

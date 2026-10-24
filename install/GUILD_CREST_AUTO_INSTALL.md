@@ -6,8 +6,9 @@ Gildenleiter das Wappen manuell screenshotten/zuschneiden/hochladen muss.
 
 Seit dem Entfernen des Uploads ist das gerenderte Wappen die einzige Quelle.
 Fällt die Auto-Generierung aus (Assets fehlen, Code ungültig, Rendering-Fehler),
-zeigt die UI den Platzhalter. Die Spalte `guilds.crest_file` ist ungenutzt und
-bleibt leer; die Lesestellen behandeln sie weiter als "kein Upload". Beim Löschen
+zeigt die UI den Platzhalter. Die Spalte `guilds.crest_file` wird nicht mehr gelesen
+oder geschrieben und kann bei Bedarf einmalig entfernt werden
+(`ALTER TABLE guilds DROP COLUMN crest_file;`, SQLite ab 3.35). Beim Löschen
 einer Gilde werden ihre gerenderten Bilder (`guild_coa_<id>_*.webp`) entfernt.
 
 ## 1. DB-Spalte anlegen
