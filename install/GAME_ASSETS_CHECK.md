@@ -19,6 +19,18 @@ chmod 775 /var/www/sfguildsv2/storage/game_assets
 
 Der erste Lauf speichert nur den Ausgangszustand (`storage/game_assets/state.json`) und lädt nichts. Mit `--download` lädt er stattdessen alle 25 Bundles.
 
+## Benachrichtigung
+
+Bei einer Änderung schickt das Skript eine Telegram-Nachricht (kurz) und eine Mail (mit Details). Die Zugangsdaten liest es aus `/usr/local/bin/notify.sh` (`TELEGRAM_TOKEN`, `TELEGRAM_CHATID`, `MAIL_TO`), wie `technitium-update-check`; im Repo stehen keine Secrets. Fehlt die Datei oder ist sie nicht lesbar, wird nichts verschickt.
+
+Benachrichtigt wird bei geänderten Bundles, bei einem neuen Client-Build ohne Bundle-Änderung und bei einem Fehler (ein gleichbleibender Fehler nur einmal, nicht bei jedem Lauf).
+
+Testnachricht (als `www-data`, damit auch Lese- und Mailrechte stimmen):
+
+```bash
+sudo -u www-data php /var/www/sfguildsv2/cli/check_game_assets.php --test-notify
+```
+
 ## Was passiert bei einer Änderung
 
 - Neuer Client-Build (`productVersion` oder `dataUrl` in `sfgame.net/js/build.json`): das Skript lädt die `data`-Datei (ca. 25 MB), liest den Asset-Pfad (`sfprodX.Y.Z`) aus und vergleicht danach pro Bundle den Hash.
