@@ -21,7 +21,6 @@
 - [x] Inline-Editing für Beitrittsdatum, Entlassen, Verlassen, Notizen
 - [x] Gilden-Notizen (sichtbar auf der Gildenseite)
 - [x] Wappen-Upload und Darstellung
-- [x] **Wappen automatisch** aus dem synchronisierten Spiel-Code gerendert
 - [x] Tab-Navigation zwischen Gilden
 - [x] Öffentliche Gilden-Profilseiten (ohne Login einsehbar)
 - [x] **Mitglieder-Sortierung** – Aktive <7 Tage offline nach Rang/Level, Aktive ≥7 Tage als Block nach Offline-Tagen, Entlassene/Verlassene am Ende
@@ -119,6 +118,7 @@
 
 - Setup-Assistent für Erstinstallation
 - Mitglieder-Entwicklung über Zeit (Graphen)
+- Wappen automatisch aus dem Spiel-Code rendern (technisch vorhanden, aber zurückgestellt: das Ergebnis weicht noch zu stark vom Original ab; der manuelle Upload hat Vorrang)
 - Pfeil zwischen Waffe und Treffereffekt wie im Spiel
 - Icon-Updates nach Spiel-Updates vollständig automatisieren (Zuschneiden; Erkennen und Laden ist schon automatisch)
 - Export-Funktionen (CSV, PDF) für Gilden-Reports

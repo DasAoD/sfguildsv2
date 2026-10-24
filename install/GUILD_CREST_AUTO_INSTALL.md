@@ -55,9 +55,11 @@ UI fällt automatisch auf den Platzhalter zurück, kein Fehler.
 
 ## 3. Sync erweitern (`coa_code` befüllen)
 
-**Noch offen / TODO:** einer der bestehenden `rust_examples/*.rs`-Sync-Binaries
+**Umgesetzt** in `rust_examples/member_sync.rs` und `cli/cron_member_sync.php` (Beschreibung unten als Hintergrund). Der Sync befüllt `coa_code`; das Rendering ist aber zurückgestellt (siehe Einschränkungen), manuell hochgeladene Wappen haben Vorrang.
+
+Ursprünglich offen: einer der bestehenden `rust_examples/*.rs`-Sync-Binaries
 (vermutlich `member_sync.rs`, da dieser bereits pro Gilde mit dem
-Admin-Account einloggt) muss erweitert werden:
+Admin-Account einloggt) musste erweitert werden:
 
 1. Nach dem Login `Response::raw_response()` verwenden (NICHT
    `gs.guild.emblem` -- das ist ein anderes, meist leeres Feld, siehe
@@ -66,8 +68,6 @@ Admin-Account einloggt) muss erweitert werden:
    Index 1 nehmen (der 22-stellige Hex-Code).
 3. `UPDATE guilds SET coa_code = ? WHERE id = ?`.
 
-Bis das steht, bleibt `coa_code` NULL und die Auto-Generierung inaktiv
-(reiner Fallback auf den Platzhalter -- keine Regression).
 
 ## Bekannte Einschränkungen (Stand 2026-09-04)
 

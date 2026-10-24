@@ -29,6 +29,9 @@ Konkrete anstehende Aufgaben. Sicherheitsrelevante Details sind in der privaten 
 ### UI-Verbesserungen
 - [ ] Pfeil zwischen Waffe und Treffereffekt im Charakter-Modal (wie im Spiel)
 
+### Gildenwappen
+- [ ] Automatisches Wappen-Rendering verbessern (Farbpalette und Layout weichen vom Original ab; bisher zurückgestellt, manuell hochgeladene Wappen haben Vorrang)
+
 ### Asset-Pflege
 - [ ] Neue Item-Icons nach einer Meldung des Asset-Checks zuschneiden und einpflegen (bisher manuell mit AssetRipper)
 - [ ] Zuordnung Waffe -> Treffereffekt bei weiteren Waffenmodellen stichprobenartig gegen das Spiel prüfen
@@ -55,7 +58,6 @@ Konkrete anstehende Aufgaben. Sicherheitsrelevante Details sind in der privaten 
 - [x] **Zweitwaffe der Assassine** zeigte ein Schild-Icon, jetzt das richtige Waffen-Icon
 - [x] **Gilden-Angriffszeit-Check** — Anzeige in UTC statt lokaler Zeit, kein Fallback mehr auf fremde Accounts
 - [x] **Website-Statistik** als Admin-Tab (GoAccess)
-- [x] **Wappen automatisch rendern** aus dem synchronisierten Spiel-Code
 - [x] **Inaktivitäts-Logout** mit Restzeit-Anzeige und Vorwarnung; Timer auch auf Hellevator, Kämpfe und Posteingang, Zurücksetzen nur bei echten Interaktionen
 - [x] **character_sync: "Jetzt ausführen"** im Admin-Bereich wirkte wie ein No-Op, behoben
 - [x] **Reports und Gilden-Detailseite**: erste Gilde als Standard statt fester ID
