@@ -29,9 +29,6 @@ Konkrete anstehende Aufgaben. Sicherheitsrelevante Details sind in der privaten 
 ### UI-Verbesserungen
 - [ ] Pfeil zwischen Waffe und Treffereffekt im Charakter-Modal (wie im Spiel)
 
-### Gildenwappen
-- [ ] Restliche Farbnummern der Wappen-Palette messen (gemessen sind 2, 3, 4, 8, 9 und 11, der Rest ist geschätzt)
-
 ### Asset-Pflege
 - [ ] Neue Item-Icons nach einer Meldung des Asset-Checks zuschneiden und einpflegen (bisher manuell mit AssetRipper)
 - [ ] Zuordnung Waffe -> Treffereffekt bei weiteren Waffenmodellen stichprobenartig gegen das Spiel prüfen
@@ -41,6 +38,7 @@ Konkrete anstehende Aufgaben. Sicherheitsrelevante Details sind in der privaten 
 ## ✅ Zuletzt erledigt (Oktober 2026)
 
 - [x] **Wappen automatisch rendern** — Layout aus den Pivot-Daten der Spiel-Assets, Ebenen-Reihenfolge und Farben an Spiel-Screenshots abgeglichen, Gildenname auf dem Banner; Gilden ohne hochgeladenes Wappen zeigen es automatisch
+- [x] **Wappen-Palette vollständig** — alle 13 Farben stammen aus den Spiel-Daten (`COAData`), der Gildenname sitzt wie im Spiel auf dem Banner; Löschen einer Gilde räumt auch ihr gerendertes Wappen auf (an einer Test-Gilde geprüft)
 - [x] **Wappen-Upload entfernt** — das gerenderte Wappen ist die einzige Quelle (Admin-Liste zeigt es); beim Löschen einer Gilde werden auch die gerenderten Bilder entfernt
 - [x] **Gildenseite**: Button "Charakterdaten aktualisieren" (eine Gilde) und Wappen-Code beim Mitglieder-Sync
 - [x] **Treffereffekt im Charakter-Modal** — Effekt-Kreis neben der Waffe bei Mage-/Scout-Waffen (Zuordnung über Waffenklasse und Modell), Größe auf 75 % des Slots abgestimmt; kein leerer zweiter Slot mehr bei Nahkampfwaffen

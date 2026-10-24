@@ -21,7 +21,7 @@
 - [x] Inline-Editing für Beitrittsdatum, Entlassen, Verlassen, Notizen
 - [x] Gilden-Notizen (sichtbar auf der Gildenseite)
 - [x] Wappen-Darstellung (der frühere Upload ist entfallen)
-- [x] **Wappen automatisch** aus dem Spiel-Code gerendert (Layout aus den Spiel-Assets, Gildenname auf dem Banner); ein hochgeladenes Wappen gibt es nicht mehr
+- [x] **Wappen automatisch** aus dem Spiel-Code gerendert (Layout und Farben aus den Spiel-Daten, Gildenname auf dem Banner); ein hochgeladenes Wappen gibt es nicht mehr
 - [x] Tab-Navigation zwischen Gilden
 - [x] Öffentliche Gilden-Profilseiten (ohne Login einsehbar)
 - [x] **Mitglieder-Sortierung** – Aktive <7 Tage offline nach Rang/Level, Aktive ≥7 Tage als Block nach Offline-Tagen, Entlassene/Verlassene am Ende
