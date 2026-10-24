@@ -49,6 +49,18 @@ Konkrete anstehende Aufgaben. Sicherheitsrelevante Details sind in der privaten 
 - [x] **CSV-Import entfernt** — sf-api ist die einzige Datenquelle
 - [x] **Charakter-Modal** mit Attributen, Ausrüstung, Tränken und echten Item-/Trank-Icons (Charakterdaten-Sync als eigener Cron-Job)
 
+## ✅ Davor erledigt (August/September 2026)
+
+- [x] **Charakter-Modal** in der Mitgliederliste (Phase 1), danach echte Item-, Trank- und Charakter-Portraits samt Layout-Korrekturen (Waffen-Reihe, einheitliche Slot-Größe, Tränke unter den Waffen, Scrollbalken ausgeblendet); Sonder-/Streamer-Portraits, Fehler bei positiver Sonderbild-ID und Haar-/Hörner-Sprites behoben
+- [x] **Zweitwaffe der Assassine** zeigte ein Schild-Icon, jetzt das richtige Waffen-Icon
+- [x] **Gilden-Angriffszeit-Check** — Anzeige in UTC statt lokaler Zeit, kein Fallback mehr auf fremde Accounts
+- [x] **Website-Statistik** als Admin-Tab (GoAccess)
+- [x] **Wappen automatisch rendern** aus dem synchronisierten Spiel-Code
+- [x] **Inaktivitäts-Logout** mit Restzeit-Anzeige und Vorwarnung; Timer auch auf Hellevator, Kämpfe und Posteingang, Zurücksetzen nur bei echten Interaktionen
+- [x] **character_sync: "Jetzt ausführen"** im Admin-Bereich wirkte wie ein No-Op, behoben
+- [x] **Reports und Gilden-Detailseite**: erste Gilde als Standard statt fester ID
+- [x] Aufräumen: toter Code, Tippfehler und veraltete Doku entfernt
+
 ## ✅ Davor erledigt (Juli 2026)
 
 - [x] **fetch_guild_reports: Mitternachtsgrenze bei Zeitzonen-Offset-Servern gefixt** — Ergebnis-Matching für Kämpfe kurz vor/nach Mitternacht auf Servern mit abweichendem UTC-Offset korrigiert

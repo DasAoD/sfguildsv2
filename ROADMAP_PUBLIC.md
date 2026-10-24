@@ -21,6 +21,7 @@
 - [x] Inline-Editing für Beitrittsdatum, Entlassen, Verlassen, Notizen
 - [x] Gilden-Notizen (sichtbar auf der Gildenseite)
 - [x] Wappen-Upload und Darstellung
+- [x] **Wappen automatisch** aus dem synchronisierten Spiel-Code gerendert
 - [x] Tab-Navigation zwischen Gilden
 - [x] Öffentliche Gilden-Profilseiten (ohne Login einsehbar)
 - [x] **Mitglieder-Sortierung** – Aktive <7 Tage offline nach Rang/Level, Aktive ≥7 Tage als Block nach Offline-Tagen, Entlassene/Verlassene am Ende
@@ -43,6 +44,9 @@
 - [x] Kämpfe verschieben (zwischen Gilden) und löschen
 - [x] Teilnehmerliste pro Kampf
 
+### Angriffszeit-Check
+- [x] **Gilden-Angriffszeit-Check** mit korrekter UTC-Anzeige und ohne Fallback auf fremde Accounts
+
 ### Posteingang (Battle-Inbox)
 - [x] Kampfberichte landen zunächst im Posteingang (Review vor Übernahme in den Kalender)
 - [x] Übernehmen/Ablehnen einzelner Berichte, Dedup-Abgleich gegen bereits importierte Kämpfe
@@ -52,6 +56,7 @@
 ### Charakter-Details
 - [x] **Charakter-Modal** auf der Gildenseite: Attribute, Rüstung, Schaden, Ausrüstung mit Gemmen, Runen, Verzauberungen und aktive Tränke
 - [x] **Echte Item- und Trank-Icons** aus den Spiel-Assets (Waffen, Rüstung, Schmuck, Tränke)
+- [x] **Echte Charakter-Portraits** statt Buchstaben-Platzhalter, auch Sonder- und Streamer-Portraits
 - [x] **Treffereffekt neben der Waffe** bei Einzelwaffen-Charakteren (Zuordnung über die Waffenklasse); kein leerer zweiter Slot mehr
 - [x] **Charakterdaten-Sync** als eigener Cron-Job (unabhängig vom Member-Sync)
 - [x] **Gildenrang der Ehrenhalle** im Dashboard und auf der Gildenseite
@@ -80,6 +85,7 @@
 - [x] Rollen-System (Admin / Moderator / User)
 - [x] Admin-Bereich mit User-Verwaltung
 - [x] Passwort-Reset (Web + CLI)
+- [x] **Inaktivitäts-Logout** mit Restzeit-Anzeige und Vorwarnung; der Timer setzt nur bei echten Interaktionen zurück
 
 ### Multi-Account & Sicherheit
 - [x] Mehrere SF-Accounts pro User, verschlüsselte Credential-Speicherung
@@ -95,6 +101,8 @@
 ### UI & Dokumentation
 - [x] Ladeanimationen bei API-Calls
 - [x] Interne API-Dokumentation aller Endpunkte (docs/api.md)
+- [x] **Website-Statistik** als Admin-Tab (GoAccess)
+- [x] Reports und Gilden-Detailseite starten mit der ersten Gilde statt einer festen
 
 ---
 
