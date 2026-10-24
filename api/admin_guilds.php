@@ -22,6 +22,12 @@ try {
         case 'GET':
             // List all guilds
             $guilds = query('SELECT * FROM guilds ORDER BY name');
+            foreach ($guilds as &$guild) {
+                // Ohne hochgeladenes Wappen das automatisch gerenderte zeigen
+                $guild['coa_image'] = $guild['crest_file'] ? null : resolveGuildCrestImage((int) $guild['id'], $guild['coa_code'], $guild['name']);
+                unset($guild['coa_code']);
+            }
+            unset($guild);
             jsonResponse([
                 'success' => true,
                 'guilds' => $guilds
@@ -250,6 +256,28 @@ try {
             ]);
             break;
             
+        case 'DELETE_CREST':
+            // Danach greift das automatisch gerenderte Wappen, sofern ein coa_code vorliegt
+            $guildId = isset($_POST['guild_id']) ? (int)$_POST['guild_id'] : 0;
+            $guild = queryOne('SELECT name, crest_file FROM guilds WHERE id = ?', [$guildId]);
+            if (!$guild) {
+                jsonResponse(['success' => false, 'message' => 'Gilde nicht gefunden'], 404);
+            }
+            if (!$guild['crest_file']) {
+                jsonResponse(['success' => false, 'message' => 'Kein hochgeladenes Wappen vorhanden'], 400);
+            }
+
+            execute('UPDATE guilds SET crest_file = NULL, updated_at = datetime("now") WHERE id = ?', [$guildId]);
+            $uploadDir = __DIR__ . '/../public/assets/images/';
+            @unlink($uploadDir . basename($guild['crest_file']));
+            foreach (glob($uploadDir . 'guild_' . $guildId . '.*') as $file) {
+                @unlink($file);
+            }
+
+            logActivity('Gildenwappen gelöscht', ['ID' => $guildId, 'Name' => $guild['name']]);
+            jsonResponse(['success' => true, 'message' => 'Wappen gelöscht']);
+            break;
+
         case 'DELETE':
             // Delete guild
             try {

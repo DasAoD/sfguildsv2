@@ -133,7 +133,8 @@ const d=await r.json();
 if(d.success){
 const tbody=document.getElementById('guildsTable');
 tbody.innerHTML=d.guilds.map(g=>{
-const crestImg=g.crest_file?`<img src="/assets/images/${g.crest_file}?v=${encodeURIComponent(g.updated_at||'')}" alt="Wappen" style="width:32px;height:32px;object-fit:contain">`:'—';
+const crestSrc=g.crest_file||g.coa_image;
+const crestImg=crestSrc?`<img src="/assets/images/${crestSrc}?v=${encodeURIComponent(g.updated_at||'')}" alt="Wappen" style="width:32px;height:32px;object-fit:contain">`:'—';
 return`
 <tr>
 <td>${crestImg}</td>
@@ -177,7 +178,7 @@ document.getElementById('guildNotes').value=notes;
 document.getElementById('currentCrest').value=crest;
 document.getElementById('guildCrest').value='';
 if(crest){
-document.getElementById('currentCrestPreview').innerHTML=`<div style="display:flex;align-items:center;gap:0.5rem"><img src="/assets/images/${crest}" alt="" style="width:32px;height:32px;object-fit:contain"><span style="color:var(--color-text-secondary);font-size:0.875rem">${crest}</span></div>`;
+document.getElementById('currentCrestPreview').innerHTML=`<div style="display:flex;align-items:center;gap:0.5rem"><img src="/assets/images/${crest}" alt="" style="width:32px;height:32px;object-fit:contain"><span style="color:var(--color-text-secondary);font-size:0.875rem">${crest}</span><button type="button" class="btn btn-danger" onclick="deleteGuildCrest(${id})">Wappen löschen</button></div>`;
 }else{
 document.getElementById('currentCrestPreview').innerHTML='';
 }
@@ -230,6 +231,18 @@ if(d.message && d.message.toLowerCase().includes('wappen')){
 }
 }
 });
+
+async function deleteGuildCrest(guildId){
+confirmDialog('Hochgeladenes Wappen wirklich löschen?\n\nDanach wird das Wappen automatisch aus dem Spielcode erzeugt, sobald dieser synchronisiert ist.', async () => {
+const formData=new FormData();
+formData.append('_method','DELETE_CREST');
+formData.append('guild_id',guildId);
+const r=await fetch('/api/admin_guilds.php',{method:'POST',body:formData});
+const d=await r.json();
+showAlert(d.message,d.success?'success':'error');
+if(d.success){closeGuildModal();loadGuilds();}
+});
+}
 
 async function deleteGuild(guildId,name){
 confirmDialog(`Gilde "${name}" wirklich löschen?\n\nAlle Mitglieder, Kampfdaten und das Wappen werden ebenfalls gelöscht!\n\nDiese Aktion kann nicht rückgängig gemacht werden.`, async () => {
