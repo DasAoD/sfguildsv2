@@ -41,6 +41,7 @@ $guildId = isset($_GET['id']) ? (int)$_GET['id'] : (int)($firstGuild['id'] ?? 1)
                     </div>
                     <div class="guild-head-actions">
                         <button onclick="syncMembers()" class="btn btn-secondary" id="syncBtn" style="display:none">⟳ Mitglieder synchronisieren</button>
+                        <button onclick="syncCharacters()" class="btn btn-secondary" id="charSyncBtn" style="display:none">⟳ Charakterdaten aktualisieren</button>
                     </div>
                 </div>
             </div>

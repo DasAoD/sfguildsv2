@@ -657,6 +657,7 @@ function showAlert(message, title = 'Hinweis') {
 // Show sync button only if logged in
 if (isLoggedIn) {
     document.getElementById('syncBtn').style.display = 'block';
+    document.getElementById('charSyncBtn').style.display = 'block';
 }
 
 // Initialize
@@ -690,6 +691,60 @@ async function syncMembers() {
         } else {
             showAlert('Fehler beim Sync: ' + (d.message || 'Unbekannt'));
         }
+    } catch (e) {
+        console.error(e);
+        showAlert('Fehler beim Sync: Verbindungsfehler');
+    } finally {
+        btn.disabled = false;
+        hideOverlay();
+    }
+}
+
+// Der Charakterdaten-Sync läuft im Hintergrund (länger als das Server-Zeitlimit),
+// das Ergebnis wird per Polling abgeholt.
+async function syncCharacters() {
+    const guildId = parseInt(new URLSearchParams(window.location.search).get('id'));
+    if (!guildId) { showAlert('Keine Gilde ausgewählt.'); return; }
+
+    const btn = document.getElementById('charSyncBtn');
+    btn.disabled = true;
+    showOverlay('Charakterdaten werden aktualisiert… (kann einige Minuten dauern)');
+
+    try {
+        const r = await fetch('/api/sf_character_sync.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ guild_id: guildId })
+        });
+        const d = await r.json();
+        if (!d.success) {
+            showAlert('Fehler beim Sync: ' + (d.error || d.message || 'Unbekannt'));
+            return;
+        }
+
+        const startedAt = Date.now();
+        let idle = 0;
+        while (Date.now() - startedAt < 4 * 60 * 1000) {
+            await new Promise(res => setTimeout(res, 4000));
+            const p = await (await fetch(`/api/sf_character_sync.php?guild_id=${guildId}`)).json();
+            if (!p.success) continue;
+            if (!p.result) {
+                idle = p.running ? 0 : idle + 1;
+                if (idle >= 3) {
+                    showAlert('Fehler beim Sync: Der Sync wurde nicht gestartet.');
+                    return;
+                }
+                continue;
+            }
+            if (p.result.ok) {
+                showAlert(`Charakterdaten aktualisiert: ${p.result.written} Mitglieder, ${p.result.skipped} übersprungen.`);
+                loadGuild();
+            } else {
+                showAlert('Fehler beim Sync: ' + (p.result.error || 'Unbekannt'));
+            }
+            return;
+        }
+        showAlert('Der Sync läuft noch. Bitte die Seite später neu laden.');
     } catch (e) {
         console.error(e);
         showAlert('Fehler beim Sync: Verbindungsfehler');

@@ -202,6 +202,10 @@ try {
         [':ts' => gmdate('c'), ':id' => $guildId]
     );
 
+    if (!empty($data['coa_code'])) {
+        execute("UPDATE guilds SET coa_code = :coa WHERE id = :id", [':coa' => $data['coa_code'], ':id' => $guildId]);
+    }
+
     $hofRank = (int)($data['guild_rank'] ?? 0);
     if ($hofRank > 0) {
         execute("UPDATE guilds SET hof_rank = :rank WHERE id = :id", [':rank' => $hofRank, ':id' => $guildId]);
