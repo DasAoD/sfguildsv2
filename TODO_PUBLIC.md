@@ -27,11 +27,29 @@ Konkrete anstehende Aufgaben. Sicherheitsrelevante Details sind in der privaten 
 - [ ] Installations-Assistent (Web-basiert oder CLI) für Erst-Einrichtung
 
 ### UI-Verbesserungen
-- [ ] Mobile-Ansicht überarbeiten
+- [ ] Pfeil zwischen Waffe und Treffereffekt im Charakter-Modal (wie im Spiel)
+
+### Asset-Pflege
+- [ ] Neue Item-Icons nach einer Meldung des Asset-Checks zuschneiden und einpflegen (bisher manuell mit AssetRipper)
+- [ ] Zuordnung Waffe -> Treffereffekt bei weiteren Waffenmodellen stichprobenartig gegen das Spiel prüfen
 
 ---
 
-## ✅ Zuletzt erledigt (Juli 2026)
+## ✅ Zuletzt erledigt (Oktober 2026)
+
+- [x] **Treffereffekt im Charakter-Modal** — Effekt-Kreis neben der Waffe bei Mage-/Scout-Waffen (Zuordnung über Waffenklasse und Modell), Größe auf 75 % des Slots abgestimmt; kein leerer zweiter Slot mehr bei Nahkampfwaffen
+- [x] **Icons für neue Item-Modelle** (73, 113) und Schlüssel ergänzt; Waffen neuer Modelle zeigen kein Platzhalter-Icon mehr
+- [x] **Asset-Check** (`cli/check_game_assets.php`) — täglich per Cron, legt geänderte Bundles in `storage/game_assets/staging/` ab und meldet per Telegram und Mail; Anleitung in `install/GAME_ASSETS_CHECK.md`
+- [x] **Gildenrang der Ehrenhalle** im Dashboard und auf der Gildenseite
+- [x] **Gilde löschen** räumt Mitglieder, Kämpfe und Berichtsdateien vollständig auf
+- [x] **Mitglieder entfernen/zusammenführen** — keine Waisen-Einträge in Reports mehr, Zusammenführung löscht den neuen Namen nicht mehr
+- [x] **Mobile Ansicht** für alle Seiten, Querformat-Navigation, Charakter-Modal auf dem Handy; Issue geschlossen
+- [x] **Barrierefreiheit und Kontrast** (WCAG AA), Lighthouse 100/100/100, Screenreader-Test
+- [x] **Rechtliches**: Impressum und Datenschutzerklärung im Admin-Bereich pflegbar, `noindex`, HTTP/2
+- [x] **CSV-Import entfernt** — sf-api ist die einzige Datenquelle
+- [x] **Charakter-Modal** mit Attributen, Ausrüstung, Tränken und echten Item-/Trank-Icons (Charakterdaten-Sync als eigener Cron-Job)
+
+## ✅ Davor erledigt (Juli 2026)
 
 - [x] **fetch_guild_reports: Mitternachtsgrenze bei Zeitzonen-Offset-Servern gefixt** — Ergebnis-Matching für Kämpfe kurz vor/nach Mitternacht auf Servern mit abweichendem UTC-Offset korrigiert
 - [x] **Posteingang: Hydra-/Gildenportal-Nachrichten automatisch als gelesen markiert**
@@ -69,4 +87,4 @@ Konkrete anstehende Aufgaben. Sicherheitsrelevante Details sind in der privaten 
 
 ---
 
-*Letzte Aktualisierung: Juli 2026*
+*Letzte Aktualisierung: Oktober 2026*

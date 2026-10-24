@@ -30,7 +30,8 @@
   - Neues Mitglied: joined_at = heute ("first seen"-Ansatz, da guild_joined seit v29.500 nicht mehr vom Server geliefert wird)
   - Wiederbeitritt: fired_at/left_at automatisch geleert, joined_at = heute
   - Aktive Mitglieder: Stats aktualisiert, joined_at/Notizen/fired_at/left_at unberührt
-- [x] Rust-CLI-Tools auf Basis von sf-api (fetch_guild_reports, list_chars, member_sync)
+- [x] Rust-CLI-Tools auf Basis von sf-api (fetch_guild_reports, list_chars, member_sync, character_sync)
+- [x] CSV-Import entfernt: sf-api ist die einzige Datenquelle
 - [x] Robuste Fehlerbehandlung bei API-Inkompatibilitäten (leere/ungültige systemmessagelist, graceful Seed-Fallback)
 - [x] sf-api automatisch auf neue S&F-Serverversionen aktualisierbar (v30.500-kompatibel ab v0.4.3)
 
@@ -48,6 +49,14 @@
 - [x] Ungelesen-Badge in der Navigation
 - [x] Automatisches Markieren von Hydra-/Gildenportal-Systemnachrichten als gelesen
 
+### Charakter-Details
+- [x] **Charakter-Modal** auf der Gildenseite: Attribute, Rüstung, Schaden, Ausrüstung mit Gemmen, Runen, Verzauberungen und aktive Tränke
+- [x] **Echte Item- und Trank-Icons** aus den Spiel-Assets (Waffen, Rüstung, Schmuck, Tränke)
+- [x] **Treffereffekt neben der Waffe** bei Einzelwaffen-Charakteren (Zuordnung über die Waffenklasse); kein leerer zweiter Slot mehr
+- [x] **Charakterdaten-Sync** als eigener Cron-Job (unabhängig vom Member-Sync)
+- [x] **Gildenrang der Ehrenhalle** im Dashboard und auf der Gildenseite
+- [x] **Asset-Check**: tägliche Prüfung der Spiel-Bundles auf Änderungen (neue Items), Meldung per Telegram und Mail
+
 ### Import-Log
 - [x] Import-Protokoll in Admin-Bereich (Logs → Import-Tab): letzter Import pro Gilde + gefilterte Activity-Einträge
 
@@ -55,6 +64,7 @@
 - [x] Master-Runner (cli/cron_runner.php) via crontab (jede Minute)
 - [x] Automatischer Kampfbericht-Fetch (07:25 + 19:10 Uhr)
 - [x] Automatischer Member-Sync (07:30 + 19:15 Uhr)
+- [x] Gilde löschen räumt Mitglieder, Kämpfe und Berichtsdateien vollständig auf
 - [x] Admin-UI: Jobs aktivieren/deaktivieren, Uhrzeiten konfigurieren, manuell starten
 - [x] Cron-Status im Admin-Bereich (Logs → Cron-Tab)
 - [x] Sicherheit: nur Admin-Accounts werden verwendet
@@ -76,6 +86,12 @@
 - [x] Cron verwendet ausschließlich Admin-Accounts
 - [x] Zentralisierte API-Antworten, Whitelist-Ansatz, CLI-Guards, flock()-Locking
 
+### Mobile & Barrierefreiheit
+- [x] **Mobile Ansicht** für alle Seiten (Hamburger-Menü, Tabellen, Modals, Querformat), am echten Handy geprüft
+- [x] **Barrierefreiheit**: Kontrast nach WCAG AA, Tastatur- und Screenreader-Bedienung, Lighthouse-Läufe mit 100 Punkten bei Performance, Barrierefreiheit und Best Practices
+- [x] **Rechtliches**: Impressum und Datenschutzerklärung als pflegbare Seiten im Admin-Bereich, Schalter für die Anzeige
+- [x] Seite für Suchmaschinen gesperrt (noindex), HTTP/2 und Caching
+
 ### UI & Dokumentation
 - [x] Ladeanimationen bei API-Calls
 - [x] Interne API-Dokumentation aller Endpunkte (docs/api.md)
@@ -95,9 +111,10 @@
 
 - Setup-Assistent für Erstinstallation
 - Mitglieder-Entwicklung über Zeit (Graphen)
-- Mobile-Ansicht überarbeiten
+- Pfeil zwischen Waffe und Treffereffekt wie im Spiel
+- Icon-Updates nach Spiel-Updates vollständig automatisieren (Zuschneiden; Erkennen und Laden ist schon automatisch)
 - Export-Funktionen (CSV, PDF) für Gilden-Reports
 
 ---
 
-*Letzte Aktualisierung: Juli 2026*
+*Letzte Aktualisierung: Oktober 2026*
