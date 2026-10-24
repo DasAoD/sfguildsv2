@@ -230,7 +230,7 @@ function renderGuildCrestImage(string $coaCode, string $assetsDir): ?\GdImage {
     }
 
     $layers = [];
-    foreach (['helm', 'shield', 'emblem', 'supporter', 'helmet', 'banner', 'order'] as $cat) {
+    foreach (['helm', 'supporter', 'shield', 'emblem', 'helmet', 'banner', 'order'] as $cat) {
         $img = coaLoadLayer($assetsDir, $cat, $d[$cat]);
         if (!$img) return null;
         $layers[$cat] = $img;
