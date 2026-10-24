@@ -202,6 +202,11 @@ try {
         [':ts' => gmdate('c'), ':id' => $guildId]
     );
 
+    $hofRank = (int)($data['guild_rank'] ?? 0);
+    if ($hofRank > 0) {
+        execute("UPDATE guilds SET hof_rank = :rank WHERE id = :id", [':rank' => $hofRank, ':id' => $guildId]);
+    }
+
     $db->commit();
 } catch (Throwable $e) {
     $db->rollBack();

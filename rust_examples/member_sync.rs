@@ -40,6 +40,8 @@ struct SyncOutput {
     server: String,
     member_count: usize,
     members: Vec<MemberOutput>,
+    /// Platz der Gilde in der Ehrenhalle ihres Servers; 0 = vom Server nicht geliefert
+    guild_rank: u32,
     /// Der /coa-Wappencode der Gilde (11 Byte, 22 Hex-Zeichen), aus
     /// `owngroupsave.groupSave` (Index 1) im rohen Login-Response geparst --
     /// NICHT aus `GameState::guild.emblem` (das ist ein anderes, meist
@@ -90,6 +92,7 @@ async fn run() -> SyncOutput {
         server: server_host.clone(),
         member_count: 0,
         members: vec![],
+        guild_rank: 0,
         coa_code: None,
         error: Some(msg),
     };
@@ -135,6 +138,7 @@ async fn run() -> SyncOutput {
     };
 
     let guild_name = guild.name.clone();
+    let guild_rank = guild.rank;
     let server = session.server_url().host_str().unwrap_or("?").to_string();
 
     let members: Vec<MemberOutput> = guild.members.iter().map(|m| {
@@ -169,6 +173,7 @@ async fn run() -> SyncOutput {
         server,
         member_count: members.len(),
         members,
+        guild_rank,
         coa_code,
         error: None,
     }

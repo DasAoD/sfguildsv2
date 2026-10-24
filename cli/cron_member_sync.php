@@ -123,6 +123,10 @@ foreach ($guilds as $guild) {
             if (!empty($data['coa_code'])) {
                 execute("UPDATE guilds SET coa_code=:coa WHERE id=:id", [':coa'=>$data['coa_code'], ':id'=>$guild['id']]);
             }
+            $hofRank = (int)($data['guild_rank'] ?? 0);
+            if ($hofRank > 0) {
+                execute("UPDATE guilds SET hof_rank=:rank WHERE id=:id", [':rank'=>$hofRank, ':id'=>$guild['id']]);
+            }
             $db->commit();
         } catch (Throwable $e) {
             $db->rollBack();
