@@ -41,6 +41,7 @@ Konkrete anstehende Aufgaben. Sicherheitsrelevante Details sind in der privaten 
 ## ✅ Zuletzt erledigt (Oktober 2026)
 
 - [x] **Wappen automatisch rendern** — Layout aus den Pivot-Daten der Spiel-Assets, Ebenen-Reihenfolge und Farben an Spiel-Screenshots abgeglichen, Gildenname auf dem Banner; Gilden ohne hochgeladenes Wappen zeigen es automatisch
+- [x] **Admin: Wappen löschen** und gerendertes Wappen in der Gildenliste — ein hochgeladenes Wappen lässt sich entfernen, danach greift das automatisch gerenderte
 - [x] **Gildenseite**: Button "Charakterdaten aktualisieren" (eine Gilde) und Wappen-Code beim Mitglieder-Sync
 - [x] **Treffereffekt im Charakter-Modal** — Effekt-Kreis neben der Waffe bei Mage-/Scout-Waffen (Zuordnung über Waffenklasse und Modell), Größe auf 75 % des Slots abgestimmt; kein leerer zweiter Slot mehr bei Nahkampfwaffen
 - [x] **Icons für neue Item-Modelle** (73, 113) und Schlüssel ergänzt; Waffen neuer Modelle zeigen kein Platzhalter-Icon mehr
