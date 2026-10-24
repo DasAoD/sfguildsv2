@@ -493,8 +493,8 @@ input[type="file"].form-input {
 }
 
 .char-slot.char-slot-hit {
-    width: 48px;
-    min-width: 48px;
+    width: 62px;
+    min-width: 62px;
     align-self: center;
     border-radius: 50%;
 }
@@ -697,8 +697,8 @@ input[type="file"].form-input {
     }
 
     .char-slot.char-slot-hit {
-        width: 36px;
-        min-width: 36px;
+        width: 47px;
+        min-width: 47px;
     }
 
     .char-slot-label {
