@@ -43,6 +43,3 @@ chown -R www-data:www-data /var/www/sfguildsv2
 chmod 775 /var/www/sfguildsv2/data /var/www/sfguildsv2/data/uploads
 ```
 Rust-Binaries: siehe `rust_examples/README.md` für Build- und Deploy-Anleitung.
-
-## Offene Baustellen
-Aktuell 4 offene Issues im Repo – vor größeren Änderungen kurz gegenchecken, ob eine Änderung mit einem bestehenden Issue kollidiert.
