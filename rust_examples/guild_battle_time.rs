@@ -151,7 +151,7 @@ async fn run() -> BattleTimeOutput {
         .unwrap_or_else(|| target_guild.clone());
 
     let resp = match session
-        .send_command_raw(&Command::ViewGuild { guild_ident })
+        .send_command_raw(&Command::ViewGuild { guild_ident: guild_ident.clone() })
         .await
     {
         Ok(r) => r,
@@ -177,7 +177,7 @@ async fn run() -> BattleTimeOutput {
 
     BattleTimeOutput {
         success: true,
-        target_guild,
+        target_guild: guild_ident,
         server: server_host,
         attacked_by: if attacked_at.is_some() { attacked_by } else { None },
         attacked_at,
