@@ -65,12 +65,13 @@ async fn resolve_guild_name(session: &mut sf_api::session::Session, wanted: &str
         }
     };
     let kv = parse_raw_kv(resp.raw_response());
-    let list = kv.get("ranklistgroup.s").or_else(|| kv.get("ranklistgroup"))?;
+    // Eintragsformat: Rang,Gildenname,Leiter,Mitglieder,Ehre,Flag
+    let list = kv.get("ranklistgroup.r")?;
     let wanted = wanted.to_lowercase();
     list.trim_matches(';')
         .split(';')
-        .flat_map(|entry| entry.split(','))
-        .find(|field| field.to_lowercase() == wanted)
+        .filter_map(|entry| entry.split(',').nth(1))
+        .find(|name| name.to_lowercase() == wanted)
         .map(str::to_string)
 }
 
@@ -150,7 +151,7 @@ async fn run() -> BattleTimeOutput {
         .unwrap_or_else(|| target_guild.clone());
 
     let resp = match session
-        .send_command_raw(&Command::ViewGuild { guild_ident })
+        .send_command_raw(&Command::ViewGuild { guild_ident: guild_ident.clone() })
         .await
     {
         Ok(r) => r,
@@ -176,7 +177,7 @@ async fn run() -> BattleTimeOutput {
 
     BattleTimeOutput {
         success: true,
-        target_guild,
+        target_guild: guild_ident,
         server: server_host,
         attacked_by: if attacked_at.is_some() { attacked_by } else { None },
         attacked_at,
