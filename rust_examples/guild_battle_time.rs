@@ -47,6 +47,33 @@ fn parse_raw_kv(raw: &str) -> std::collections::HashMap<String, String> {
     map
 }
 
+async fn resolve_guild_name(session: &mut sf_api::session::Session, wanted: &str) -> Option<String> {
+    if wanted.contains(['/', '&', ';', ',', ':']) {
+        return None;
+    }
+    let resp = match session
+        .send_command_raw(&Command::Custom {
+            cmd_name: "GroupGetHallOfFame".to_string(),
+            arguments: vec!["-1".to_string(), wanted.to_string(), "25".to_string(), "25".to_string()],
+        })
+        .await
+    {
+        Ok(r) => r,
+        Err(e) => {
+            eprintln!("Gildensuche fehlgeschlagen: {e}");
+            return None;
+        }
+    };
+    let kv = parse_raw_kv(resp.raw_response());
+    let list = kv.get("ranklistgroup.s").or_else(|| kv.get("ranklistgroup"))?;
+    let wanted = wanted.to_lowercase();
+    list.trim_matches(';')
+        .split(';')
+        .flat_map(|entry| entry.split(','))
+        .find(|field| field.to_lowercase() == wanted)
+        .map(str::to_string)
+}
+
 #[tokio::main]
 async fn main() {
     let result = run().await;
@@ -116,8 +143,14 @@ async fn run() -> BattleTimeOutput {
         return err_output(format!("Login fehlgeschlagen: {e}"), &server_host, &target_guild);
     }
 
+    // ViewGuild vergleicht case-sensitiv, die Ehrenhallen-Suche des Spiels nicht.
+    // Daher erst den exakten Namen über die Suche auflösen.
+    let guild_ident = resolve_guild_name(&mut session, &target_guild)
+        .await
+        .unwrap_or_else(|| target_guild.clone());
+
     let resp = match session
-        .send_command_raw(&Command::ViewGuild { guild_ident: target_guild.clone() })
+        .send_command_raw(&Command::ViewGuild { guild_ident })
         .await
     {
         Ok(r) => r,
