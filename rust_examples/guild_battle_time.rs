@@ -65,12 +65,13 @@ async fn resolve_guild_name(session: &mut sf_api::session::Session, wanted: &str
         }
     };
     let kv = parse_raw_kv(resp.raw_response());
-    let list = kv.get("ranklistgroup.s").or_else(|| kv.get("ranklistgroup"))?;
+    // Eintragsformat: Rang,Gildenname,Leiter,Mitglieder,Ehre,Flag
+    let list = kv.get("ranklistgroup.r")?;
     let wanted = wanted.to_lowercase();
     list.trim_matches(';')
         .split(';')
-        .flat_map(|entry| entry.split(','))
-        .find(|field| field.to_lowercase() == wanted)
+        .filter_map(|entry| entry.split(',').nth(1))
+        .find(|name| name.to_lowercase() == wanted)
         .map(str::to_string)
 }
 
