@@ -108,9 +108,12 @@ $history = getAttackHistory($db, (int)$_SESSION['user_id']);
             checkAttackTime();
         }));
     }
-    if (document.getElementById('historyBox')) {
-        renderHistory(<?php echo json_encode($history, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>);
-    }
+    // main.js (escapeHtml) wird erst nach diesem Script geladen
+    document.addEventListener('DOMContentLoaded', () => {
+        if (document.getElementById('historyBox')) {
+            renderHistory(<?php echo json_encode($history, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>);
+        }
+    });
 
     async function checkAttackTime() {
         const server = document.getElementById('serverSelect').value;
