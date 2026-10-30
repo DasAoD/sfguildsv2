@@ -100,6 +100,15 @@ if (empty($result['success'])) {
     jsonError($result['error'] ?? 'Abfrage fehlgeschlagen', 502);
 }
 
+// Der Verlauf ist Nebensache: ein DB-Fehler darf das Abfrageergebnis nicht blockieren.
+$history = [];
+try {
+    recordAttackQuery($db, $userId, $server, $result['target_guild'], $foundCharacter['name'], $foundCharacter['guild'] ?? null);
+    $history = getAttackHistory($db, $userId);
+} catch (PDOException $e) {
+    logError('guild_attack_time: Verlauf nicht gespeichert', ['error' => $e->getMessage()]);
+}
+
 jsonResponse([
     'success'      => true,
     'target_guild' => $result['target_guild'],
@@ -107,4 +116,5 @@ jsonResponse([
     'queried_with' => $foundCharacter['name'], // welcher Charakter für die Abfrage genutzt wurde
     'attacked_at'  => $result['attacked_at'],  // Unix-Timestamp (Sekunden, UTC) oder null
     'attacked_by'  => $result['attacked_by'],
+    'history'      => $history,
 ]);

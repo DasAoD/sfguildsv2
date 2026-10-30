@@ -251,3 +251,73 @@ function listKnownServersForUser($db, int $userId) {
     sort($list);
     return $list;
 }
+
+const ATTACK_HISTORY_LIMIT = 5;
+const ATTACK_HISTORY_SHOWN = 15;
+
+// Tabelle wird lazy angelegt, das Projekt hat kein Migrationsskript.
+function ensureAttackHistoryTable($db): void {
+    $db->exec("
+        CREATE TABLE IF NOT EXISTS guild_attack_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            server TEXT NOT NULL,
+            target_guild TEXT NOT NULL,
+            char_name TEXT NOT NULL,
+            char_guild TEXT,
+            queried_at INTEGER NOT NULL
+        )
+    ");
+    $db->exec("
+        CREATE INDEX IF NOT EXISTS idx_guild_attack_history_user
+        ON guild_attack_history (user_id, server, char_name, queried_at)
+    ");
+}
+
+function getAttackHistory($db, int $userId): array {
+    ensureAttackHistoryTable($db);
+    $stmt = $db->prepare("
+        SELECT server, target_guild, char_name, char_guild, queried_at
+        FROM guild_attack_history
+        WHERE user_id = ?
+        ORDER BY queried_at DESC, id DESC
+        LIMIT " . ATTACK_HISTORY_SHOWN
+    );
+    $stmt->execute([$userId]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+// $targetGuild ist der vom Spiel aufgelöste Name, daher exakter Vergleich
+// (SQLite-LOWER() kennt keine Umlaute).
+function recordAttackQuery($db, int $userId, string $server, string $targetGuild, string $charName, ?string $charGuild): void {
+    ensureAttackHistoryTable($db);
+
+    $db->beginTransaction();
+    try {
+        $del = $db->prepare("
+            DELETE FROM guild_attack_history
+            WHERE user_id = ? AND server = ? AND char_name = ? AND target_guild = ?
+        ");
+        $del->execute([$userId, $server, $charName, $targetGuild]);
+
+        $ins = $db->prepare("
+            INSERT INTO guild_attack_history (user_id, server, target_guild, char_name, char_guild, queried_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ");
+        $ins->execute([$userId, $server, $targetGuild, $charName, $charGuild, time()]);
+
+        $prune = $db->prepare("
+            DELETE FROM guild_attack_history
+            WHERE user_id = ? AND server = ? AND char_name = ? AND id NOT IN (
+                SELECT id FROM guild_attack_history
+                WHERE user_id = ? AND server = ? AND char_name = ?
+                ORDER BY queried_at DESC, id DESC LIMIT " . ATTACK_HISTORY_LIMIT . "
+            )
+        ");
+        $prune->execute([$userId, $server, $charName, $userId, $server, $charName]);
+        $db->commit();
+    } catch (PDOException $e) {
+        $db->rollBack();
+        throw $e;
+    }
+}

@@ -15,6 +15,7 @@ checkAuth();
 
 $db = getDB();
 $servers = listKnownServersForUser($db, (int)$_SESSION['user_id']);
+$history = getAttackHistory($db, (int)$_SESSION['user_id']);
 ?>
 <!DOCTYPE html>
 <html lang="de">
@@ -64,12 +65,53 @@ $servers = listKnownServersForUser($db, (int)$_SESSION['user_id']);
                     <?php endif; ?>
                 </div>
             </div>
+
+            <?php if (!empty($servers)): ?>
+            <div class="card" style="max-width: 560px; margin-top: 1rem;">
+                <div class="card-header">
+                    <h2>Verlauf</h2>
+                </div>
+                <div class="card-body" id="historyBox"></div>
+            </div>
+            <?php endif; ?>
         </div>
     </main>
 
     <?php renderFooter(); ?>
 
     <script>
+    function renderHistory(history) {
+        const box = document.getElementById('historyBox');
+        if (!history.length) {
+            box.innerHTML = '<p class="text-muted">Noch keine Abfragen.</p>';
+            return;
+        }
+        box.innerHTML = history.map((h, i) => {
+            const when = new Date(h.queried_at * 1000).toLocaleString('de-DE', {
+                day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit',
+            });
+            const who = h.char_guild ? `${h.char_name} (${h.char_guild})` : h.char_name;
+            return `<div class="history-item" data-i="${i}" style="cursor:pointer; padding:.5rem 0; border-bottom:1px solid var(--border-color, #444);">
+                <strong>${escapeHtml(h.target_guild)}</strong>
+                <small>${escapeHtml(h.server)}</small><br>
+                <small>abgefragt von ${escapeHtml(who)} · ${when}</small>
+            </div>`;
+        }).join('');
+        box.querySelectorAll('.history-item').forEach(el => el.addEventListener('click', () => {
+            const h = history[el.dataset.i];
+            const select = document.getElementById('serverSelect');
+            if (document.getElementById('checkBtn').disabled || ![...select.options].some(o => o.value === h.server)) {
+                return;
+            }
+            select.value = h.server;
+            document.getElementById('targetGuildInput').value = h.target_guild;
+            checkAttackTime();
+        }));
+    }
+    if (document.getElementById('historyBox')) {
+        renderHistory(<?php echo json_encode($history, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>);
+    }
+
     async function checkAttackTime() {
         const server = document.getElementById('serverSelect').value;
         const targetGuild = document.getElementById('targetGuildInput').value.trim();
@@ -96,6 +138,8 @@ $servers = listKnownServersForUser($db, (int)$_SESSION['user_id']);
                 resultBox.innerHTML = `<div class="alert alert-error">${escapeHtml(d.error || d.message || 'Abfrage fehlgeschlagen')}</div>`;
                 return;
             }
+
+            renderHistory(d.history);
 
             if (d.attacked_at) {
                 // Das Spiel zeigt Kampfzeiten selbst in UTC an (siehe Kommentar in
