@@ -121,6 +121,9 @@ function resolveItemIconPath(string $slot, array $item): ?string
     return "/assets/images/items/{$bundle}/" . basename($matches[0]);
 }
 
+// Mage-Modelle, deren Effekt im Spiel nicht hit_2_{model_id} ist (an Screenshots geprüft)
+const MAGE_HIT_EFFECT_OVERRIDE = [62 => 50, 68 => 62, 69 => 59];
+
 // Warrior-Waffen haben nie einen Treffereffekt; Scout-Modelle 1-10 haben
 // zusätzlich eine Variante pro Farbe.
 function resolveHitEffectPath(array $weapon): ?string
@@ -133,7 +136,7 @@ function resolveHitEffectPath(array $weapon): ?string
     switch ($weapon['class'] ?? null) {
         case 'Mage':
             $bundle = 'magehits';
-            $name = "hit_2_{$modelId}";
+            $name = "hit_2_" . (MAGE_HIT_EFFECT_OVERRIDE[$modelId] ?? $modelId);
             break;
         case 'Scout':
             $bundle = 'scoutshots';
