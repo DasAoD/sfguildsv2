@@ -175,7 +175,12 @@ Der øberwiegende Teil des Codes, der Architektur und der Dokumentation wurde du
 
 ## Drittinhalte
 
+Dies ist ein inoffizielles Fanprojekt ohne Verbindung zu Playa Games. Shakes & Fidget und die zugehörigen Grafiken, Namen und die Musik gehören ihren Rechteinhabern.
+
+- **Spielmaterial aus Shakes & Fidget** (Playa Games), aus dem Browser-Client übernommen: Item-Icons und Treffereffekte, Portrait-Ebenen, das Logo `sf-logo.png`, Wappen-Teile für die Wappen-Erzeugung (liegen nur auf dem Server), Hellevator-Musik (`hellevator_music.mp3`). Die Hellevator-Bilder (Kopf- und Seitenbild) stammen aus einer Internetsuche und vermutlich ebenfalls von Playa Games.
+- **Sonderportraits** (`public/assets/images/portraits/special`) von [sfportrait.12hp.de](https://sfportrait.12hp.de) übernommen. Die Seite bedankt sich dort bei Eggman, EdiGrieg / Gwenno und Resist 2 Exist; bei EdiGrieg / Gwenno verweist sie auf [trickfilmstimmen.de/avatare.htm](http://www.trickfilmstimmen.de/avatare.htm).
 - Schrift **Tobi** (Gildennamen auf den automatisch erzeugten Wappen) von Rodrigo Araya Salas ([rodrigotypo.com](https://www.rodrigotypo.com)), bezogen über [onlinewebfonts.com](https://www.onlinewebfonts.com), laut Anbieter unter CC BY 4.0. Die Schriftdatei liegt nicht im Repo, sondern nur auf dem Server.
+- Selbst erstellt (mit Claude): Fehlerseiten-Illustrationen, Icons (`helmet`, `medal`, `shield`, `swords`, `invited`) und Flaggen.
 
 ## Lizenz
 
