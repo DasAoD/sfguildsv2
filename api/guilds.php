@@ -125,7 +125,7 @@ try {
         $guild['participation_quote'] = $participationQuote;
 
         $guild['coa_image'] = resolveGuildCrestImage((int) $id, $guild['coa_code'], $guild['name']);
-        unset($guild['coa_code'], $guild['crest_file']); // Frontend braucht nur den fertigen Bildnamen (coa_image)
+        unset($guild['coa_code']); // Frontend braucht nur den fertigen Bildnamen (coa_image)
     }
     
     jsonResponse([
