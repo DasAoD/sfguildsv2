@@ -115,6 +115,7 @@ $members    = $data['members'] ?? [];
 $inserted   = 0;
 $updated    = 0;
 $rejoined   = 0;
+$purged     = 0;
 $today      = gmdate('Y-m-d');
 
 $selStmt = $db->prepare(
@@ -197,6 +198,8 @@ try {
         }
     }
 
+    $purged = purgeExpiredInvites($db, (int)$guildId, array_column($members, 'name'));
+
     // last_import_at der Gilde aktualisieren
     execute(
         "UPDATE guilds SET last_import_at = :ts, updated_at = datetime('now') WHERE id = :id",
@@ -224,6 +227,7 @@ logActivity('Member-Sync', [
     'Neu'        => $inserted,
     'Aktualisiert' => $updated,
     'Wiederbeigetreten' => $rejoined,
+    'Verfallene Einladungen entfernt' => $purged,
 ]);
 
 jsonResponse([
@@ -232,5 +236,6 @@ jsonResponse([
     'inserted'  => $inserted,
     'updated'   => $updated,
     'rejoined'  => $rejoined,
+    'purged'    => $purged,
     'total'     => count($members),
 ]);
