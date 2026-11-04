@@ -89,7 +89,7 @@ foreach ($guilds as $guild) {
     if ($data && $data['success']) {
         // DB-Update (selbe Logik wie sf_member_sync.php)
         $members  = $data['members'] ?? [];
-        $inserted = 0; $updated = 0; $rejoined = 0;
+        $inserted = 0; $updated = 0; $rejoined = 0; $purged = 0;
         $today    = gmdate('Y-m-d');
 
         $selStmt = $db->prepare("SELECT id, fired_at, left_at FROM members WHERE guild_id = ? AND name = ? LIMIT 1");
@@ -116,6 +116,7 @@ foreach ($guilds as $guild) {
                     $inserted++;
                 }
             }
+            $purged = purgeExpiredInvites($db, (int)$guild['id'], array_column($members, 'name'));
             execute("UPDATE guilds SET last_import_at=:ts,updated_at=datetime('now') WHERE id=:id", [':ts'=>gmdate('c'),':id'=>$guild['id']]);
             // Wappen-Code für die Auto-Generierung mitschreiben (nur wenn vorhanden)
             if (!empty($data['coa_code'])) {

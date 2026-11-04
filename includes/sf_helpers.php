@@ -321,3 +321,26 @@ function recordAttackQuery($db, int $userId, string $server, string $targetGuild
         throw $e;
     }
 }
+
+function purgeExpiredInvites($db, int $guildId, array $syncedNames): int {
+    if (!$syncedNames) {
+        return 0;
+    }
+    $cutoff = gmdate('Y-m-d', strtotime('-7 days'));
+    $stmt = $db->prepare("
+        SELECT id, name FROM members
+        WHERE guild_id = ? AND rank = 'Eingeladen'
+          AND (fired_at IS NULL OR fired_at = '') AND (left_at IS NULL OR left_at = '')
+          AND joined_at GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]' AND joined_at < ?
+    ");
+    $stmt->execute([$guildId, $cutoff]);
+    $del = $db->prepare("DELETE FROM members WHERE id = ?");
+    $count = 0;
+    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        if (!in_array($row['name'], $syncedNames, true)) {
+            $del->execute([$row['id']]);
+            $count++;
+        }
+    }
+    return $count;
+}
