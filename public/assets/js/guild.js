@@ -357,7 +357,8 @@ const attrLabels = { Strength: 'Stärke', Dexterity: 'Geschick', Intelligence: '
 const classLabels = {
     Warrior: 'Krieger', Mage: 'Magier', Scout: 'Kundschafter', Assassin: 'Assassine',
     BattleMage: 'Kampfmagier', Berserker: 'Berserker', DemonHunter: 'Dämonenjäger',
-    Druid: 'Druide', Bard: 'Barde', Necromancer: 'Nekromant', Paladin: 'Paladin', PlagueDoctor: 'Pestdoktor'
+    Druid: 'Druide', Bard: 'Barde', Necromancer: 'Nekromant', Paladin: 'Paladin', PlagueDoctor: 'Pestdoktor',
+    BloodWeaver: 'Blutweber'
 };
 const raceLabels = {
     Human: 'Mensch', Elf: 'Elf', Dwarf: 'Zwerg', Gnome: 'Gnom', Orc: 'Ork',
