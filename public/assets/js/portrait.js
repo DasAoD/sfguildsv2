@@ -47,6 +47,7 @@ const PORTRAIT_CLASS_FACE = {
     BattleMage: 'warlock', Berserker: 'berserker', DemonHunter: 'demonhunter',
     Druid: 'druid', Bard: 'bard',
     Necromancer: 'mage', Paladin: 'warrior', PlagueDoctor: 'mage',
+    BloodWeaver: 'warrior',
 };
 
 // sf-api Race-Name -> Dateiname-/Ordner-Bestandteil
