@@ -3,7 +3,7 @@
 Diese Dateien sind Examples für [sf-api](https://github.com/the-marenga/sf-api)
 und gehören in `/root/sf-api/examples/` auf dns1.
 
-**Aktuell getestete sf-api Version: v0.4.4** (kompatibel mit S&F-Server v30.500)
+**Aktuell getestete sf-api Version: v0.5.0** (kompatibel mit S&F-Client-Build 32.000.261110.1, benötigt rustc ≥ 1.95)
 
 ## Deployment
 
