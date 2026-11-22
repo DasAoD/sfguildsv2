@@ -60,7 +60,7 @@ $embed = !empty($_GET['embed']);
 
                 <div class="warning-box info" id="warningMarket">
                     <span>🛒 </span><span class="warning-label info-text" id="marketLabel">Schwarzmarkt:</span>
-                    <span id="marketText"> Während des Events könnt ihr im Schwarzmarkt je 3× Schlüsselkarten für Lucky Coins und 3× für Pilze kaufen.</span>
+                    <span id="marketText"> Während des Events könnt ihr im Schwarzmarkt je 10× Schlüsselkarten für je 100 Lucky Coins und 10× für 9 Pilze kaufen.</span>
                 </div>
             </div>
 
@@ -180,7 +180,7 @@ $embed = !empty($_GET['embed']);
                 dangerLabel: 'Very Important:',
                 dangerText: ' Only players who are actually deployed in battle receive a reward – surplus registrations go empty-handed!',
                 marketLabel: 'Black Market:',
-                marketText: ' During the event you can buy key cards on the Black Market: 3× for Lucky Coins and 3× for Mushrooms.',
+                marketText: ' During the event you can buy key cards on the Black Market: 10× for 100 Lucky Coins and 10× for 9 Mushrooms.',
                 helpTitle: 'Official Hellevator Help',
                 helpDesc: 'Playa Games Helpshift – Everything about the Hellevator',
                 twitchHelpTitle: 'Connect Twitch Drops',
