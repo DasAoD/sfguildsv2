@@ -15,7 +15,7 @@ require_once __DIR__ . '/../includes/template.php';
     <?php renderNavbar(''); ?>
     <main class="container">
         <div class="page-header"><h1>Credits</h1></div>
-        <div class="section">
+        <div class="section credits">
             <p>Inoffizielles Fanprojekt ohne Verbindung zu Playa Games. Shakes &amp; Fidget und die zugehörigen Grafiken, Namen und die Musik gehören ihren Rechteinhabern.</p>
 
             <h2 class="section-title">sf-api</h2>

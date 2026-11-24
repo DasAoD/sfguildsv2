@@ -504,6 +504,16 @@ select:focus {
     text-decoration-thickness: 2px;
 }
 
+.credits a,
+.credits a:visited {
+    color: var(--color-primary);
+    text-decoration: underline;
+}
+
+.credits a:hover {
+    text-decoration-thickness: 2px;
+}
+
 /* Keyboard focus for clickable headers */
 .account-card-header:focus-visible {
     outline: 2px solid var(--color-primary);
