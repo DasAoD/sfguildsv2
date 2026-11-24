@@ -146,6 +146,7 @@ function renderFooter() {
                 if (legalPageActive($page)): ?>
             &middot; <a href="<?php echo $url; ?>"><?php echo $label; ?></a>
             <?php endif; endforeach; } catch (Throwable $e) { error_log('footer: ' . $e->getMessage()); } ?>
+            &middot; <a href="/credits.php">Credits</a>
         </div>
     </footer>
     <?php
